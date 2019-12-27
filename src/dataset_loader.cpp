@@ -30,8 +30,37 @@ void DatasetLoader::LoadFreiburgRgb(const std::string &dataset_folder_name) {
   }
 }
 
+void DatasetLoader::LoadFreiburgGroundTruth(
+    const std::string &dataset_folder_name) {
+
+  std::string gt_filename = dataset_folder_name + "/groundtruth.txt";
+  std::ifstream f{gt_filename, std::ifstream::in};
+
+  double timestamp, tx, ty, tz, qx, qy, qz, qw;
+  std::string s;
+  while (!f.eof()) {
+    getline(f, s);
+    if (!s.empty() && !IsCommentLine(s)) {
+      std::stringstream ss;
+      ss << s;
+      ss >> timestamp >> tx >> ty >> tz >> qx >> qy >> qz >> qw;
+      _ground_truths.emplace_back(Eigen::Vector3d(tx, ty, tz), Eigen::Quaterniond(qw, qx, qy, qz),
+                                  timestamp);
+    }
+  }
+}
+
+void DatasetLoader::LoadFreiburgDataset(
+    const std::string &dataset_folder_name) {
+  LoadFreiburgRgb(dataset_folder_name);
+  LoadFreiburgGroundTruth(dataset_folder_name);
+}
+
 const std::vector<ImageFile> &DatasetLoader::GetImageFiles() const {
   return _image_files;
 }
 
+const std::vector<GroundTruth> &DatasetLoader::GetGroundTruths() const {
+  return _ground_truths;
+}
 } // namespace clean_slam

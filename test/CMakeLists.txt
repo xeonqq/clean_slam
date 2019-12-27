@@ -25,5 +25,6 @@ target_link_libraries (
         ${BINARY}
         PUBLIC ${CMAKE_PROJECT_NAME}
         gtest_main
+        gmock
         )
 add_dependencies(${BINARY} rgbd_dataset_freiburg1_xyz)
