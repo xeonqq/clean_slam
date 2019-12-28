@@ -63,4 +63,7 @@ const std::vector<ImageFile> &DatasetLoader::GetImageFiles() const {
 const std::vector<GroundTruth> &DatasetLoader::GetGroundTruths() const {
   return _ground_truths;
 }
+GroundTruth DatasetLoader::GetGroundTruthAt(double timestamp) const {
+  return _ground_truths.GetGroundTruthAt(timestamp);
+}
 } // namespace clean_slam
