@@ -1,5 +1,4 @@
 include(ExternalProject)
-set(DATASET_DIR ${CMAKE_BINARY_DIR}/test/dataset)
 ExternalProject_Add(
         rgbd_dataset_freiburg1_xyz
         PREFIX ""
@@ -11,7 +10,11 @@ ExternalProject_Add(
         BUILD_COMMAND ""
         INSTALL_COMMAND ""
 )
+
+set(DATASET_DIR ${CMAKE_BINARY_DIR}/test/dataset)
+set(CONFIG_DIR ${CMAKE_SOURCE_DIR}/config)
 add_compile_definitions(DATASET_DIR="${DATASET_DIR}")
+add_compile_definitions(CONFIG_DIR="${CONFIG_DIR}")
 include_directories (${TEST_SOURCE_DIR}/src
         ${CMAKE_SOURCE_DIR}/src
         ${CMAKE_SOURCE_DIR}
@@ -19,7 +22,7 @@ include_directories (${TEST_SOURCE_DIR}/src
         )
 
 set(BINARY ${CMAKE_PROJECT_NAME}_test)
-add_executable (${BINARY} test_dataset_loader.cpp)
+add_executable (${BINARY} test_dataset_loader.cpp test_slam_system.cpp)
 add_test(NAME ${BINARY} COMMAND ${BINARY})
 target_link_libraries (
         ${BINARY}

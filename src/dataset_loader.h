@@ -5,9 +5,10 @@
 #ifndef CLEAN_SLAM_SRC_DATASET_LOADER_H_
 #define CLEAN_SLAM_SRC_DATASET_LOADER_H_
 
+#include "ground_truth.h"
+#include <opencv2/core/mat.hpp>
 #include <string>
 #include <vector>
-#include "ground_truth.h"
 
 namespace clean_slam {
 
@@ -22,16 +23,23 @@ struct ImageFile {
 
 class DatasetLoader {
 public:
-  void LoadFreiburgDataset(const std::string &dataset_folder_name);
+  void LoadFreiburgDataset(const std::string &dataset_folder_name, const std::string& path_to_yaml);
   const std::vector<ImageFile> &GetImageFiles() const;
   const std::vector<GroundTruth> &GetGroundTruths() const;
   GroundTruth GetGroundTruthAt(double timestamp) const;
+  const std::string &GetDatasetFolder() const;
+  const cv::Mat &GetCameraIntrinsics() const;
+  const cv::Mat &GetDistortionCoeffs() const;
 
 private:
   void LoadFreiburgRgb(const std::string &dataset_folder_name);
   void LoadFreiburgGroundTruth(const std::string &dataset_folder_name);
+  void LoadFreiburgCameraIntrinsics(const std::string &path_to_yaml);
   std::vector<ImageFile> _image_files;
   GroundTruths _ground_truths;
+  std::string _dataset_folder;
+  cv::Mat _camera_intrinsics;
+  cv::Mat _distortion_coeffs;
 };
 
 } // namespace clean_slam

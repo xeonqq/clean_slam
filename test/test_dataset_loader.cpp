@@ -5,6 +5,7 @@
 #include "dataset_loader.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include <opencv2/opencv.hpp>
 
 namespace clean_slam {
 
@@ -12,8 +13,8 @@ TEST(DatasetLoaderTest, load_dataset) {
   // arrange
   DatasetLoader loader;
   // act
-  loader.LoadFreiburgDataset(DATASET_DIR +
-                             std::string("/rgbd_dataset_freiburg1_xyz"));
+  loader.LoadFreiburgDataset(
+      DATASET_DIR + std::string("/rgbd_dataset_freiburg1_xyz"), CONFIG_DIR);
   const auto& image_files = loader.GetImageFiles();
   const auto& ground_truths = loader.GetGroundTruths();
 
@@ -39,8 +40,8 @@ TEST(DatasetLoaderTest, GetGroundTruthAtTime_ThenGroudTruthWillBeInterpolated) {
   // arrange
   DatasetLoader loader;
   // act
-  loader.LoadFreiburgDataset(DATASET_DIR +
-      std::string("/rgbd_dataset_freiburg1_xyz"));
+  loader.LoadFreiburgDataset(
+      DATASET_DIR + std::string("/rgbd_dataset_freiburg1_xyz"), CONFIG_DIR);
 
   // assert
   const auto ground_truth = loader.GetGroundTruthAt(1305031102.175304);
@@ -57,5 +58,48 @@ TEST(DatasetLoaderTest, GetGroundTruthAtTime_ThenGroudTruthWillBeInterpolated) {
   EXPECT_NEAR(-q.y(), 6.12530539e-01, 1.1e-4);
   EXPECT_NEAR(-q.z(), -2.94845424e-01,1.1e-4);
   EXPECT_NEAR(-q.w(), -3.24889307e-01,1.1e-4);
+}
+
+template<typename T>
+void ExpectTwoMatsEqual(const cv::Mat& a, const cv::Mat& b)
+{
+  for (size_t row=0; row<a.rows; ++row)
+  {
+    for (size_t col=0; col<a.cols; ++col)
+      EXPECT_FLOAT_EQ(a.at<T>(row, col), b.at<T>(row, col));
+  }
+}
+
+TEST(DatasetLoaderTest, LoadCameraIntrinsics) {
+  // arrange
+  DatasetLoader loader;
+  // act
+  loader.LoadFreiburgDataset(
+      DATASET_DIR + std::string("/rgbd_dataset_freiburg1_xyz"), CONFIG_DIR);
+
+  // assert
+  const auto& camera_intrinsics = loader.GetCameraIntrinsics();
+  const auto& distortion_coeffs = loader.GetDistortionCoeffs();
+
+  cv::Mat expect_camera_intrinsics =
+      (cv::Mat_<double>(3, 3) << 517.306408, 0, 318.643040
+          , 0, 516.469215,
+          255.313989, 0, 0, 1);
+
+  cv::Mat expect_distortion_coeffs=
+      (cv::Mat_<double>(5, 1) <<
+      0.262383,
+      -0.953104,
+      -0.005358,
+      0.002628,
+      1.163314);
+
+  //  Equal if no elements disagree
+  ExpectTwoMatsEqual<double>(expect_camera_intrinsics, camera_intrinsics);
+  ExpectTwoMatsEqual<double>(expect_distortion_coeffs, distortion_coeffs);
+//  EXPECT_EQ(cv::countNonZero(expect_camera_intrinsics != camera_intrinsics), 0);
+//  EXPECT_EQ(cv::countNonZero(expect_distortion_coeffs != distortion_coeffs), 0);
+
+
 }
 } // namespace clean_slam
