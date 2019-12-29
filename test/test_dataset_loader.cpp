@@ -77,29 +77,21 @@ TEST(DatasetLoaderTest, LoadCameraIntrinsics) {
   loader.LoadFreiburgDataset(
       DATASET_DIR + std::string("/rgbd_dataset_freiburg1_xyz"), CONFIG_DIR);
 
+  const auto &camera_intrinsics = loader.GetCameraIntrinsics();
+  const auto &distortion_coeffs = loader.GetDistortionCoeffs();
+
+  Eigen::Matrix3d expect_camera_intrinsics;
+  expect_camera_intrinsics << 517.306408, 0, 318.643040, 0, 516.469215,
+      255.313989, 0, 0, 1;
+
+  Eigen::Matrix<double, 5, 1> expect_distortion_coeffs;
+  expect_distortion_coeffs << 0.262383, -0.953104, -0.005358, 0.002628,
+      1.163314;
+
   // assert
-  const auto& camera_intrinsics = loader.GetCameraIntrinsics();
-  const auto& distortion_coeffs = loader.GetDistortionCoeffs();
-
-  cv::Mat expect_camera_intrinsics =
-      (cv::Mat_<double>(3, 3) << 517.306408, 0, 318.643040
-          , 0, 516.469215,
-          255.313989, 0, 0, 1);
-
-  cv::Mat expect_distortion_coeffs=
-      (cv::Mat_<double>(5, 1) <<
-      0.262383,
-      -0.953104,
-      -0.005358,
-      0.002628,
-      1.163314);
-
-  //  Equal if no elements disagree
-  ExpectTwoMatsEqual<double>(expect_camera_intrinsics, camera_intrinsics);
-  ExpectTwoMatsEqual<double>(expect_distortion_coeffs, distortion_coeffs);
-//  EXPECT_EQ(cv::countNonZero(expect_camera_intrinsics != camera_intrinsics), 0);
-//  EXPECT_EQ(cv::countNonZero(expect_distortion_coeffs != distortion_coeffs), 0);
-
-
+  //  ExpectTwoMatsEqual<double>(expect_camera_intrinsics, camera_intrinsics);
+  //  ExpectTwoMatsEqual<double>(expect_distortion_coeffs, distortion_coeffs);
+  expect_camera_intrinsics.isApprox(camera_intrinsics);
+  expect_distortion_coeffs.isApprox(distortion_coeffs);
 }
 } // namespace clean_slam

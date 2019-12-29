@@ -17,6 +17,7 @@ include_directories(
         ${Pangolin_INCLUDE_DIRS}
 )
 add_library(${PROJECT_NAME} SHARED
+        slam_core.cpp
         orb_extractor.cpp
         slam_system.cpp dataset_loader.cpp
         ground_truth.cpp)

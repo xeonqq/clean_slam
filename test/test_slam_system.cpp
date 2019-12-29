@@ -12,9 +12,8 @@ TEST(SlamSystemTest, Run) {
   // arrange
   SlamSystem system;
   // act
-  system.LoadMonoDataset(DATASET_DIR +
-                             std::string("/rgbd_dataset_freiburg1_xyz"),
-                         CONFIG_DIR);
-  //system.Run();
-
-}}
+  system.LoadMonoDataset(
+      DATASET_DIR + std::string("/rgbd_dataset_freiburg1_xyz"), CONFIG_DIR);
+  system.Run();
+}
+}
