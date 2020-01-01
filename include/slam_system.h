@@ -11,7 +11,7 @@
 namespace clean_slam {
 class SlamSystem {
 public:
-  SlamSystem();
+  SlamSystem() = default;
   void LoadMonoDataset(const std::string &dataset_folder,
                        const std::string &path_to_yaml);
   void Run();
