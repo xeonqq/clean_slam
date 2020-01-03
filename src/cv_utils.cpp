@@ -7,18 +7,6 @@
 
 namespace clean_slam {
 
-std::vector<cv::DMatch>
-RetrieveGoodMatches(const std::vector<cv::DMatch> &matches,
-                    float descriptor_distance_threshold) {
-  // Retrieve matches have distance lower than descriptor distance threshold
-  std::vector<cv::DMatch> good_matches;
-  std::copy_if(matches.begin(), matches.end(), std::back_inserter(good_matches),
-               [descriptor_distance_threshold](const auto &match) {
-                 return match.distance < descriptor_distance_threshold;
-               });
-  return good_matches;
-}
-
 std::string MatType2Str(int type) {
   std::string r;
 

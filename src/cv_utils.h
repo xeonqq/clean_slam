@@ -11,10 +11,6 @@
 
 namespace clean_slam {
 
-std::vector<cv::DMatch>
-RetrieveGoodMatches(const std::vector<cv::DMatch> &matches,
-                    float descriptor_distance_threshold);
-
 struct QueryIdxs {
   std::vector<int> operator()(const std::vector<cv::DMatch> &matches) {
     std::vector<int> idxs;
@@ -35,16 +31,6 @@ struct TrainIdxs {
   }
 };
 
-template <typename Query>
-std::vector<cv::Point2f>
-GetKeyPointsInPixelFromMatches(const std::vector<cv::KeyPoint> &key_points,
-                               const std::vector<cv::DMatch> &matches) {
-  std::vector<cv::Point2f> key_points_in_pixel;
-  for (const auto &match_idx : Query()(matches)) {
-    key_points_in_pixel.push_back(key_points[match_idx].pt);
-  }
-  return key_points_in_pixel;
-}
 
 std::string MatType2Str(int type);
 } // namespace clean_slam
