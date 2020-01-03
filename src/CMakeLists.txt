@@ -20,7 +20,7 @@ add_library(${PROJECT_NAME} SHARED
         slam_core.cpp
         orb_extractor.cpp
         slam_system.cpp dataset_loader.cpp
-        ground_truth.cpp)
+        ground_truth.cpp cv_utils.cpp cv_utils.h)
 
 target_link_libraries(${PROJECT_NAME}
         ${OpenCV_LIBS}
