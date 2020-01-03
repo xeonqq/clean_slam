@@ -4,7 +4,13 @@
 
 #include "slam_core.h"
 #include "cv_utils.h"
+#include <opencv2/calib3d/calib3d.hpp>
+#include <opencv2/core/core.hpp>
+#include <opencv2/features2d/features2d.hpp>
+#include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgcodecs.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/opencv.hpp>
 
 namespace clean_slam {
 
@@ -18,7 +24,33 @@ void SlamCore::Track(const cv::Mat image) {
     matcher.match(orb_features.GetDescriptors(),
                   _previous_frame.GetDescriptors(), matches);
 
+    double max_dist = 0;
+    double min_dist = 100;
+    //-- Quick calculation of max and min distances between keypoints
+    for (const auto &m : matches) {
+      double dist = m.distance;
+      if (dist < min_dist)
+        min_dist = dist;
+      if (dist > max_dist)
+        max_dist = dist;
+    }
+
+    printf("-- Max dist : %f \n", max_dist);
+    printf("-- Min dist : %f \n", min_dist);
+
     std::vector<cv::DMatch> good_matches = RetrieveGoodMatches(matches, 20);
+
+    // Localize the object
+    std::vector<cv::Point2f> key_pixels_curr_frame =
+        GetKeyPointsInPixelFromMatches<QueryIdxs>(orb_features.GetKeyPoints(),
+                                                  good_matches);
+    std::vector<cv::Point2f> key_pixels_prev_frame =
+        GetKeyPointsInPixelFromMatches<TrainIdxs>(orb_features.GetKeyPoints(),
+                                                  good_matches);
+
+    cv::Mat H = cv::findHomography(key_pixels_curr_frame, key_pixels_prev_frame,
+                                   CV_RANSAC);
+    std::cout << H << std::endl;
     cv::Mat img_matches;
     cv::drawMatches(image, orb_features.GetKeyPoints(),
                     _previous_frame.GetImage(), _previous_frame.GetKeyPoints(),
