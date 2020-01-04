@@ -63,11 +63,12 @@ void DatasetLoader::LoadFreiburgDataset(const std::string &dataset_folder_name,
 void DatasetLoader::LoadFreiburgCameraIntrinsics(
     const std::string &path_to_yaml) {
   cv::FileStorage fSettings(path_to_yaml + "/TUM1.yaml", cv::FileStorage::READ);
-  _camera_intrinsics << fSettings["Camera.fx"], 0, fSettings["Camera.cx"], 0,
-      fSettings["Camera.fy"], fSettings["Camera.cy"], 0, 0, 1;
-
-  _distortion_coeffs << fSettings["Camera.k1"], fSettings["Camera.k2"],
-      fSettings["Camera.p1"], fSettings["Camera.p2"], fSettings["Camera.k3"];
+  _camera_intrinsics = (cv::Mat_<double>(3, 3) << fSettings["Camera.fx"], 0,
+                        fSettings["Camera.cx"], 0, fSettings["Camera.fy"],
+                        fSettings["Camera.cy"], 0, 0, 1);
+  _distortion_coeffs =
+      (cv::Mat_<double>(5, 1) << fSettings["Camera.k1"], fSettings["Camera.k2"],
+       fSettings["Camera.p1"], fSettings["Camera.p2"], fSettings["Camera.k3"]);
 
   //  const float k3 = fSettings["Camera.k3"];
   //  if (k3 != 0) {
@@ -90,10 +91,10 @@ GroundTruth DatasetLoader::GetGroundTruthAt(double timestamp) const {
 const std::string &DatasetLoader::GetDatasetFolder() const {
   return _dataset_folder;
 }
-const Eigen::Matrix3d &DatasetLoader::GetCameraIntrinsics() const {
+const cv::Mat &DatasetLoader::GetCameraIntrinsics() const {
   return _camera_intrinsics;
 }
-const Eigen::Matrix<double, 5, 1> &DatasetLoader::GetDistortionCoeffs() const {
+const cv::Mat &DatasetLoader::GetDistortionCoeffs() const {
   return _distortion_coeffs;
 }
 } // namespace clean_slam

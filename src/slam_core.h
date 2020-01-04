@@ -16,13 +16,13 @@ namespace clean_slam {
 class SlamCore {
 public:
   SlamCore() = default;
-  void Initialize(const Eigen::Matrix3d &camera_intrinsic,
-                  const Eigen::Matrix<double, 5, 1> &camera_distortion_coeffs);
+  void Initialize(const cv::Mat &camera_intrinsic,
+                  const cv::Mat &camera_distortion_coeffs);
   void Track(const cv::Mat image);
 
 private:
-  Eigen::Matrix3d _camera_intrinsic;
-  Eigen::Matrix<double, 5, 1> _camera_distortion_coeffs;
+  cv::Mat _camera_intrinsic;
+  cv::Mat _camera_distortion_coeffs;
   OrbExtractor _orb_extractor;
   Frame _previous_frame;
   OrbFeatureMatcher _orb_feature_matcher;

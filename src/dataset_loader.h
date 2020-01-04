@@ -9,9 +9,6 @@
 #include <opencv2/core/mat.hpp>
 #include <string>
 #include <vector>
-namespace Eigen {
-using Vector5d = Matrix<double, 5, 1>;
-}
 
 namespace clean_slam {
 
@@ -32,8 +29,8 @@ public:
   const std::vector<GroundTruth> &GetGroundTruths() const;
   GroundTruth GetGroundTruthAt(double timestamp) const;
   const std::string &GetDatasetFolder() const;
-  const Eigen::Matrix3d &GetCameraIntrinsics() const;
-  const Eigen::Matrix<double, 5, 1> &GetDistortionCoeffs() const;
+  const cv::Mat &GetCameraIntrinsics() const;
+  const cv::Mat &GetDistortionCoeffs() const;
 
 private:
   void LoadFreiburgRgb(const std::string &dataset_folder_name);
@@ -42,9 +39,8 @@ private:
   std::vector<ImageFile> _image_files;
   GroundTruths _ground_truths;
   std::string _dataset_folder;
-  Eigen::Matrix3d _camera_intrinsics;
-  Eigen::Matrix<double, 5, 1> _distortion_coeffs;
+  cv::Mat _camera_intrinsics;
+  cv::Mat _distortion_coeffs;
 };
-
 } // namespace clean_slam
 #endif // CLEAN_SLAM_SRC_DATASET_LOADER_H_

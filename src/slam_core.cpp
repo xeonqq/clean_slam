@@ -39,9 +39,8 @@ void SlamCore::Track(const cv::Mat image) {
   cv::waitKey(0);
 }
 
-void SlamCore::Initialize(
-    const Eigen::Matrix3d &camera_intrinsic,
-    const Eigen::Matrix<double, 5, 1> &camera_distortion_coeffs) {
+void SlamCore::Initialize(const cv::Mat &camera_intrinsic,
+                          const cv::Mat &camera_distortion_coeffs) {
   _camera_intrinsic = camera_intrinsic;
   _camera_distortion_coeffs = camera_distortion_coeffs;
 }
