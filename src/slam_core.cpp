@@ -22,13 +22,21 @@ void SlamCore::Track(const cv::Mat image) {
     const auto matched_points_pair_undistorted =
         OrbFeatureMatcher::GetMatchedPointsPairUndistorted(
             current_frame, _previous_frame, good_matches);
-    cv::Mat H = cv::findHomography(
-        matched_points_pair_undistorted.GetPointsCurrFrame(),
-        matched_points_pair_undistorted.GetPointsPrevFrame(), CV_RANSAC);
-
-    cv::Mat F = cv::findFundamentalMat(
-        matched_points_pair_undistorted.GetPointsCurrFrame(),
-        matched_points_pair_undistorted.GetPointsPrevFrame());
+    cv::Mat homography_inlies;
+    const auto &points_current_frame =
+        matched_points_pair_undistorted.GetPointsCurrFrame();
+    const auto &points_previous_frame =
+        matched_points_pair_undistorted.GetPointsPrevFrame();
+    cv::Mat H = cv::findHomography(points_previous_frame, points_current_frame,
+                                   homography_inlies, CV_RANSAC);
+    cv::Mat points_previous_frame_homogeneous;
+    cv::convertPointsToHomogeneous(points_previous_frame,
+                                   points_previous_frame_homogeneous);
+    const auto expected_points_current_frame_homogeneous =
+        H * points_previous_frame_homogeneous;
+    //    std::cout << expected_points_current_frame_homogeneous<< std::endl;
+    cv::Mat F =
+        cv::findFundamentalMat(points_current_frame, points_previous_frame);
 
     //    std::cout << "Homography Mat:\n" << H << std::endl;
     //    std::cout << "Fundemental Mat:\n" << F << std::endl;
