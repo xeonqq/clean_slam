@@ -35,21 +35,23 @@ private:
 class OrbFeatureMatcher {
 public:
   OrbFeatureMatcher();
-  void Match(const Frame &curr_frame, const Frame &prev_frame);
-  PointsPair GetMatchedPointsPair() const;
-  PointsPair GetMatchedPointsPairUndistorted() const;
-
-  const std::vector<cv::DMatch> &GetGoodMatches() const;
+  std::vector<cv::DMatch> Match(const Frame &curr_frame,
+                                const Frame &prev_frame);
+  static PointsPair
+  GetMatchedPointsPair(const Frame &curr_frame, const Frame &prev_frame,
+                       const std::vector<cv::DMatch> &matches);
+  static PointsPair
+  GetMatchedPointsPairUndistorted(const Frame &curr_frame,
+                                  const Frame &prev_frame,
+                                  const std::vector<cv::DMatch> &matches);
 
 private:
-  void ComputeGoodMatches(float descriptor_distance_threshold);
+  std::vector<cv::DMatch>
+  ComputeGoodMatches(const std::vector<cv::DMatch> &matches,
+                     float descriptor_distance_threshold);
 
 private:
   cv::FlannBasedMatcher _matcher;
-  std::vector<cv::DMatch> _matches;
-  std::vector<cv::DMatch> _good_matches;
-  const Frame *_current_frame;
-  const Frame *_previous_frame;
 };
 
 } // namespace clean_slam

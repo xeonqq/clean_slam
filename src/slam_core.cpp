@@ -17,10 +17,11 @@ void SlamCore::Track(const cv::Mat image) {
   Frame current_frame{image, _orb_extractor.DetectAndUndistortKeyPoints(image)};
 
   if (!_previous_frame.GetImage().empty()) {
-    _orb_feature_matcher.Match(current_frame, _previous_frame);
+    const auto good_matches =
+        _orb_feature_matcher.Match(current_frame, _previous_frame);
     const auto matched_points_pair_undistorted =
-        _orb_feature_matcher.GetMatchedPointsPairUndistorted();
-
+        OrbFeatureMatcher::GetMatchedPointsPairUndistorted(
+            current_frame, _previous_frame, good_matches);
     cv::Mat H = cv::findHomography(
         matched_points_pair_undistorted.GetPointsCurrFrame(),
         matched_points_pair_undistorted.GetPointsPrevFrame(), CV_RANSAC);
@@ -32,11 +33,11 @@ void SlamCore::Track(const cv::Mat image) {
     //    std::cout << "Homography Mat:\n" << H << std::endl;
     //    std::cout << "Fundemental Mat:\n" << F << std::endl;
     cv::Mat img_matches;
-    cv::drawMatches(
-        image, current_frame.GetKeyPoints(), _previous_frame.GetImage(),
-        _previous_frame.GetKeyPoints(), _orb_feature_matcher.GetGoodMatches(),
-        img_matches, cv::Scalar::all(-1), cv::Scalar::all(-1),
-        std::vector<char>(), cv::DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS);
+    cv::drawMatches(image, current_frame.GetKeyPoints(),
+                    _previous_frame.GetImage(), _previous_frame.GetKeyPoints(),
+                    good_matches, img_matches, cv::Scalar::all(-1),
+                    cv::Scalar::all(-1), std::vector<char>(),
+                    cv::DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS);
 
     imshow("Good Matches & Object detection", img_matches);
   }
