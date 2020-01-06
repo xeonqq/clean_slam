@@ -32,17 +32,6 @@ private:
   std::vector<cv::Point2f> key_pixels_prev_frame;
 };
 
-template <typename Query>
-std::vector<cv::Point2f>
-GetKeyPointsInPixelFromMatches(const std::vector<cv::KeyPoint> &key_points,
-                               const std::vector<cv::DMatch> &matches) {
-  std::vector<cv::Point2f> key_points_in_pixel;
-  for (const auto &match_idx : Query()(matches)) {
-    key_points_in_pixel.push_back(key_points[match_idx].pt);
-  }
-  return key_points_in_pixel;
-}
-
 class OrbFeatureMatcher {
 public:
   OrbFeatureMatcher();

@@ -32,12 +32,13 @@ KeyPixelsPair OrbFeatureMatcher::Match(const OrbFeatures &orb_features,
   ComputeGoodMatches(20);
 
   // Localize the object
-  std::vector<cv::Point2f> key_pixels_curr_frame =
-      GetKeyPointsInPixelFromMatches<QueryIdxs>(orb_features.GetKeyPoints(),
-                                                _good_matches);
-  std::vector<cv::Point2f> key_pixels_prev_frame =
-      GetKeyPointsInPixelFromMatches<TrainIdxs>(orb_features.GetKeyPoints(),
-                                                _good_matches);
+  std::vector<cv::Point2f> key_pixels_curr_frame;
+  cv::KeyPoint::convert(orb_features.GetKeyPoints(), key_pixels_curr_frame,
+                        QueryIdxs{}(_good_matches));
+
+  std::vector<cv::Point2f> key_pixels_prev_frame;
+  cv::KeyPoint::convert(prev_frame.GetKeyPoints(), key_pixels_prev_frame,
+                        TrainIdxs{}(_good_matches));
 
   return KeyPixelsPair{std::move(key_pixels_curr_frame),
                        std::move(key_pixels_prev_frame)};
@@ -57,4 +58,5 @@ void OrbFeatureMatcher::ComputeGoodMatches(
 const std::vector<cv::DMatch> &OrbFeatureMatcher::GetGoodMatches() const {
   return _good_matches;
 }
+
 } // namespace clean_slam

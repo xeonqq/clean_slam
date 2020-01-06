@@ -25,7 +25,7 @@ void SlamSystem::Run() {
                          cv::IMREAD_GRAYSCALE);
     _core.Track(im);
     ++i;
-    if (i == 12)
+    if (i == 2)
       break;
   }
 }

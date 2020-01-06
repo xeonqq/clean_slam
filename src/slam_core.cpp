@@ -3,6 +3,7 @@
 //
 
 #include "slam_core.h"
+#include <iterator>
 #include <opencv2/calib3d/calib3d.hpp>
 #include <opencv2/core/core.hpp>
 #include <opencv2/features2d/features2d.hpp>
@@ -13,7 +14,7 @@ namespace clean_slam {
 
 void SlamCore::Track(const cv::Mat image) {
 
-  const auto orb_features = _orb_extractor.Detect(image);
+  const auto orb_features = _orb_extractor.DetectAndUndistortKeyPoints(image);
   if (!_previous_frame.GetImage().empty()) {
     const auto key_pixels_pair =
         _orb_feature_matcher.Match(orb_features, _previous_frame);
@@ -21,7 +22,12 @@ void SlamCore::Track(const cv::Mat image) {
     cv::Mat H =
         cv::findHomography(key_pixels_pair.GetKeyPixelsCurrFrame(),
                            key_pixels_pair.GetKeyPixelsPrevFrame(), CV_RANSAC);
-    std::cout << H << std::endl;
+
+    cv::Mat F = cv::findFundamentalMat(key_pixels_pair.GetKeyPixelsCurrFrame(),
+                                       key_pixels_pair.GetKeyPixelsPrevFrame());
+
+    //    std::cout << "Homography Mat:\n" << H << std::endl;
+    //    std::cout << "Fundemental Mat:\n" << F << std::endl;
     cv::Mat img_matches;
     cv::drawMatches(
         image, orb_features.GetKeyPoints(), _previous_frame.GetImage(),
@@ -39,9 +45,11 @@ void SlamCore::Track(const cv::Mat image) {
   cv::waitKey(0);
 }
 
-void SlamCore::Initialize(const cv::Mat &camera_intrinsic,
+void SlamCore::Initialize(const cv::Mat &camera_intrinsics,
                           const cv::Mat &camera_distortion_coeffs) {
-  _camera_intrinsic = camera_intrinsic;
-  _camera_distortion_coeffs = camera_distortion_coeffs;
+  _orb_extractor.SetCameraIntrinsicsAndDistortionCoeffs(
+      camera_intrinsics, camera_distortion_coeffs);
+  //  _camera_intrinsic = camera_intrinsics;
+  //  _camera_distortion_coeffs = camera_distortion_coeffs;
 }
 } // namespace clean_slam

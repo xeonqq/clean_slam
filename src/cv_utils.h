@@ -31,7 +31,6 @@ struct TrainIdxs {
   }
 };
 
-
 std::string MatType2Str(int type);
 } // namespace clean_slam
 #endif // CLEAN_SLAM_SRC_CV_UTILS_H_
