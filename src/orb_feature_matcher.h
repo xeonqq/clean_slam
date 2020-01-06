@@ -9,21 +9,21 @@
 
 namespace clean_slam {
 
-class KeyPixelsPair {
+class PointsPair {
 public:
-  KeyPixelsPair(const std::vector<cv::Point2f> &key_pixels_curr_frame,
-                const std::vector<cv::Point2f> &key_pixels_prev_frame)
+  PointsPair(const std::vector<cv::Point2f> &key_pixels_curr_frame,
+             const std::vector<cv::Point2f> &key_pixels_prev_frame)
       : key_pixels_curr_frame(key_pixels_curr_frame),
         key_pixels_prev_frame(key_pixels_prev_frame) {}
 
-  KeyPixelsPair(std::vector<cv::Point2f> &&key_pixels_curr_frame,
-                std::vector<cv::Point2f> &&key_pixels_prev_frame)
+  PointsPair(std::vector<cv::Point2f> &&key_pixels_curr_frame,
+             std::vector<cv::Point2f> &&key_pixels_prev_frame)
       : key_pixels_curr_frame(std::move(key_pixels_curr_frame)),
         key_pixels_prev_frame(std::move(key_pixels_prev_frame)) {}
-  const std::vector<cv::Point2f> &GetKeyPixelsCurrFrame() const {
+  const std::vector<cv::Point2f> &GetPointsCurrFrame() const {
     return key_pixels_curr_frame;
   }
-  const std::vector<cv::Point2f> &GetKeyPixelsPrevFrame() const {
+  const std::vector<cv::Point2f> &GetPointsPrevFrame() const {
     return key_pixels_prev_frame;
   }
 
@@ -35,7 +35,10 @@ private:
 class OrbFeatureMatcher {
 public:
   OrbFeatureMatcher();
-  KeyPixelsPair Match(const OrbFeatures &orb_features, const Frame &prev_frame);
+  void Match(const Frame &curr_frame, const Frame &prev_frame);
+  PointsPair GetMatchedPointsPair() const;
+  PointsPair GetMatchedPointsPairUndistorted() const;
+
   const std::vector<cv::DMatch> &GetGoodMatches() const;
 
 private:
@@ -45,6 +48,8 @@ private:
   cv::FlannBasedMatcher _matcher;
   std::vector<cv::DMatch> _matches;
   std::vector<cv::DMatch> _good_matches;
+  const Frame *_current_frame;
+  const Frame *_previous_frame;
 };
 
 } // namespace clean_slam
