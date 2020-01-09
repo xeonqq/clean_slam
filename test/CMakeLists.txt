@@ -1,4 +1,6 @@
 include(ExternalProject)
+set(DATASET_DIR ${CMAKE_BINARY_DIR}/test/dataset)
+set(CONFIG_DIR ${CMAKE_SOURCE_DIR}/config)
 ExternalProject_Add(
         rgbd_dataset_freiburg1_xyz
         PREFIX ""
@@ -11,8 +13,7 @@ ExternalProject_Add(
         INSTALL_COMMAND ""
 )
 
-set(DATASET_DIR ${CMAKE_BINARY_DIR}/test/dataset)
-set(CONFIG_DIR ${CMAKE_SOURCE_DIR}/config)
+
 add_compile_definitions(DATASET_DIR="${DATASET_DIR}")
 add_compile_definitions(CONFIG_DIR="${CONFIG_DIR}")
 include_directories (${TEST_SOURCE_DIR}/src
