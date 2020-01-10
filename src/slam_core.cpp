@@ -30,20 +30,17 @@ void SlamCore::Track(const cv::Mat image) {
         matched_points_pair_undistorted.GetPointsPrevFrame();
     cv::Mat H = cv::findHomography(points_previous_frame, points_current_frame,
                                    homography_inlies, CV_RANSAC);
-    std::vector<cv::Point2f> points_previous_frame_inlies =
-        FilterByMask(points_previous_frame, homography_inlies);
-    std::vector<cv::Point2f> points_current_frame_inlies_vec =
-        FilterByMask(points_current_frame, homography_inlies);
 
-    cv::Mat points_current_frame_inlies =
-        cv::Mat{points_current_frame_inlies_vec}.reshape(2, 1);
-
-    cv::Mat expected_points_current_frame_inlies;
-    cv::perspectiveTransform(points_previous_frame_inlies,
-                             expected_points_current_frame_inlies, H);
-    const auto transfer_error =
-        cv::sum(cv::sum(cv::abs(expected_points_current_frame_inlies -
-                                points_current_frame_inlies)))[0];
+    cv::Mat expected_points_current_frame;
+    cv::perspectiveTransform(points_previous_frame,
+                             expected_points_current_frame, H);
+    cv::Mat diff = cv::Mat::zeros(expected_points_current_frame.rows,
+                                  expected_points_current_frame.cols,
+                                  expected_points_current_frame.type());
+    cv::subtract(expected_points_current_frame,
+                 cv::Mat(points_current_frame).reshape(2, 1), diff,
+                 homography_inlies.reshape(1, 1));
+    const auto transfer_error = cv::sum(cv::sum(cv::abs(diff)))[0];
     std::cout << transfer_error << std::endl;
     cv::Mat fundamental_inlies;
     cv::Mat F = cv::findFundamentalMat(
