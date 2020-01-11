@@ -30,22 +30,15 @@ void SlamCore::Track(const cv::Mat image) {
         matched_points_pair_undistorted.GetPointsPrevFrame();
     cv::Mat H = cv::findHomography(points_previous_frame, points_current_frame,
                                    homography_inlies, CV_RANSAC);
+    const auto homography_average_symmetric_transfer_error =
+        CalculateSymmetricTransferError(
+            points_previous_frame, points_current_frame, H, homography_inlies) /
+        cv::countNonZero(homography_inlies);
 
-    cv::Mat expected_points_current_frame;
-    cv::perspectiveTransform(points_previous_frame,
-                             expected_points_current_frame, H);
-    cv::Mat diff = ZerosLike(expected_points_current_frame);
-    cv::subtract(expected_points_current_frame,
-                 cv::Mat(points_current_frame).reshape(2, 1), diff,
-                 homography_inlies.reshape(1, 1));
-    auto transfer_error = cv::sum(cv::sum(cv::abs(diff)))[0];
-    transfer_error /= cv::countNonZero(homography_inlies);
-
-    std::cout << transfer_error << std::endl;
+    std::cout << homography_average_symmetric_transfer_error << std::endl;
     cv::Mat fundamental_inlies;
     cv::Mat F = cv::findFundamentalMat(
-        points_current_frame, points_previous_frame, fundamental_inlies);
-
+        points_previous_frame, points_current_frame, fundamental_inlies);
     //    std::cout << "Homography Mat:\n" << H << std::endl;
     //    std::cout << "Fundemental Mat:\n" << F << std::endl;
     cv::Mat img_matches;
@@ -64,6 +57,32 @@ void SlamCore::Track(const cv::Mat image) {
   cv::waitKey(0);
 
   _previous_frame = std::move(current_frame);
+}
+
+float CalculateSymmetricTransferError(
+    const std::vector<cv::Point2f> &src_points,
+    const std::vector<cv::Point2f> &dst_points, const cv::Mat &m,
+    const cv::Mat &inlies_mask) {
+  const auto forward_transfer_error =
+      CalculateTransferError(src_points, dst_points, m, inlies_mask);
+  const auto backward_transfer_error =
+      CalculateTransferError(dst_points, src_points, m.inv(), inlies_mask);
+  return forward_transfer_error + backward_transfer_error;
+}
+
+float CalculateTransferError(const std::vector<cv::Point2f> &src_points,
+                             const std::vector<cv::Point2f> &dst_points,
+                             const cv::Mat &m, const cv::Mat &inlies_mask) {
+  cv::Mat expected_dst_points;
+  cv::perspectiveTransform(src_points, expected_dst_points, m);
+  cv::Mat diff = ZerosLike(expected_dst_points);
+  cv::subtract(expected_dst_points, cv::Mat(dst_points).reshape(2, 1), diff,
+               inlies_mask.reshape(1, 1));
+  cv::pow(diff, 2, diff);
+  auto transfer_error = cv::sum(cv::sum(diff))[0];
+
+  std::cout << transfer_error << std::endl;
+  return transfer_error;
 }
 
 void SlamCore::Initialize(const cv::Mat &camera_intrinsics,
