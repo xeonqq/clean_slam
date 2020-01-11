@@ -34,13 +34,13 @@ void SlamCore::Track(const cv::Mat image) {
     cv::Mat expected_points_current_frame;
     cv::perspectiveTransform(points_previous_frame,
                              expected_points_current_frame, H);
-    cv::Mat diff = cv::Mat::zeros(expected_points_current_frame.rows,
-                                  expected_points_current_frame.cols,
-                                  expected_points_current_frame.type());
+    cv::Mat diff = ZerosLike(expected_points_current_frame);
     cv::subtract(expected_points_current_frame,
                  cv::Mat(points_current_frame).reshape(2, 1), diff,
                  homography_inlies.reshape(1, 1));
-    const auto transfer_error = cv::sum(cv::sum(cv::abs(diff)))[0];
+    auto transfer_error = cv::sum(cv::sum(cv::abs(diff)))[0];
+    transfer_error /= cv::countNonZero(homography_inlies);
+
     std::cout << transfer_error << std::endl;
     cv::Mat fundamental_inlies;
     cv::Mat F = cv::findFundamentalMat(

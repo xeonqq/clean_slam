@@ -45,4 +45,7 @@ std::string MatType2Str(int type) {
 
   return r;
 }
+cv::MatExpr ZerosLike(cv::Mat m) {
+  return cv::Mat::zeros(m.rows, m.cols, m.type());
+}
 } // namespace clean_slam
