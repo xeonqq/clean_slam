@@ -4,16 +4,18 @@
 
 #include "slam_core.h"
 #include "cv_utils.h"
+#include "transfer_error.h"
+#include <chrono>
 #include <iterator>
 #include <opencv2/calib3d/calib3d.hpp>
 #include <opencv2/core/core.hpp>
 #include <opencv2/features2d/features2d.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/opencv.hpp>
-
+using namespace std::chrono;
 namespace clean_slam {
 
-void SlamCore::Track(const cv::Mat image) {
+void SlamCore::Track(const cv::Mat &image) {
 
   Frame current_frame{image, _orb_extractor.DetectAndUndistortKeyPoints(image)};
 
@@ -28,61 +30,53 @@ void SlamCore::Track(const cv::Mat image) {
         matched_points_pair_undistorted.GetPointsCurrFrame();
     const auto &points_previous_frame =
         matched_points_pair_undistorted.GetPointsPrevFrame();
+
+    auto start = high_resolution_clock::now();
+
     cv::Mat H = cv::findHomography(points_previous_frame, points_current_frame,
                                    homography_inlies, CV_RANSAC);
     const auto homography_average_symmetric_transfer_error =
-        CalculateSymmetricTransferError(
+        Homography::CalculateSymmetricTransferError(
             points_previous_frame, points_current_frame, H, homography_inlies) /
-        cv::countNonZero(homography_inlies);
+        static_cast<float>(cv::countNonZero(homography_inlies));
+    auto stop = high_resolution_clock::now();
+    std::cerr << "H reprojection err:"
+              << homography_average_symmetric_transfer_error << " run time: "
+              << duration_cast<microseconds>(stop - start).count() << '\n';
 
-    std::cout << homography_average_symmetric_transfer_error << std::endl;
+    start = high_resolution_clock::now();
     cv::Mat fundamental_inlies;
     cv::Mat F = cv::findFundamentalMat(
         points_previous_frame, points_current_frame, fundamental_inlies);
+    const auto epipolar_constraint_average_symmetric_transfer_error =
+        EpipolarConstraint::CalculateSymmetricTransferError(
+            points_previous_frame, points_current_frame, F,
+            fundamental_inlies) /
+        static_cast<float>(cv::countNonZero(fundamental_inlies));
+    stop = high_resolution_clock::now();
+    std::cerr << "F reprojection err:"
+              << epipolar_constraint_average_symmetric_transfer_error
+              << " run time: "
+              << duration_cast<microseconds>(stop - start).count() << '\n';
     //    std::cout << "Homography Mat:\n" << H << std::endl;
     //    std::cout << "Fundemental Mat:\n" << F << std::endl;
-    cv::Mat img_matches;
-    cv::drawMatches(image, current_frame.GetKeyPoints(),
-                    _previous_frame.GetImage(), _previous_frame.GetKeyPoints(),
-                    good_matches, img_matches, cv::Scalar::all(-1),
-                    cv::Scalar::all(-1), std::vector<char>(),
-                    cv::DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS);
-
-    imshow("Good Matches & Object detection", img_matches);
+    //    cv::Mat img_matches;
+    //    cv::drawMatches(image, current_frame.GetKeyPoints(),
+    //                    _previous_frame.GetImage(),
+    //                    _previous_frame.GetKeyPoints(), good_matches,
+    //                    img_matches, cv::Scalar::all(-1), cv::Scalar::all(-1),
+    //                    std::vector<char>(),
+    //                    cv::DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS);
+    //
+    //    imshow("Good Matches & Object detection", img_matches);
   }
 
-  cv::Mat out_im;
-  cv::drawKeypoints(image, current_frame.GetKeyPoints(), out_im);
-  cv::imshow("image", out_im);
-  cv::waitKey(0);
+  //  cv::Mat out_im;
+  //  cv::drawKeypoints(image, current_frame.GetKeyPoints(), out_im);
+  //  cv::imshow("image", out_im);
+  //  cv::waitKey(0);
 
   _previous_frame = std::move(current_frame);
-}
-
-float CalculateSymmetricTransferError(
-    const std::vector<cv::Point2f> &src_points,
-    const std::vector<cv::Point2f> &dst_points, const cv::Mat &m,
-    const cv::Mat &inlies_mask) {
-  const auto forward_transfer_error =
-      CalculateTransferError(src_points, dst_points, m, inlies_mask);
-  const auto backward_transfer_error =
-      CalculateTransferError(dst_points, src_points, m.inv(), inlies_mask);
-  return forward_transfer_error + backward_transfer_error;
-}
-
-float CalculateTransferError(const std::vector<cv::Point2f> &src_points,
-                             const std::vector<cv::Point2f> &dst_points,
-                             const cv::Mat &m, const cv::Mat &inlies_mask) {
-  cv::Mat expected_dst_points;
-  cv::perspectiveTransform(src_points, expected_dst_points, m);
-  cv::Mat diff = ZerosLike(expected_dst_points);
-  cv::subtract(expected_dst_points, cv::Mat(dst_points).reshape(2, 1), diff,
-               inlies_mask.reshape(1, 1));
-  cv::pow(diff, 2, diff);
-  auto transfer_error = cv::sum(cv::sum(diff))[0];
-
-  std::cout << transfer_error << std::endl;
-  return transfer_error;
 }
 
 void SlamCore::Initialize(const cv::Mat &camera_intrinsics,

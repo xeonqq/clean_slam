@@ -13,19 +13,12 @@
 
 namespace clean_slam {
 
-float CalculateSymmetricTransferError(
-    const std::vector<cv::Point2f> &src_points,
-    const std::vector<cv::Point2f> &dst_points, const cv::Mat &m,
-    const cv::Mat &inlies_mask);
-float CalculateTransferError(const std::vector<cv::Point2f> &src_points,
-                             const std::vector<cv::Point2f> &dst_points,
-                             const cv::Mat &m, const cv::Mat &inlies_mask);
 class SlamCore {
 public:
   SlamCore() = default;
   void Initialize(const cv::Mat &camera_intrinsic,
                   const cv::Mat &camera_distortion_coeffs);
-  void Track(const cv::Mat image);
+  void Track(const cv::Mat &image);
 
 private:
   //  cv::Mat _camera_intrinsic;

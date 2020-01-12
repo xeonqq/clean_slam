@@ -61,8 +61,8 @@ TEST(DatasetLoaderTest, GetGroundTruthAtTime_ThenGroudTruthWillBeInterpolated) {
 
 template <typename T>
 void ExpectTwoMatsEqual(const cv::Mat &a, const cv::Mat &b) {
-  for (size_t row = 0; row < a.rows; ++row) {
-    for (size_t col = 0; col < a.cols; ++col)
+  for (int row = 0; row < a.rows; ++row) {
+    for (int col = 0; col < a.cols; ++col)
       EXPECT_FLOAT_EQ(a.at<T>(row, col), b.at<T>(row, col));
   }
 }
