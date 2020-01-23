@@ -9,6 +9,7 @@
 namespace clean_slam {
 class HomogeneousMatrix {
 public:
+  HomogeneousMatrix() = default;
   HomogeneousMatrix(const cv::Mat &translation, const cv::Mat &rotation)
       : _translation{translation}, _rotation{rotation} {}
   const cv::Mat &GetTranslation() const { return _translation; }

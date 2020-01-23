@@ -11,32 +11,47 @@
 
 namespace clean_slam {
 
-struct MatWithReprojErr {
-  const cv::Mat m; // homography matrix or fundamental matrix
-  const float error;
-};
-
-class IMotionEstimator {
+class IProjectiveTransformation {
 public:
   virtual HomogeneousMatrix
-  Estimate(const std::vector<cv::Point2f> &points_previous_frame,
-           const std::vector<cv::Point2f> &points_current_frame) = 0;
+  EstimateMotion(const cv::Mat &camera_intrinsics) = 0;
+  IProjectiveTransformation(
+      const cv::Mat &m, const std::vector<cv::Point2f> &points_previous_frame,
+      const std::vector<cv::Point2f> &points_current_frame,
+      const cv::Mat &inlier, const float reprojection_error);
+  const float GetReprojectionError() const;
+
+private:
+  const cv::Mat &_m; // homography matrix or fundamental matrix
+  const std::vector<cv::Point2f> &_points_previous_frame;
+  const std::vector<cv::Point2f> &_points_current_frame;
+  const cv::Mat &_inlier;
+  const float _reprojection_error;
 };
 
-class ITwoViewsMotionEstimator {
+class HomographyTransformation : public IProjectiveTransformation {
 public:
-  virtual MatWithReprojErr EstimateMatAndReprojError(
-      const std::vector<cv::Point2f> &points_previous_frame,
-      const std::vector<cv::Point2f> &points_current_frame) const = 0;
-  virtual HomogeneousMatrix EstimateMotion(cv::Mat) const = 0;
+  HomographyTransformation(
+      const cv::Mat &m, const std::vector<cv::Point2f> &points_previous_frame,
+      const std::vector<cv::Point2f> &points_current_frame,
+      const cv::Mat &inlier, const float reprojection_error);
+  HomogeneousMatrix EstimateMotion(const cv::Mat &camera_intrinsics) override;
 };
 
-class HomographyMotionEstimator : public ITwoViewsMotionEstimator {
+class EpipolarTransformation : public IProjectiveTransformation {
 public:
-  MatWithReprojErr EstimateMatAndReprojError(
+  EpipolarTransformation(const cv::Mat &m,
+                         const std::vector<cv::Point2f> &points_previous_frame,
+                         const std::vector<cv::Point2f> &points_current_frame,
+                         const cv::Mat &inlier, const float reprojection_error);
+  HomogeneousMatrix EstimateMotion(const cv::Mat &camera_intrinsics) override;
+};
+
+class HomographyMotionEstimator {
+public:
+  HomographyTransformation EstimateProjectiveTransformation(
       const std::vector<cv::Point2f> &points_previous_frame,
-      const std::vector<cv::Point2f> &points_current_frame) const override;
-  HomogeneousMatrix EstimateMotion(cv::Mat mat) const override;
+      const std::vector<cv::Point2f> &points_current_frame) const;
 
 private:
   float
@@ -50,12 +65,11 @@ private:
                                const cv::Mat &inlies_mask) const;
 };
 
-class EpipolarConstraintMotionEstimator : public ITwoViewsMotionEstimator {
+class EpipolarConstraintMotionEstimator {
 public:
-  MatWithReprojErr EstimateMatAndReprojError(
+  EpipolarTransformation EstimateProjectiveTransformation(
       const std::vector<cv::Point2f> &points_previous_frame,
-      const std::vector<cv::Point2f> &points_current_frame) const override;
-  HomogeneousMatrix EstimateMotion(cv::Mat mat) const override;
+      const std::vector<cv::Point2f> &points_current_frame) const;
 
 private:
   float
@@ -69,17 +83,16 @@ private:
   CalculateRepojectionErrorDemoniator(const cv::Mat &epipolar_lines) const;
 };
 
-class CameraMotionEstimator : public IMotionEstimator {
+class CameraMotionEstimator {
 public:
   CameraMotionEstimator(const cv::Mat &camera_intrinsic);
   HomogeneousMatrix
   Estimate(const std::vector<cv::Point2f> &points_previous_frame,
-           const std::vector<cv::Point2f> &points_current_frame) override;
+           const std::vector<cv::Point2f> &points_current_frame);
 
 private:
-  std::unique_ptr<ITwoViewsMotionEstimator> _homography_motion_estimator;
-  std::unique_ptr<ITwoViewsMotionEstimator>
-      _epipolar_constraint_motion_estimator;
+  HomographyMotionEstimator _homography_motion_estimator;
+  EpipolarConstraintMotionEstimator _epipolar_constraint_motion_estimator;
   cv::Mat _camera_intrinsic;
 };
 

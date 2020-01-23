@@ -12,7 +12,8 @@ namespace clean_slam {
 
 using namespace std::chrono;
 
-MatWithReprojErr EpipolarConstraintMotionEstimator::EstimateMatAndReprojError(
+EpipolarTransformation
+EpipolarConstraintMotionEstimator::EstimateProjectiveTransformation(
     const std::vector<cv::Point2f> &points_previous_frame,
     const std::vector<cv::Point2f> &points_current_frame) const {
   auto start = high_resolution_clock::now();
@@ -29,25 +30,26 @@ MatWithReprojErr EpipolarConstraintMotionEstimator::EstimateMatAndReprojError(
             << epipolar_constraint_average_symmetric_transfer_error
             << " run time: "
             << duration_cast<microseconds>(stop - start).count() << '\n';
-  return MatWithReprojErr{F,
-                          epipolar_constraint_average_symmetric_transfer_error};
-  ;
+  return EpipolarTransformation{
+      F, points_previous_frame, points_current_frame, fundamental_inlies,
+      epipolar_constraint_average_symmetric_transfer_error};
 }
 
-HomogeneousMatrix
-EpipolarConstraintMotionEstimator::EstimateMotion(cv::Mat F) const {
+// HomogeneousMatrix
+// EpipolarConstraintMotionEstimator::EstimateMotion(cv::Mat F) const {
+//
+//  cv::Mat essential_mat;
+//  cv::sfm::essentialFromFundamental(F, _camera_intrinsic, _camera_intrinsic,
+//                                    essential_mat);
+//  cv::Mat R, t;
+//  cv::recoverPose(essential_mat, points_previous_frame,
+//  points_current_frame,
+//                  _camera_intrinsic, R, t, fundamental_inlies);
+//  std::cout << "R: \n" << R << std::endl;
+//  std::cout << "t: \n" << t << std::endl;
+//  return HomogeneousMatrix(cv::Mat(), cv::Mat());
+//}
 
-  cv::Mat essential_mat;
-  //  cv::sfm::essentialFromFundamental(F, _camera_intrinsic, _camera_intrinsic,
-  //                                    essential_mat);
-  //  cv::Mat R, t;
-  //  cv::recoverPose(essential_mat, points_previous_frame,
-  //  points_current_frame,
-  //                  _camera_intrinsic, R, t, fundamental_inlies);
-  //  std::cout << "R: \n" << R << std::endl;
-  //  std::cout << "t: \n" << t << std::endl;
-  return HomogeneousMatrix(cv::Mat(), cv::Mat());
-}
 float EpipolarConstraintMotionEstimator::CalculateSymmetricTransferError(
     const std::vector<cv::Point2f> &src_points,
     const std::vector<cv::Point2f> &dst_points, const cv::Mat &F,

@@ -10,7 +10,8 @@ namespace clean_slam {
 
 using namespace std::chrono;
 
-MatWithReprojErr HomographyMotionEstimator::EstimateMatAndReprojError(
+HomographyTransformation
+HomographyMotionEstimator::EstimateProjectiveTransformation(
     const std::vector<cv::Point2f> &points_previous_frame,
     const std::vector<cv::Point2f> &points_current_frame) const {
   auto start = high_resolution_clock::now();
@@ -27,13 +28,16 @@ MatWithReprojErr HomographyMotionEstimator::EstimateMatAndReprojError(
             << homography_average_symmetric_transfer_error << " run time: "
             << duration_cast<microseconds>(stop - start).count() << '\n';
 
-  return MatWithReprojErr{H, homography_average_symmetric_transfer_error};
+  return HomographyTransformation{H, points_previous_frame,
+                                  points_current_frame, homography_inlies,
+                                  homography_average_symmetric_transfer_error};
   ;
 }
-HomogeneousMatrix HomographyMotionEstimator::EstimateMotion(cv::Mat H) const {
-  //    cv::decomposeHomographyMat(H, _camera_intrinsic);
-  return HomogeneousMatrix(cv::Mat(), cv::Mat());
-}
+// HomogeneousMatrix HomographyMotionEstimator::EstimateMotion(cv::Mat H) const
+// {
+//      cv::decomposeHomographyMat(H, _camera_intrinsic);
+//  return HomogeneousMatrix(cv::Mat(), cv::Mat());
+//}
 
 float HomographyMotionEstimator::CalculateSymmetricTransferError(
     const std::vector<cv::Point2f> &src_points,
