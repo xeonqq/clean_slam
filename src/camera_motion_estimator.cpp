@@ -3,7 +3,9 @@
 //
 
 #include "camera_motion_estimator.h"
+#include "cv_utils.h"
 #include <chrono>
+#include <cv.hpp>
 #include <future>
 #include <iostream>
 namespace clean_slam {
@@ -27,6 +29,7 @@ HomogeneousMatrix CameraMotionEstimator::Estimate(
   std::cerr << " run time: "
             << duration_cast<microseconds>(stop - start).count() << '\n';
   HomogeneousMatrix homogeneous_matrix;
+
   if (homography_transformation.GetReprojectionError() <
       epipolar_transformation.GetReprojectionError()) {
     homogeneous_matrix =
@@ -46,7 +49,7 @@ const float IProjectiveTransformation::GetReprojectionError() const {
 }
 
 IProjectiveTransformation::IProjectiveTransformation(
-    const cv::Mat &m, const std::vector<cv::Point2f> &points_previous_frame,
+    const cv::Mat m, const std::vector<cv::Point2f> &points_previous_frame,
     const std::vector<cv::Point2f> &points_current_frame, const cv::Mat &inlier,
     const float reprojection_error)
     : _m(m), _points_previous_frame(points_previous_frame),
@@ -55,22 +58,28 @@ IProjectiveTransformation::IProjectiveTransformation(
 
 HomogeneousMatrix
 HomographyTransformation::EstimateMotion(const cv::Mat &camera_intrinsics) {
+  //  std::vector<cv::Mat> Rs, Ts, Normals;
+  //  cv::decomposeHomographyMat(_m, camera_intrinsics, Rs, Ts, Normals);
   return HomogeneousMatrix(cv::Mat(), cv::Mat());
 }
 
 HomographyTransformation::HomographyTransformation(
-    const cv::Mat &m, const std::vector<cv::Point2f> &points_previous_frame,
+    const cv::Mat m, const std::vector<cv::Point2f> &points_previous_frame,
     const std::vector<cv::Point2f> &points_current_frame, const cv::Mat &inlier,
     const float reprojection_error)
     : IProjectiveTransformation(m, points_previous_frame, points_current_frame,
                                 inlier, reprojection_error) {}
+
 HomogeneousMatrix
 EpipolarTransformation::EstimateMotion(const cv::Mat &camera_intrinsics) {
-  return HomogeneousMatrix(cv::Mat(), cv::Mat());
+  cv::Mat r1, r2, t;
+  cv::Mat essential_mat = camera_intrinsics.t() * _m * camera_intrinsics;
+  cv::decomposeEssentialMat(essential_mat, r1, r2, t);
+  return HomogeneousMatrix(cv::Mat(), t);
 }
 
 EpipolarTransformation::EpipolarTransformation(
-    const cv::Mat &m, const std::vector<cv::Point2f> &points_previous_frame,
+    const cv::Mat m, const std::vector<cv::Point2f> &points_previous_frame,
     const std::vector<cv::Point2f> &points_current_frame, const cv::Mat &inlier,
     const float reprojection_error)
     : IProjectiveTransformation(m, points_previous_frame, points_current_frame,

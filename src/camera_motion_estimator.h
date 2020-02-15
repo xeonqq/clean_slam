@@ -16,23 +16,23 @@ public:
   virtual HomogeneousMatrix
   EstimateMotion(const cv::Mat &camera_intrinsics) = 0;
   IProjectiveTransformation(
-      const cv::Mat &m, const std::vector<cv::Point2f> &points_previous_frame,
+      const cv::Mat m, const std::vector<cv::Point2f> &points_previous_frame,
       const std::vector<cv::Point2f> &points_current_frame,
       const cv::Mat &inlier, const float reprojection_error);
   const float GetReprojectionError() const;
 
-private:
-  const cv::Mat &_m; // homography matrix or fundamental matrix
+protected:
+  const cv::Mat _m; // homography matrix or fundamental matrix
   const std::vector<cv::Point2f> &_points_previous_frame;
   const std::vector<cv::Point2f> &_points_current_frame;
-  const cv::Mat &_inlier;
+  const cv::Mat _inlier;
   const float _reprojection_error;
 };
 
 class HomographyTransformation : public IProjectiveTransformation {
 public:
   HomographyTransformation(
-      const cv::Mat &m, const std::vector<cv::Point2f> &points_previous_frame,
+      const cv::Mat m, const std::vector<cv::Point2f> &points_previous_frame,
       const std::vector<cv::Point2f> &points_current_frame,
       const cv::Mat &inlier, const float reprojection_error);
   HomogeneousMatrix EstimateMotion(const cv::Mat &camera_intrinsics) override;
@@ -40,7 +40,7 @@ public:
 
 class EpipolarTransformation : public IProjectiveTransformation {
 public:
-  EpipolarTransformation(const cv::Mat &m,
+  EpipolarTransformation(const cv::Mat m,
                          const std::vector<cv::Point2f> &points_previous_frame,
                          const std::vector<cv::Point2f> &points_current_frame,
                          const cv::Mat &inlier, const float reprojection_error);
@@ -93,7 +93,7 @@ public:
 private:
   HomographyMotionEstimator _homography_motion_estimator;
   EpipolarConstraintMotionEstimator _epipolar_constraint_motion_estimator;
-  cv::Mat _camera_intrinsic;
+  const cv::Mat &_camera_intrinsic;
 };
 
 } // namespace clean_slam

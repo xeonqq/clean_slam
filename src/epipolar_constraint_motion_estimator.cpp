@@ -6,7 +6,6 @@
 #include <cv.hpp>
 #include <iostream>
 #include <opencv2/calib3d/calib3d.hpp>
-#include <opencv2/sfm/fundamental.hpp>
 
 namespace clean_slam {
 
@@ -30,25 +29,12 @@ EpipolarConstraintMotionEstimator::EstimateProjectiveTransformation(
             << epipolar_constraint_average_symmetric_transfer_error
             << " run time: "
             << duration_cast<microseconds>(stop - start).count() << '\n';
+
+  //  std::cerr << "F :" << F <<std::endl;
   return EpipolarTransformation{
       F, points_previous_frame, points_current_frame, fundamental_inlies,
       epipolar_constraint_average_symmetric_transfer_error};
 }
-
-// HomogeneousMatrix
-// EpipolarConstraintMotionEstimator::EstimateMotion(cv::Mat F) const {
-//
-//  cv::Mat essential_mat;
-//  cv::sfm::essentialFromFundamental(F, _camera_intrinsic, _camera_intrinsic,
-//                                    essential_mat);
-//  cv::Mat R, t;
-//  cv::recoverPose(essential_mat, points_previous_frame,
-//  points_current_frame,
-//                  _camera_intrinsic, R, t, fundamental_inlies);
-//  std::cout << "R: \n" << R << std::endl;
-//  std::cout << "t: \n" << t << std::endl;
-//  return HomogeneousMatrix(cv::Mat(), cv::Mat());
-//}
 
 float EpipolarConstraintMotionEstimator::CalculateSymmetricTransferError(
     const std::vector<cv::Point2f> &src_points,
