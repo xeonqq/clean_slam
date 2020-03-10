@@ -12,15 +12,14 @@ namespace clean_slam {
 class SlamSystem {
 public:
   SlamSystem() = default;
-  void LoadMonoDataset(const std::string &dataset_folder,
-                       const std::string &path_to_yaml);
+  SlamSystem(const DatasetLoader *dataset_loader)
+      : _dataset_loader{dataset_loader} {};
   void Run();
   const std::vector<g2o::SE3Quat> &GetCamTrajectory() const;
 
 private:
-  DatasetLoader _dataset_loader;
+  const DatasetLoader *_dataset_loader;
   SlamCore _core;
-  std::vector<g2o::SE3Quat> _cam_trajectory;
 };
 }
 

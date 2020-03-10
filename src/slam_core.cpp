@@ -31,8 +31,10 @@ void SlamCore::Track(const cv::Mat &image) {
     const auto &points_previous_frame =
         matched_points_pair_undistorted.GetPointsPrevFrame();
 
-    _camera_motion_estimator.Estimate(points_previous_frame,
-                                      points_current_frame);
+    const auto homogeneous_mat = _camera_motion_estimator.Estimate(
+        points_previous_frame, points_current_frame);
+    _trajectory.push_back(homogeneous_mat);
+
     //    std::cout << "Fundemental Mat:\n" << F << std::endl;
     //    cv::Mat img_matches;
     //    cv::drawMatches(image, current_frame.GetKeyPoints(),
@@ -60,4 +62,5 @@ void SlamCore::Initialize(const cv::Mat &camera_intrinsics,
   _camera_intrinsic = camera_intrinsics;
   //  _camera_distortion_coeffs = camera_distortion_coeffs;
 }
+const CameraTrajectory &SlamCore::GetTrajectory() const { return _trajectory; }
 } // namespace clean_slam

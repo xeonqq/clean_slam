@@ -1,13 +1,14 @@
 //
 // Created by root on 1/20/20.
 //
+#include <chrono>
+#include <future>
+#include <iostream>
 
 #include "camera_motion_estimator.h"
 #include "cv_utils.h"
-#include <chrono>
 #include <cv.hpp>
-#include <future>
-#include <iostream>
+
 namespace clean_slam {
 
 using namespace std::chrono;
@@ -58,9 +59,9 @@ IProjectiveTransformation::IProjectiveTransformation(
 
 HomogeneousMatrix
 HomographyTransformation::EstimateMotion(const cv::Mat &camera_intrinsics) {
-  //  std::vector<cv::Mat> Rs, Ts, Normals;
-  //  cv::decomposeHomographyMat(_m, camera_intrinsics, Rs, Ts, Normals);
-  return HomogeneousMatrix(cv::Mat(), cv::Mat());
+  std::vector<cv::Mat> Rs, Ts, Normals;
+  cv::decomposeHomographyMat(_m, camera_intrinsics, Rs, Ts, Normals);
+  return CreateHomogeneousMatrix(cv::Mat(), cv::Mat());
 }
 
 HomographyTransformation::HomographyTransformation(
@@ -72,10 +73,11 @@ HomographyTransformation::HomographyTransformation(
 
 HomogeneousMatrix
 EpipolarTransformation::EstimateMotion(const cv::Mat &camera_intrinsics) {
-  cv::Mat r1, r2, t;
+  cv::Mat r, t;
   cv::Mat essential_mat = camera_intrinsics.t() * _m * camera_intrinsics;
-  cv::decomposeEssentialMat(essential_mat, r1, r2, t);
-  return HomogeneousMatrix(cv::Mat(), t);
+  cv::recoverPose(_m, _points_previous_frame, _points_current_frame,
+                  camera_intrinsics, r, t, _inlier);
+  return CreateHomogeneousMatrix(r, t);
 }
 
 EpipolarTransformation::EpipolarTransformation(

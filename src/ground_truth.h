@@ -24,9 +24,12 @@ public:
   const Eigen::Quaterniond &GetQuaternion() const {
     return _se3_quat.rotation();
   }
+  const g2o::SE3Quat &GetTransformation() const { return _se3_quat; }
 
 private:
   g2o::SE3Quat _se3_quat;
+
+private:
   double _timestamp;
 };
 

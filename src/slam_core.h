@@ -14,6 +14,8 @@
 
 namespace clean_slam {
 
+using CameraTrajectory = std::vector<HomogeneousMatrix>;
+
 class SlamCore {
 public:
   SlamCore() = default;
@@ -28,6 +30,10 @@ private:
   Frame _previous_frame;
   OrbFeatureMatcher _orb_feature_matcher;
   CameraMotionEstimator _camera_motion_estimator{_camera_intrinsic};
+  CameraTrajectory _trajectory;
+
+public:
+  const CameraTrajectory &GetTrajectory() const;
 };
 } // namespace clean_slam
 #endif // CLEAN_SLAM_SRC_SLAM_CORE_H_
