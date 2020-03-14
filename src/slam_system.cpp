@@ -6,7 +6,7 @@
 
 namespace clean_slam {
 
-const std::vector<g2o::SE3Quat> &SlamSystem::GetCamTrajectory() const {
+const CameraTrajectory &SlamSystem::GetCamTrajectory() const {
   return _core.GetTrajectory();
 }
 
@@ -19,7 +19,7 @@ void SlamSystem::Run() {
       auto im = cv::imread(_dataset_loader->GetDatasetFolder() + '/' +
                                image_file.image_filename,
                            cv::IMREAD_GRAYSCALE);
-      _core.Track(im);
+      _core.Track(im, image_file.timestamp);
       ++i;
       if (i == 2)
         break;

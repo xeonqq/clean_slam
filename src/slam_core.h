@@ -9,19 +9,20 @@
 #include "frame.h"
 #include "orb_extractor.h"
 #include "orb_feature_matcher.h"
+#include "stamped_transformation.h"
 #include <Eigen/Core>
 #include <opencv2/core/core.hpp>
 
 namespace clean_slam {
 
-using CameraTrajectory = std::vector<HomogeneousMatrix>;
+using CameraTrajectory = std::vector<StampedTransformation>;
 
 class SlamCore {
 public:
   SlamCore() = default;
   void Initialize(const cv::Mat &camera_intrinsic,
                   const cv::Mat &camera_distortion_coeffs);
-  void Track(const cv::Mat &image);
+  void Track(const cv::Mat &image, double timestamp);
 
 private:
   cv::Mat _camera_intrinsic;

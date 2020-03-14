@@ -30,9 +30,26 @@ TEST(SlamSystemTest, Run) {
 
   // assert
   const auto &trajectory = system.GetCamTrajectory();
-  const auto &groundtruths = dataset_loader.GetGroundTruths();
+  EXPECT_EQ(trajectory.size(), 2);
+
+  const auto initial_gt_transformation =
+      dataset_loader.GetGroundTruthAt(trajectory.front().GetTimestamp())
+          .GetTransformation();
+  const auto initial_gt_transformation_inv =
+      initial_gt_transformation.inverse();
+  for (const auto &stamped_transformation : trajectory) {
+    const g2o::SE3Quat ground_truth_transformation =
+        dataset_loader.GetGroundTruthAt(stamped_transformation.GetTimestamp())
+            .GetTransformation();
+    const auto gt_transformation_wrt_initial_traj_pose =
+        initial_gt_transformation_inv * ground_truth_transformation;
+    std::printf("slame time %.6f\n", stamped_transformation.GetTimestamp());
+    std::cout << "slam result: \n"
+              << stamped_transformation.GetTransformation() << std::endl;
+    std::cout << "ground truth: \n"
+              << gt_transformation_wrt_initial_traj_pose << std::endl;
+    std::cout << std::endl;
+  }
   //  EXPECT_EQ(trajectory[0], groundtruths[0].GetTransformation());
-  std::cout << trajectory[0] << std::endl;
-  std::cout << groundtruths[0].GetTransformation() << std::endl;
 }
 } // namespace clean_slam

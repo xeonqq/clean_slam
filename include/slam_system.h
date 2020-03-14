@@ -15,7 +15,7 @@ public:
   SlamSystem(const DatasetLoader *dataset_loader)
       : _dataset_loader{dataset_loader} {};
   void Run();
-  const std::vector<g2o::SE3Quat> &GetCamTrajectory() const;
+  const CameraTrajectory &GetCamTrajectory() const;
 
 private:
   const DatasetLoader *_dataset_loader;

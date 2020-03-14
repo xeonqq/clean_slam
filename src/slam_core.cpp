@@ -15,7 +15,7 @@
 
 namespace clean_slam {
 
-void SlamCore::Track(const cv::Mat &image) {
+void SlamCore::Track(const cv::Mat &image, double timestamp) {
 
   Frame current_frame{image, _orb_extractor.DetectAndUndistortKeyPoints(image)};
 
@@ -33,7 +33,7 @@ void SlamCore::Track(const cv::Mat &image) {
 
     const auto homogeneous_mat = _camera_motion_estimator.Estimate(
         points_previous_frame, points_current_frame);
-    _trajectory.push_back(homogeneous_mat);
+    _trajectory.emplace_back(homogeneous_mat, timestamp);
 
     //    std::cout << "Fundemental Mat:\n" << F << std::endl;
     //    cv::Mat img_matches;
@@ -45,6 +45,8 @@ void SlamCore::Track(const cv::Mat &image) {
     //                    cv::DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS);
     //
     //    imshow("Good Matches & Object detection", img_matches);
+  } else {
+    _trajectory.emplace_back(HomogeneousMatrix{}, timestamp);
   }
 
   //  cv::Mat out_im;
