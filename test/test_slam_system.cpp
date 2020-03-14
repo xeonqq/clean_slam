@@ -46,8 +46,19 @@ TEST(SlamSystemTest, Run) {
     std::printf("slame time %.6f\n", stamped_transformation.GetTimestamp());
     std::cout << "slam result: \n"
               << stamped_transformation.GetTransformation() << std::endl;
+    const auto rotation = stamped_transformation.GetTransformation()
+                              .to_homogeneous_matrix()
+                              .block<3, 3>(0, 0);
+    const auto euler_angles = rotation.eulerAngles(0, 1, 2);
     std::cout << "ground truth: \n"
               << gt_transformation_wrt_initial_traj_pose << std::endl;
+    std::cout << euler_angles << std::endl;
+
+    const auto rotation_gt =
+        gt_transformation_wrt_initial_traj_pose.to_homogeneous_matrix()
+            .block<3, 3>(0, 0);
+    const auto euler_angles_gt = rotation_gt.eulerAngles(0, 1, 2);
+    std::cout << euler_angles_gt << std::endl;
     std::cout << std::endl;
   }
   //  EXPECT_EQ(trajectory[0], groundtruths[0].GetTransformation());

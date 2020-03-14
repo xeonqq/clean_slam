@@ -9,6 +9,7 @@
 #include <opencv2/imgcodecs.hpp>
 #include <string>
 #include <vector>
+
 namespace clean_slam {
 
 std::string MatType2Str(int type);
@@ -57,5 +58,6 @@ std::ostream &operator<<(std::ostream &os, const std::vector<T> &values) {
   os << "]";
   return os;
 }
+
 } // namespace clean_slam
 #endif // CLEAN_SLAM_SRC_CV_UTILS_H_

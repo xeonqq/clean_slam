@@ -7,7 +7,9 @@
 
 #include "camera_motion_estimator.h"
 #include "cv_utils.h"
+#include "eigen_utils.h"
 #include <cv.hpp>
+#include <opencv2/core/eigen.hpp>
 
 namespace clean_slam {
 
@@ -75,7 +77,7 @@ HomogeneousMatrix
 EpipolarTransformation::EstimateMotion(const cv::Mat &camera_intrinsics) {
   cv::Mat r, t;
   cv::Mat essential_mat = camera_intrinsics.t() * _m * camera_intrinsics;
-  cv::recoverPose(_m, _points_previous_frame, _points_current_frame,
+  cv::recoverPose(essential_mat, _points_previous_frame, _points_current_frame,
                   camera_intrinsics, r, t, _inlier);
   return CreateHomogeneousMatrix(r, t);
 }
