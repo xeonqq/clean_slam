@@ -36,6 +36,7 @@ EpipolarConstraintMotionEstimator::EstimateProjectiveTransformation(
       epipolar_constraint_average_symmetric_transfer_error};
 }
 
+// multi view geometry p.288
 float EpipolarConstraintMotionEstimator::CalculateSymmetricTransferError(
     const std::vector<cv::Point2f> &src_points,
     const std::vector<cv::Point2f> &dst_points, const cv::Mat &F,
@@ -58,9 +59,7 @@ float EpipolarConstraintMotionEstimator::CalculateSymmetricTransferError(
       CalculateRepojectionErrorDemoniator(epipolar_lines_backward);
 
   const auto symmetric_reprojection_errors =
-      epipolar_constraints.mul(epipolar_constraints) /
-      (forward_reprojection_error_demoninator +
-       backward_reprojection_error_demoninator);
+      epipolar_constraints.mul(epipolar_constraints).mul(1/forward_reprojection_error_demoninator + 1/backward_reprojection_error_demoninator);
 
   //  std::cout << dst_points << std::endl;
   //  std::cout << epipolar_lines_forward << std::endl;
@@ -85,7 +84,7 @@ cv::Mat EpipolarConstraintMotionEstimator::CalculateEpipolarLine(
 cv::MatExpr
 EpipolarConstraintMotionEstimator::CalculateRepojectionErrorDemoniator(
     const cv::Mat &epipolar_lines) const {
-  cv::Mat epipolar_lines_reshaped = epipolar_lines.reshape(1, 0);
+  cv::Mat epipolar_lines_reshaped = epipolar_lines.reshape(1);
   cv::Mat a = epipolar_lines_reshaped.col(0);
   cv::Mat b = epipolar_lines_reshaped.col(1);
   cv::MatExpr reprojection_error_demoninator = a.mul(a) + b.mul(b);

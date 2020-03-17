@@ -7,12 +7,11 @@
 #include <iostream>
 #include <opencv2/core/persistence.hpp>
 #include <sstream>
-
 namespace clean_slam {
 
 bool IsCommentLine(const std::string &s) { return s.find('#') == 0; }
 
-void DatasetLoader::LoadFreiburgRgb(const std::string &dataset_folder_name) {
+void DatasetLoader::LoadRgb(const std::string &dataset_folder_name) {
   std::string image_inventory_filename = dataset_folder_name + "/rgb.txt";
   std::ifstream f;
   f.open(image_inventory_filename.c_str());
@@ -55,25 +54,31 @@ void DatasetLoader::LoadFreiburgGroundTruth(
 
 void DatasetLoader::LoadFreiburgDataset(const std::string &dataset_folder_name,
                                         const std::string &path_to_yaml) {
-  LoadFreiburgRgb(dataset_folder_name);
+  LoadRgb(dataset_folder_name);
   LoadFreiburgGroundTruth(dataset_folder_name);
-  LoadFreiburgCameraIntrinsics(path_to_yaml);
+  LoadCameraIntrinsics(path_to_yaml);
 }
 
-void DatasetLoader::LoadFreiburgCameraIntrinsics(
-    const std::string &path_to_yaml) {
-  cv::FileStorage fSettings(path_to_yaml + "/TUM1.yaml", cv::FileStorage::READ);
+void DatasetLoader::LoadCameraIntrinsics(const std::string &path_to_yaml) {
+  cv::FileStorage fSettings(path_to_yaml, cv::FileStorage::READ);
+  if (fSettings.isOpened()){
+
   _camera_intrinsics = (cv::Mat_<double>(3, 3) << fSettings["Camera.fx"], 0,
                         fSettings["Camera.cx"], 0, fSettings["Camera.fy"],
                         fSettings["Camera.cy"], 0, 0, 1);
   _distortion_coeffs =
       (cv::Mat_<double>(5, 1) << fSettings["Camera.k1"], fSettings["Camera.k2"],
        fSettings["Camera.p1"], fSettings["Camera.p2"], fSettings["Camera.k3"]);
+  } else{
+    throw std::runtime_error("Could not open file: " + path_to_yaml);
+  }
+}
 
-  //  const float k3 = fSettings["Camera.k3"];
-  //  if (k3 != 0) {
-  //    _distortion_coeffs.resize(5, k3);
-  //  }
+void DatasetLoader::LoadImages(const std::string &image_folder,
+                               const std::string &path_to_yaml) {
+  _dataset_folder = image_folder;
+  LoadRgb(image_folder);
+  LoadCameraIntrinsics(path_to_yaml);
 }
 
 const std::vector<ImageFile> &DatasetLoader::GetImageFiles() const {

@@ -25,6 +25,7 @@ class DatasetLoader {
 public:
   void LoadFreiburgDataset(const std::string &dataset_folder_name,
                            const std::string &path_to_yaml);
+  void LoadImages(const std::string& image_folder, const std::string &path_to_yaml);
   const std::vector<ImageFile> &GetImageFiles() const;
   const std::vector<GroundTruth> &GetGroundTruths() const;
   GroundTruth GetGroundTruthAt(double timestamp) const;
@@ -33,9 +34,9 @@ public:
   const cv::Mat &GetDistortionCoeffs() const;
 
 private:
-  void LoadFreiburgRgb(const std::string &dataset_folder_name);
+  void LoadRgb(const std::string &dataset_folder_name);
   void LoadFreiburgGroundTruth(const std::string &dataset_folder_name);
-  void LoadFreiburgCameraIntrinsics(const std::string &path_to_yaml);
+  void LoadCameraIntrinsics(const std::string &path_to_yaml);
   std::vector<ImageFile> _image_files;
   GroundTruths _ground_truths;
   std::string _dataset_folder;

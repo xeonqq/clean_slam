@@ -8,13 +8,14 @@
 #include <opencv2/opencv.hpp>
 
 namespace clean_slam {
+std::string config_file = CONFIG_DIR + std::string("/TUM1.yaml");
 
 TEST(DatasetLoaderTest, load_dataset) {
   // arrange
   DatasetLoader loader;
   // act
   loader.LoadFreiburgDataset(
-      DATASET_DIR + std::string("/rgbd_dataset_freiburg1_xyz"), CONFIG_DIR);
+      DATASET_DIR + std::string("/rgbd_dataset_freiburg1_xyz"), config_file);
   const auto &image_files = loader.GetImageFiles();
   const auto &ground_truths = loader.GetGroundTruths();
 
@@ -40,7 +41,7 @@ TEST(DatasetLoaderTest, GetGroundTruthAtTime_ThenGroudTruthWillBeInterpolated) {
   DatasetLoader loader;
   // act
   loader.LoadFreiburgDataset(
-      DATASET_DIR + std::string("/rgbd_dataset_freiburg1_xyz"), CONFIG_DIR);
+      DATASET_DIR + std::string("/rgbd_dataset_freiburg1_xyz"), config_file);
 
   // assert
   const auto ground_truth = loader.GetGroundTruthAt(1305031102.175304);
@@ -72,7 +73,7 @@ TEST(DatasetLoaderTest, LoadCameraIntrinsics) {
   DatasetLoader loader;
   // act
   loader.LoadFreiburgDataset(
-      DATASET_DIR + std::string("/rgbd_dataset_freiburg1_xyz"), CONFIG_DIR);
+      DATASET_DIR + std::string("/rgbd_dataset_freiburg1_xyz"), config_file);
 
   const auto &camera_intrinsics = loader.GetCameraIntrinsics();
   const auto &distortion_coeffs = loader.GetDistortionCoeffs();

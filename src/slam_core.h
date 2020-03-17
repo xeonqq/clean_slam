@@ -25,6 +25,9 @@ public:
   void Track(const cv::Mat &image, double timestamp);
 
 private:
+  void DrawGoodMatches(
+      const cv::Mat &image, const Frame &current_frame,
+      const std::vector<cv::DMatch> &good_matches) const;
   cv::Mat _camera_intrinsic;
   //  cv::Mat _camera_distortion_coeffs;
   OrbExtractor _orb_extractor;

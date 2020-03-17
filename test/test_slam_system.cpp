@@ -5,6 +5,7 @@
 #include "slam_system.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include <cv.hpp>
 
 namespace clean_slam {
 
@@ -22,7 +23,7 @@ TEST(SlamSystemTest, Run) {
   // arrange
   DatasetLoader dataset_loader;
   dataset_loader.LoadFreiburgDataset(
-      DATASET_DIR + std::string("/rgbd_dataset_freiburg1_xyz"), CONFIG_DIR);
+      DATASET_DIR + std::string("/rgbd_dataset_freiburg1_xyz"), CONFIG_DIR + std::string("/TUM1.yaml"));
   SlamSystem system{&dataset_loader};
 
   // act

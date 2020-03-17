@@ -50,6 +50,7 @@ float HomographyMotionEstimator::CalculateSymmetricTransferError(
   return forward_transfer_error + backward_transfer_error;
 }
 
+// multi view geometry p.96
 float HomographyMotionEstimator::CalculateTransferError(
     const std::vector<cv::Point2f> &src_points,
     const std::vector<cv::Point2f> &dst_points, const cv::Mat &m,

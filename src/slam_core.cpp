@@ -25,7 +25,7 @@ void SlamCore::Track(const cv::Mat &image, double timestamp) {
     const auto matched_points_pair_undistorted =
         OrbFeatureMatcher::GetMatchedPointsPairUndistorted(
             current_frame, _previous_frame, good_matches);
-    cv::Mat homography_inlies;
+
     const auto &points_current_frame =
         matched_points_pair_undistorted.GetPointsCurrFrame();
     const auto &points_previous_frame =
@@ -35,16 +35,7 @@ void SlamCore::Track(const cv::Mat &image, double timestamp) {
         points_previous_frame, points_current_frame);
     _trajectory.emplace_back(homogeneous_mat, timestamp);
 
-    //    std::cout << "Fundemental Mat:\n" << F << std::endl;
-    //    cv::Mat img_matches;
-    //    cv::drawMatches(image, current_frame.GetKeyPoints(),
-    //                    _previous_frame.GetImage(),
-    //                    _previous_frame.GetKeyPoints(), good_matches,
-    //                    img_matches, cv::Scalar::all(-1), cv::Scalar::all(-1),
-    //                    std::vector<char>(),
-    //                    cv::DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS);
-    //
-    //    imshow("Good Matches & Object detection", img_matches);
+    DrawGoodMatches(image, current_frame, good_matches);
   } else {
     _trajectory.emplace_back(HomogeneousMatrix{}, timestamp);
   }
@@ -55,6 +46,20 @@ void SlamCore::Track(const cv::Mat &image, double timestamp) {
   //  cv::waitKey(0);
 
   _previous_frame = std::move(current_frame);
+}
+
+void SlamCore::DrawGoodMatches(
+    const cv::Mat &image, const Frame &current_frame,
+    const std::vector<cv::DMatch> &good_matches) const {
+  cv::Mat img_matches;
+  cv::drawMatches(image, current_frame.GetKeyPoints(),
+                  this->_previous_frame.GetImage(), this->_previous_frame.GetKeyPoints(),
+                  good_matches, img_matches, cv::Scalar::all(-1),
+                  cv::Scalar::all(-1), std::vector<char>(),
+                  cv::DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS);
+
+  cv::imshow("Good Matches & Object detection", img_matches);
+  cv::waitKey(0);
 }
 
 void SlamCore::Initialize(const cv::Mat &camera_intrinsics,

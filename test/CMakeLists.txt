@@ -1,6 +1,7 @@
 include(ExternalProject)
 set(DATASET_DIR ${CMAKE_BINARY_DIR}/test/dataset)
 set(CONFIG_DIR ${CMAKE_SOURCE_DIR}/config)
+set(TEST_DIR ${CMAKE_SOURCE_DIR}/test)
 ExternalProject_Add(
         rgbd_dataset_freiburg1_xyz
         PREFIX ""
@@ -16,14 +17,15 @@ ExternalProject_Add(
 
 add_compile_definitions(DATASET_DIR="${DATASET_DIR}")
 add_compile_definitions(CONFIG_DIR="${CONFIG_DIR}")
-include_directories (${TEST_SOURCE_DIR}/src
+add_compile_definitions(TEST_DIR="${TEST_DIR}")
+include_directories (
         ${CMAKE_SOURCE_DIR}/src
         ${CMAKE_SOURCE_DIR}
         ${CMAKE_SOURCE_DIR}/include
         )
 
 set(BINARY ${CMAKE_PROJECT_NAME}_test)
-add_executable (${BINARY} test_dataset_loader.cpp test_slam_system.cpp)
+add_executable (${BINARY} test_dataset_loader.cpp test_slam_system.cpp test_slam_system_homography.cpp)
 add_test(NAME ${BINARY} COMMAND ${BINARY})
 target_link_libraries (
         ${BINARY}

@@ -32,9 +32,13 @@ HomogeneousMatrix CameraMotionEstimator::Estimate(
   std::cerr << " run time: "
             << duration_cast<microseconds>(stop - start).count() << '\n';
   HomogeneousMatrix homogeneous_matrix;
-
-  if (homography_transformation.GetReprojectionError() <
-      epipolar_transformation.GetReprojectionError()) {
+  std::cout << "homography reproj err: "
+            << homography_transformation.GetReprojectionError() << std::endl;
+  std::cout << "epipolar reproj err: "
+            << epipolar_transformation.GetReprojectionError() << std::endl;
+  //  if (homography_transformation.GetReprojectionError() <
+  //      epipolar_transformation.GetReprojectionError()) {
+  if (true) {
     homogeneous_matrix =
         homography_transformation.EstimateMotion(_camera_intrinsic);
   } else {
@@ -63,7 +67,35 @@ HomogeneousMatrix
 HomographyTransformation::EstimateMotion(const cv::Mat &camera_intrinsics) {
   std::vector<cv::Mat> Rs, Ts, Normals;
   cv::decomposeHomographyMat(_m, camera_intrinsics, Rs, Ts, Normals);
-  return CreateHomogeneousMatrix(cv::Mat(), cv::Mat());
+
+  cv::Mat projection_matrix0 =
+      camera_intrinsics * cv::Mat::eye(3, 4, camera_intrinsics.type());
+
+  HomogeneousMatrix homogeneous_matrix;
+  for (size_t i = 0; i < Rs.size(); ++i) {
+    cv::Mat projection_matrix1(3, 4, projection_matrix0.type());
+    projection_matrix1(cv::Range::all(), cv::Range(0, 3)) = Rs[i];
+    projection_matrix1.col(3) = Ts[i];
+    projection_matrix1 = camera_intrinsics * projection_matrix1;
+
+    cv::Mat points_3d_homo;
+    cv::triangulatePoints(projection_matrix0, projection_matrix1,
+                          _points_previous_frame, _points_current_frame,
+                          points_3d_homo);
+    cv::Mat points_3d_cartisian;
+    cv::convertPointsFromHomogeneous(points_3d_homo.t(), points_3d_cartisian);
+
+    points_3d_cartisian = points_3d_cartisian.reshape(1);
+    cv::Mat mask_depth_not_positive =
+        (points_3d_cartisian.col(2) <= 0) & _inlier;
+    int number_of_non_positive_depth =
+        cv::countNonZero(mask_depth_not_positive);
+    if (number_of_non_positive_depth == 0) {
+      homogeneous_matrix = CreateHomogeneousMatrix(Rs[i], Ts[i]);
+      break;
+    }
+  }
+  return homogeneous_matrix;
 }
 
 HomographyTransformation::HomographyTransformation(
