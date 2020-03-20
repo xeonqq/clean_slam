@@ -22,13 +22,11 @@ EpipolarConstraintMotionEstimator::EstimateProjectiveTransformation(
                                      points_current_frame, fundamental_inlies);
   const auto epipolar_constraint_average_symmetric_transfer_error =
       CalculateSymmetricTransferError(
-          points_previous_frame, points_current_frame, F, fundamental_inlies) /
-      static_cast<float>(cv::countNonZero(fundamental_inlies));
+          points_previous_frame, points_current_frame, F, fundamental_inlies);
   auto stop = high_resolution_clock::now();
-  std::cerr << "F reprojection err:"
+  std::cerr << "F reproject score:"
             << epipolar_constraint_average_symmetric_transfer_error
-            << " run time: "
-            << duration_cast<microseconds>(stop - start).count() << '\n';
+            << " runtime: " << duration_cast<microseconds>(stop - start).count() << '\n';
 
   //  std::cerr << "F :" << F <<std::endl;
   return EpipolarTransformation{
@@ -58,19 +56,19 @@ float EpipolarConstraintMotionEstimator::CalculateSymmetricTransferError(
   cv::MatExpr backward_reprojection_error_demoninator =
       CalculateRepojectionErrorDemoniator(epipolar_lines_backward);
 
-  const auto symmetric_reprojection_errors =
-      epipolar_constraints.mul(epipolar_constraints).mul(1/forward_reprojection_error_demoninator + 1/backward_reprojection_error_demoninator);
-
-  //  std::cout << dst_points << std::endl;
-  //  std::cout << epipolar_lines_forward << std::endl;
-  //  std::cout << epipolar_constraints << std::endl;
-  //  std::cout << symmetric_reprojection_errors << std::endl;
-  cv::Mat inlies_mask_float;
-  inlies_mask.convertTo(inlies_mask_float,
-                        symmetric_reprojection_errors.type());
-  const auto symmetric_reprojection_err =
-      symmetric_reprojection_errors.dot(inlies_mask_float);
-  return symmetric_reprojection_err;
+  const auto forward_reprojection_errors =
+      epipolar_constraints.mul(epipolar_constraints)
+          .mul(1 / forward_reprojection_error_demoninator);
+  const auto backward_reprojection_errors =
+      epipolar_constraints.mul(epipolar_constraints)
+          .mul(1 / backward_reprojection_error_demoninator);
+  const auto forward_score = ScoreFromChiSquareDistribution(
+      forward_reprojection_errors, inlies_mask,
+      HomographyMotionEstimator::chi_square_threshold_, chi_square_threshold_);
+  const auto backward_score = ScoreFromChiSquareDistribution(
+      forward_reprojection_errors, inlies_mask,
+      HomographyMotionEstimator::chi_square_threshold_, chi_square_threshold_);
+  return forward_score + backward_score;
 }
 
 cv::Mat EpipolarConstraintMotionEstimator::CalculateEpipolarLine(
@@ -81,6 +79,7 @@ cv::Mat EpipolarConstraintMotionEstimator::CalculateEpipolarLine(
   return epipolar_lines;
 }
 
+// distance to epipolar line is regarded as error
 cv::MatExpr
 EpipolarConstraintMotionEstimator::CalculateRepojectionErrorDemoniator(
     const cv::Mat &epipolar_lines) const {

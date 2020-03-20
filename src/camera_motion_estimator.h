@@ -52,17 +52,17 @@ public:
   HomographyTransformation EstimateProjectiveTransformation(
       const std::vector<cv::Point2f> &points_previous_frame,
       const std::vector<cv::Point2f> &points_current_frame) const;
+  static constexpr float chi_square_threshold_ =
+      5.99f; // two degree of freedom, 95% correction rate
 
 private:
-  float
-  CalculateSymmetricTransferError(const std::vector<cv::Point2f> &src_points,
+  float CalculateScore(const std::vector<cv::Point2f> &src_points,
+                       const std::vector<cv::Point2f> &dst_points,
+                       const cv::Mat &H, const cv::Mat &inlies_mask) const;
+  cv::Mat CalculateTransferErrors(const std::vector<cv::Point2f> &src_points,
                                   const std::vector<cv::Point2f> &dst_points,
-                                  const cv::Mat &H,
+                                  const cv::Mat &m,
                                   const cv::Mat &inlies_mask) const;
-  float CalculateTransferError(const std::vector<cv::Point2f> &src_points,
-                               const std::vector<cv::Point2f> &dst_points,
-                               const cv::Mat &m,
-                               const cv::Mat &inlies_mask) const;
 };
 
 class EpipolarConstraintMotionEstimator {
@@ -71,6 +71,8 @@ public:
       const std::vector<cv::Point2f> &points_previous_frame,
       const std::vector<cv::Point2f> &points_current_frame) const;
 
+  static constexpr float chi_square_threshold_ =
+      3.84f; // one degree of freedom, 95% correction rate
 private:
   float
   CalculateSymmetricTransferError(const std::vector<cv::Point2f> &src_points,
@@ -96,5 +98,10 @@ private:
   const cv::Mat &_camera_intrinsic;
 };
 
+float ScoreFromChiSquareDistribution(const cv::Mat &transfer_errors,
+                                     const cv::Mat &inlies, float basic_score,
+                                     float chi_square_threshold);
+bool IsHomography(const HomographyTransformation &homography_transformation,
+                  const EpipolarTransformation &epipolar_transformation);
 } // namespace clean_slam
 #endif // CLEAN_SLAM_SRC_CAMERA_MOTION_ESTIMATOR_H_

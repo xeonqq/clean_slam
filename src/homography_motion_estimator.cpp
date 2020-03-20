@@ -19,51 +19,50 @@ HomographyMotionEstimator::EstimateProjectiveTransformation(
   cv::Mat homography_inlies;
   cv::Mat H = cv::findHomography(points_previous_frame, points_current_frame,
                                  homography_inlies, CV_RANSAC);
-  const auto homography_average_symmetric_transfer_error =
-      CalculateSymmetricTransferError(
-          points_previous_frame, points_current_frame, H, homography_inlies) /
-      static_cast<float>(cv::countNonZero(homography_inlies));
+  const auto homography_average_symmetric_transfer_error = CalculateScore(
+      points_previous_frame, points_current_frame, H, homography_inlies);
   auto stop = high_resolution_clock::now();
-  std::cerr << "H reprojection err:"
-            << homography_average_symmetric_transfer_error << " run time: "
-            << duration_cast<microseconds>(stop - start).count() << '\n';
+  std::cerr << "H reproject score:"
+            << homography_average_symmetric_transfer_error
+            << " runtime: " << duration_cast<microseconds>(stop - start).count()
+            << '\n';
 
   return HomographyTransformation{H, points_previous_frame,
                                   points_current_frame, homography_inlies,
                                   homography_average_symmetric_transfer_error};
-  ;
 }
-// HomogeneousMatrix HomographyMotionEstimator::EstimateMotion(cv::Mat H) const
-// {
-//      cv::decomposeHomographyMat(H, _camera_intrinsic);
-//  return HomogeneousMatrix(cv::Mat(), cv::Mat());
-//}
 
-float HomographyMotionEstimator::CalculateSymmetricTransferError(
+float HomographyMotionEstimator::CalculateScore(
     const std::vector<cv::Point2f> &src_points,
     const std::vector<cv::Point2f> &dst_points, const cv::Mat &H,
     const cv::Mat &inlies_mask) const {
-  const auto forward_transfer_error =
-      CalculateTransferError(src_points, dst_points, H, inlies_mask);
+  const auto forward_transfer_errors =
+      CalculateTransferErrors(src_points, dst_points, H, inlies_mask);
+  const auto score_forward = ScoreFromChiSquareDistribution(
+      forward_transfer_errors, inlies_mask, chi_square_threshold_,
+      chi_square_threshold_);
+
   const auto backward_transfer_error =
-      CalculateTransferError(dst_points, src_points, H.inv(), inlies_mask);
-  return forward_transfer_error + backward_transfer_error;
+      CalculateTransferErrors(dst_points, src_points, H.inv(), inlies_mask);
+  const auto score_backward = ScoreFromChiSquareDistribution(
+      backward_transfer_error, inlies_mask, chi_square_threshold_,
+      chi_square_threshold_);
+
+  return score_forward + score_backward;
 }
 
 // multi view geometry p.96
-float HomographyMotionEstimator::CalculateTransferError(
+cv::Mat HomographyMotionEstimator::CalculateTransferErrors(
     const std::vector<cv::Point2f> &src_points,
     const std::vector<cv::Point2f> &dst_points, const cv::Mat &m,
     const cv::Mat &inlies_mask) const {
-
   cv::Mat expected_dst_points;
   cv::perspectiveTransform(src_points, expected_dst_points, m);
   cv::Mat diff = ZerosLike(expected_dst_points);
   cv::subtract(expected_dst_points, cv::Mat(dst_points).reshape(2, 1), diff,
                inlies_mask.reshape(1, 1));
   cv::pow(diff, 2, diff);
-  auto transfer_error = cv::sum(cv::sum(diff))[0];
-  //  std::cout << transfer_error << std::endl;
-  return transfer_error;
+  diff = diff.reshape(1, diff.cols);
+  return diff.col(0) + diff.col(1);
 }
 } // namespace clean_slam
