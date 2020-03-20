@@ -65,4 +65,61 @@ cv::Mat HomographyMotionEstimator::CalculateTransferErrors(
   diff = diff.reshape(1, diff.cols);
   return diff.col(0) + diff.col(1);
 }
+
+HomographyTransformation::HomographyTransformation(
+    const cv::Mat m, const std::vector<cv::Point2f> &points_previous_frame,
+    const std::vector<cv::Point2f> &points_current_frame, const cv::Mat &inlier,
+    const float reprojection_error)
+    : IProjectiveTransformation(m, points_previous_frame, points_current_frame,
+                                inlier, reprojection_error) {}
+
+HomogeneousMatrix
+HomographyTransformation::EstimateMotion(const cv::Mat &camera_intrinsics) {
+  std::vector<cv::Mat> Rs, Ts, Normals;
+  HomogeneousMatrix homogeneous_matrix;
+
+  cv::decomposeHomographyMat(_m, camera_intrinsics, Rs, Ts, Normals);
+  cv::Mat projection_matrix0 =
+      camera_intrinsics * cv::Mat::eye(3, 4, camera_intrinsics.type());
+
+  std::vector<cv::Mat> projection_matrix1_candidates =
+      GetProjectionMatrixCandidates(camera_intrinsics, Rs, Ts);
+
+  for (size_t i = 0; i < projection_matrix1_candidates.size(); ++i) {
+
+    cv::Mat points_3d_homo;
+    cv::triangulatePoints(projection_matrix0, projection_matrix1_candidates[i],
+                          _points_previous_frame, _points_current_frame,
+                          points_3d_homo);
+    cv::Mat points_3d_cartisian;
+    cv::convertPointsFromHomogeneous(points_3d_homo.t(), points_3d_cartisian);
+
+    points_3d_cartisian = points_3d_cartisian.reshape(1);
+    cv::Mat mask_depth_not_positive =
+        (points_3d_cartisian.col(2) <= 0) & _inlier;
+    int number_of_non_positive_depth =
+        cv::countNonZero(mask_depth_not_positive);
+    if (number_of_non_positive_depth == 0) {
+      homogeneous_matrix = CreateHomogeneousMatrix(Rs[i], Ts[i]);
+      break;
+    }
+  }
+
+  std::cout << "Rs: " << Rs << std::endl;
+  std::cout << "Ts: " << Ts << std::endl;
+  return homogeneous_matrix;
+}
+
+std::vector<cv::Mat>
+GetProjectionMatrixCandidates(const cv::Mat &camera_intrinsics,
+                              const std::vector<cv::Mat> &Rs,
+                              const std::vector<cv::Mat> &Ts) {
+  std::vector<cv::Mat> projection_matrix_candidates;
+  for (size_t i = 0; i < Rs.size(); ++i) {
+    projection_matrix_candidates.push_back(
+        camera_intrinsics * ToTransformationMatrix(Rs[i], Ts[i]));
+  }
+  return projection_matrix_candidates;
+}
+
 } // namespace clean_slam

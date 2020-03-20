@@ -19,11 +19,12 @@ bool operator==(const g2o::SE3Quat &lhs, const g2o::SE3Quat &rhs) {
   return result;
 }
 
-TEST(SlamSystemTest, Run) {
+TEST(SlamSystemFreiburgTest, Run) {
   // arrange
   DatasetLoader dataset_loader;
   dataset_loader.LoadFreiburgDataset(
-      DATASET_DIR + std::string("/rgbd_dataset_freiburg1_xyz"), CONFIG_DIR + std::string("/TUM1.yaml"));
+      DATASET_DIR + std::string("/rgbd_dataset_freiburg1_xyz"),
+      CONFIG_DIR + std::string("/TUM1.yaml"));
   SlamSystem system{&dataset_loader};
 
   // act
@@ -44,23 +45,39 @@ TEST(SlamSystemTest, Run) {
             .GetTransformation();
     const auto gt_transformation_wrt_initial_traj_pose =
         initial_gt_transformation_inv * ground_truth_transformation;
-    std::printf("slame time %.6f\n", stamped_transformation.GetTimestamp());
+    //    std::printf("slam time %.6f\n",
+    //    stamped_transformation.GetTimestamp());
     std::cout << "slam result: \n"
               << stamped_transformation.GetTransformation() << std::endl;
     const auto rotation = stamped_transformation.GetTransformation()
                               .to_homogeneous_matrix()
                               .block<3, 3>(0, 0);
     const auto euler_angles = rotation.eulerAngles(0, 1, 2);
-    std::cout << "ground truth: \n"
-              << gt_transformation_wrt_initial_traj_pose << std::endl;
-    std::cout << euler_angles << std::endl;
+    const auto translation = stamped_transformation.GetTransformation()
+                                 .to_homogeneous_matrix()
+                                 .block<3, 1>(0, 3);
+
+    //        std::cout << "ground truth: \n"
+    //                  << gt_transformation_wrt_initial_traj_pose << std::endl;
+    //    std::cout << "euler angle calculated: \n";
+    //    std::cout << euler_angles << std::endl;
 
     const auto rotation_gt =
         gt_transformation_wrt_initial_traj_pose.to_homogeneous_matrix()
             .block<3, 3>(0, 0);
+    const auto translation_gt =
+        gt_transformation_wrt_initial_traj_pose.to_homogeneous_matrix()
+            .block<3, 1>(0, 3);
     const auto euler_angles_gt = rotation_gt.eulerAngles(0, 1, 2);
-    std::cout << euler_angles_gt << std::endl;
-    std::cout << std::endl;
+
+    //    float scale = 5.524032482088845;
+    for (size_t i = 0; i < 3; ++i) {
+      //      EXPECT_NAER(euler_angles_gt[i], euler_angles[i], );
+      //      EXPECT_NEAR(translation_gt[i], translation[i], 1e-5);
+    }
+    //    std::cout << "euler angle gt: \n";
+    //    std::cout << euler_angles_gt << std::endl;
+    //    std::cout << std::endl;
   }
   //  EXPECT_EQ(trajectory[0], groundtruths[0].GetTransformation());
 }

@@ -1,7 +1,9 @@
 //
 // Created by root on 1/20/20.
 //
+#include "epipolar_constraint_motion_estimator.h"
 #include "camera_motion_estimator.h"
+#include "homography_motion_estimator.h"
 #include <chrono>
 #include <cv.hpp>
 #include <iostream>
@@ -26,7 +28,8 @@ EpipolarConstraintMotionEstimator::EstimateProjectiveTransformation(
   auto stop = high_resolution_clock::now();
   std::cerr << "F reproject score:"
             << epipolar_constraint_average_symmetric_transfer_error
-            << " runtime: " << duration_cast<microseconds>(stop - start).count() << '\n';
+            << " runtime: " << duration_cast<microseconds>(stop - start).count()
+            << '\n';
 
   //  std::cerr << "F :" << F <<std::endl;
   return EpipolarTransformation{
@@ -57,11 +60,11 @@ float EpipolarConstraintMotionEstimator::CalculateSymmetricTransferError(
       CalculateRepojectionErrorDemoniator(epipolar_lines_backward);
 
   const auto forward_reprojection_errors =
-      epipolar_constraints.mul(epipolar_constraints)
-          .mul(1 / forward_reprojection_error_demoninator);
+      epipolar_constraints.mul(epipolar_constraints) /
+      forward_reprojection_error_demoninator;
   const auto backward_reprojection_errors =
-      epipolar_constraints.mul(epipolar_constraints)
-          .mul(1 / backward_reprojection_error_demoninator);
+      epipolar_constraints.mul(epipolar_constraints) /
+      backward_reprojection_error_demoninator;
   const auto forward_score = ScoreFromChiSquareDistribution(
       forward_reprojection_errors, inlies_mask,
       HomographyMotionEstimator::chi_square_threshold_, chi_square_threshold_);
@@ -89,4 +92,21 @@ EpipolarConstraintMotionEstimator::CalculateRepojectionErrorDemoniator(
   cv::MatExpr reprojection_error_demoninator = a.mul(a) + b.mul(b);
   return reprojection_error_demoninator;
 }
+
+HomogeneousMatrix
+EpipolarTransformation::EstimateMotion(const cv::Mat &camera_intrinsics) {
+  cv::Mat r, t;
+  cv::Mat essential_mat = camera_intrinsics.t() * _m * camera_intrinsics;
+  cv::recoverPose(essential_mat, _points_previous_frame, _points_current_frame,
+                  camera_intrinsics, r, t, _inlier);
+  return CreateHomogeneousMatrix(r, t);
+}
+
+EpipolarTransformation::EpipolarTransformation(
+    const cv::Mat m, const std::vector<cv::Point2f> &points_previous_frame,
+    const std::vector<cv::Point2f> &points_current_frame, const cv::Mat &inlier,
+    const float reprojection_error)
+    : IProjectiveTransformation(m, points_previous_frame, points_current_frame,
+                                inlier, reprojection_error) {}
+
 } // namespace clean_slam

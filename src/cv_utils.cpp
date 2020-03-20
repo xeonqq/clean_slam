@@ -48,4 +48,10 @@ std::string MatType2Str(int type) {
 cv::MatExpr ZerosLike(cv::Mat m) {
   return cv::Mat::zeros(m.rows, m.cols, m.type());
 }
+cv::Mat ToTransformationMatrix(const cv::Mat R, const cv::Mat T) {
+  cv::Mat transformation_matrix(3, 4, R.type());
+  transformation_matrix(cv::Range::all(), cv::Range(0, 3)) = R;
+  transformation_matrix.col(3) = T;
+  return transformation_matrix;
+}
 } // namespace clean_slam
