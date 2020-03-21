@@ -23,8 +23,12 @@ public:
       const std::vector<cv::Point2f> &points_previous_frame,
       const std::vector<cv::Point2f> &points_current_frame) const;
 
-  static constexpr float chi_square_threshold_ =
+  static constexpr float chi_square_threshold =
       3.84f; // one degree of freedom, 95% correction rate
+  static constexpr float GetRansecThreshold() {
+    return std::sqrt(chi_square_threshold);
+  }
+
 private:
   float
   CalculateSymmetricTransferError(const std::vector<cv::Point2f> &src_points,

@@ -49,9 +49,9 @@ cv::MatExpr ZerosLike(cv::Mat m) {
   return cv::Mat::zeros(m.rows, m.cols, m.type());
 }
 cv::Mat ToTransformationMatrix(const cv::Mat R, const cv::Mat T) {
-  cv::Mat transformation_matrix(3, 4, R.type());
-  transformation_matrix(cv::Range::all(), cv::Range(0, 3)) = R;
-  transformation_matrix.col(3) = T;
-  return transformation_matrix;
+  cv::Mat extrinsics(3, 4, R.type());
+  extrinsics(cv::Range::all(), cv::Range(0, 3)) = R;
+  extrinsics.col(3) = T;
+  return extrinsics;
 }
 } // namespace clean_slam

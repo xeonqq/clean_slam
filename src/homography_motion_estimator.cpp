@@ -17,8 +17,9 @@ HomographyMotionEstimator::EstimateProjectiveTransformation(
   auto start = high_resolution_clock::now();
 
   cv::Mat homography_inlies;
-  cv::Mat H = cv::findHomography(points_previous_frame, points_current_frame,
-                                 homography_inlies, CV_RANSAC);
+  cv::Mat H = cv::findHomography(
+      points_previous_frame, points_current_frame, homography_inlies, CV_RANSAC,
+      HomographyMotionEstimator::GetRansecThreshold());
   const auto homography_average_symmetric_transfer_error = CalculateScore(
       points_previous_frame, points_current_frame, H, homography_inlies);
   auto stop = high_resolution_clock::now();
@@ -39,14 +40,14 @@ float HomographyMotionEstimator::CalculateScore(
   const auto forward_transfer_errors =
       CalculateTransferErrors(src_points, dst_points, H, inlies_mask);
   const auto score_forward = ScoreFromChiSquareDistribution(
-      forward_transfer_errors, inlies_mask, chi_square_threshold_,
-      chi_square_threshold_);
+      forward_transfer_errors, inlies_mask, chi_square_threshold,
+      chi_square_threshold);
 
   const auto backward_transfer_error =
       CalculateTransferErrors(dst_points, src_points, H.inv(), inlies_mask);
   const auto score_backward = ScoreFromChiSquareDistribution(
-      backward_transfer_error, inlies_mask, chi_square_threshold_,
-      chi_square_threshold_);
+      backward_transfer_error, inlies_mask, chi_square_threshold,
+      chi_square_threshold);
 
   return score_forward + score_backward;
 }
@@ -95,6 +96,8 @@ HomographyTransformation::EstimateMotion(const cv::Mat &camera_intrinsics) {
     cv::convertPointsFromHomogeneous(points_3d_homo.t(), points_3d_cartisian);
 
     points_3d_cartisian = points_3d_cartisian.reshape(1);
+    std::cout << "points 3d carti " << points_3d_cartisian.row(0) << std::endl;
+
     cv::Mat mask_depth_not_positive =
         (points_3d_cartisian.col(2) <= 0) & _inlier;
     int number_of_non_positive_depth =
@@ -104,9 +107,6 @@ HomographyTransformation::EstimateMotion(const cv::Mat &camera_intrinsics) {
       break;
     }
   }
-
-  std::cout << "Rs: " << Rs << std::endl;
-  std::cout << "Ts: " << Ts << std::endl;
   return homogeneous_matrix;
 }
 

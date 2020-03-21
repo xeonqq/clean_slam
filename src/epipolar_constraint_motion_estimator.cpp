@@ -20,8 +20,9 @@ EpipolarConstraintMotionEstimator::EstimateProjectiveTransformation(
   auto start = high_resolution_clock::now();
 
   cv::Mat fundamental_inlies;
-  cv::Mat F = cv::findFundamentalMat(points_previous_frame,
-                                     points_current_frame, fundamental_inlies);
+  cv::Mat F = cv::findFundamentalMat(
+      points_previous_frame, points_current_frame, fundamental_inlies,
+      cv::FM_RANSAC, EpipolarConstraintMotionEstimator::GetRansecThreshold());
   const auto epipolar_constraint_average_symmetric_transfer_error =
       CalculateSymmetricTransferError(
           points_previous_frame, points_current_frame, F, fundamental_inlies);
@@ -67,10 +68,10 @@ float EpipolarConstraintMotionEstimator::CalculateSymmetricTransferError(
       backward_reprojection_error_demoninator;
   const auto forward_score = ScoreFromChiSquareDistribution(
       forward_reprojection_errors, inlies_mask,
-      HomographyMotionEstimator::chi_square_threshold_, chi_square_threshold_);
+      HomographyMotionEstimator::chi_square_threshold, chi_square_threshold);
   const auto backward_score = ScoreFromChiSquareDistribution(
       forward_reprojection_errors, inlies_mask,
-      HomographyMotionEstimator::chi_square_threshold_, chi_square_threshold_);
+      HomographyMotionEstimator::chi_square_threshold, chi_square_threshold);
   return forward_score + backward_score;
 }
 

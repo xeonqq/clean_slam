@@ -22,8 +22,11 @@ public:
   HomographyTransformation EstimateProjectiveTransformation(
       const std::vector<cv::Point2f> &points_previous_frame,
       const std::vector<cv::Point2f> &points_current_frame) const;
-  static constexpr float chi_square_threshold_ =
+  static constexpr float chi_square_threshold =
       5.99f; // two degree of freedom, 95% correction rate
+  static constexpr float GetRansecThreshold() {
+    return std::sqrt(chi_square_threshold);
+  }
 
 private:
   float CalculateScore(const std::vector<cv::Point2f> &src_points,
