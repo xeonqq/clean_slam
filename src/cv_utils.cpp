@@ -48,10 +48,12 @@ std::string MatType2Str(int type) {
 cv::MatExpr ZerosLike(cv::Mat m) {
   return cv::Mat::zeros(m.rows, m.cols, m.type());
 }
-cv::Mat ToTransformationMatrix(const cv::Mat R, const cv::Mat T) {
-  cv::Mat extrinsics(3, 4, R.type());
-  extrinsics(cv::Range::all(), cv::Range(0, 3)) = R;
-  extrinsics.col(3) = T;
+cv::Mat ToTransformationMatrix(const cv::Mat &R, const cv::Mat &T) {
+  cv::Mat extrinsics(3, 4, T.type());
+  // assigning using MatExpr, if not values are not assigned properly,
+  // dangerous!
+  extrinsics(cv::Range::all(), cv::Range(0, 3)) = R * 1.0;
+  extrinsics.col(3) = T * 1.0;
   return extrinsics;
 }
 } // namespace clean_slam

@@ -35,7 +35,7 @@ void SlamCore::Track(const cv::Mat &image, double timestamp) {
         points_previous_frame, points_current_frame);
     _trajectory.emplace_back(homogeneous_mat, timestamp);
 
-    //    DrawGoodMatches(image, current_frame, good_matches);
+    //        DrawGoodMatches(image, current_frame, good_matches);
   } else {
     _trajectory.emplace_back(HomogeneousMatrix{}, timestamp);
   }

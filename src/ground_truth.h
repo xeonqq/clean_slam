@@ -27,6 +27,7 @@ public:
   const g2o::SE3Quat &GetTransformation() const { return _se3_quat; }
 
 private:
+  // world wrt current pose
   g2o::SE3Quat _se3_quat;
 
 private:

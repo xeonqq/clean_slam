@@ -48,13 +48,13 @@ std::vector<T> FilterByMask(const std::vector<T> &vec, cv::Mat mask) {
   }
   return result;
 }
-cv::Mat ToTransformationMatrix(const cv::Mat R, const cv::Mat T);
+cv::Mat ToTransformationMatrix(const cv::Mat &R, const cv::Mat &T);
 
 template <class T>
 std::ostream &operator<<(std::ostream &os, const std::vector<T> &values) {
   os << "[";
   for (const auto &v : values) {
-    os << "; " << v;
+    os << v << "; \n";
   }
   os << "]";
   return os;

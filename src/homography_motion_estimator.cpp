@@ -79,7 +79,9 @@ HomographyTransformation::EstimateMotion(const cv::Mat &camera_intrinsics) {
   std::vector<cv::Mat> Rs, Ts, Normals;
   HomogeneousMatrix homogeneous_matrix;
 
+  // Get R and T of previous camera pose(world) w.r.t. the current camera pose
   cv::decomposeHomographyMat(_m, camera_intrinsics, Rs, Ts, Normals);
+
   cv::Mat projection_matrix0 =
       camera_intrinsics * cv::Mat::eye(3, 4, camera_intrinsics.type());
 
@@ -104,7 +106,7 @@ HomographyTransformation::EstimateMotion(const cv::Mat &camera_intrinsics) {
         cv::countNonZero(mask_depth_not_positive);
     if (number_of_non_positive_depth == 0) {
       homogeneous_matrix = CreateHomogeneousMatrix(Rs[i], Ts[i]);
-      break;
+      std::cout << "good: " << i << std::endl;
     }
   }
   return homogeneous_matrix;
