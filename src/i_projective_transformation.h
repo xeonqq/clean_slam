@@ -21,6 +21,7 @@ public:
 
   int ValidateTriangulatedPoints(const cv::Mat &triangulated_points,
                                  const cv::Mat &R, const cv::Mat &T,
+                                 const cv::Mat &camera_intrinsics,
                                  cv::Mat &good_points_mask);
 
 protected:

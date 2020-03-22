@@ -101,8 +101,9 @@ HomographyTransformation::EstimateMotion(const cv::Mat &camera_intrinsics) {
     cv::Mat points_3d_cartisian;
     cv::convertPointsFromHomogeneous(points_3d_homo.t(), points_3d_cartisian);
     // points are in rows of points_3d_cartisian, 3 channels
-    good_points_numbers[i] = ValidateTriangulatedPoints(
-        points_3d_cartisian, Rs[i], Ts[i], good_points_masks[i]);
+    good_points_numbers[i] =
+        ValidateTriangulatedPoints(points_3d_cartisian, Rs[i], Ts[i],
+                                   camera_intrinsics, good_points_masks[i]);
     points_3ds[i] = points_3d_cartisian;
     std::cout << "num good points: " << good_points_numbers[i] << std::endl;
     std::cout << "points 3d carti " << points_3d_cartisian.row(0) << std::endl;

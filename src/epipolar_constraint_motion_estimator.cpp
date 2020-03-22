@@ -3,6 +3,7 @@
 //
 #include "epipolar_constraint_motion_estimator.h"
 #include "camera_motion_estimator.h"
+#include "cv_utils.h"
 #include "homography_motion_estimator.h"
 #include <chrono>
 #include <cv.hpp>
@@ -104,6 +105,11 @@ EpipolarTransformation::EstimateMotion(const cv::Mat &camera_intrinsics) {
   cv::Mat points_3d_cartisian;
   cv::convertPointsFromHomogeneous(triangulated_points.t(),
                                    points_3d_cartisian);
+  points_3d_cartisian.convertTo(points_3d_cartisian, CV_32F);
+  cv::Mat good_points_mask;
+  int good_points_number = ValidateTriangulatedPoints(
+      points_3d_cartisian, r, t, camera_intrinsics, good_points_mask);
+  std::cout << "F good_points_number: " << good_points_number << std::endl;
   //  std::cout << points_3d_cartisian << std::endl;
   return CreateHomogeneousMatrix(r, t);
 }

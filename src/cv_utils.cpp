@@ -60,12 +60,12 @@ cv::MatExpr ZerosLike(cv::Mat m) {
   return cv::Mat::zeros(m.rows, m.cols, m.type());
 }
 cv::Mat ToTransformationMatrix(const cv::Mat &R, const cv::Mat &T) {
-  cv::Mat extrinsics(3, 4, T.type());
+  cv::Mat transformation(3, 4, T.type());
   // assigning using MatExpr, if not values are not assigned properly,
   // dangerous!
-  extrinsics(cv::Range::all(), cv::Range(0, 3)) = R * 1.0;
-  extrinsics.col(3) = T * 1.0;
-  return extrinsics;
+  transformation(cv::Range::all(), cv::Range(0, 3)) = R * 1.0;
+  transformation.col(3) = T * 1.0;
+  return transformation;
 }
 
 cv::Mat NormPoints(const cv::Mat &m) {

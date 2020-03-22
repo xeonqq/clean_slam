@@ -36,7 +36,7 @@ HomogeneousMatrix CameraMotionEstimator::Estimate(
   std::cerr << " total runtime: "
             << duration_cast<microseconds>(stop - start).count() << '\n';
   if (IsHomography(homography_transformation, epipolar_transformation)) {
-    //      if (false) {
+    //          if (false) {
     std::cerr << "Choose H\n";
     return homography_transformation.EstimateMotion(_camera_intrinsic);
   } else {
