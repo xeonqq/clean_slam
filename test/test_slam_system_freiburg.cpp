@@ -13,7 +13,7 @@ bool operator==(const g2o::SE3Quat &lhs, const g2o::SE3Quat &rhs) {
   const auto v1 = lhs.toVector();
   const auto v2 = rhs.toVector();
   auto result = true;
-  for (size_t i = 0; i < v1.size(); ++i) {
+  for (int i = 0; i < v1.size(); ++i) {
     result &= (v1[i] == v2[i]);
   }
   return result;

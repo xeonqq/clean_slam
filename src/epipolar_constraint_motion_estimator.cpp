@@ -96,10 +96,15 @@ EpipolarConstraintMotionEstimator::CalculateRepojectionErrorDemoniator(
 
 HomogeneousMatrix
 EpipolarTransformation::EstimateMotion(const cv::Mat &camera_intrinsics) {
-  cv::Mat r, t;
+  cv::Mat r, t, triangulated_points;
   cv::Mat essential_mat = camera_intrinsics.t() * _m * camera_intrinsics;
   cv::recoverPose(essential_mat, _points_previous_frame, _points_current_frame,
-                  camera_intrinsics, r, t, _inlier);
+                  camera_intrinsics, r, t, std::numeric_limits<double>::max(),
+                  _inlier, triangulated_points);
+  cv::Mat points_3d_cartisian;
+  cv::convertPointsFromHomogeneous(triangulated_points.t(),
+                                   points_3d_cartisian);
+  //  std::cout << points_3d_cartisian << std::endl;
   return CreateHomogeneousMatrix(r, t);
 }
 

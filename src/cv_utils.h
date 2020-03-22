@@ -13,6 +13,7 @@
 namespace clean_slam {
 
 std::string MatType2Str(int type);
+std::string MatType2Str(cv::Mat mat);
 
 struct QueryIdxs {
   std::vector<int> operator()(const std::vector<cv::DMatch> &matches) {
@@ -49,6 +50,10 @@ std::vector<T> FilterByMask(const std::vector<T> &vec, cv::Mat mask) {
   return result;
 }
 cv::Mat ToTransformationMatrix(const cv::Mat &R, const cv::Mat &T);
+
+cv::Mat NormPoints(const cv::Mat &m);
+cv::Mat SumChannels(const cv::Mat &m);
+cv::Mat SumColumns(const cv::Mat &m);
 
 template <class T>
 std::ostream &operator<<(std::ostream &os, const std::vector<T> &values) {

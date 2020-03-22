@@ -45,6 +45,17 @@ std::string MatType2Str(int type) {
 
   return r;
 }
+
+std::string MatType2Str(cv::Mat mat) {
+  std::ostringstream os;
+  os << "type: ";
+  os << MatType2Str(mat.type());
+  os << " rows*cols: ";
+  os << mat.size;
+  ;
+  return os.str();
+}
+
 cv::MatExpr ZerosLike(cv::Mat m) {
   return cv::Mat::zeros(m.rows, m.cols, m.type());
 }
@@ -55,5 +66,24 @@ cv::Mat ToTransformationMatrix(const cv::Mat &R, const cv::Mat &T) {
   extrinsics(cv::Range::all(), cv::Range(0, 3)) = R * 1.0;
   extrinsics.col(3) = T * 1.0;
   return extrinsics;
+}
+
+cv::Mat NormPoints(const cv::Mat &m) {
+  // calculate norm of points, i.e. 3 dim points means 3 channels
+  cv::Mat norms = m.mul(m);
+  norms = SumChannels(norms);
+  cv::sqrt(norms, norms);
+  return norms;
+}
+
+cv::Mat SumChannels(const cv::Mat &m) { return SumColumns(m.reshape(1)); }
+
+cv::Mat SumColumns(const cv::Mat &m) {
+  assert(m.cols > 1);
+  cv::Mat result = m.col(0);
+  for (int i = 1; i < m.cols; ++i) {
+    result += m.col(i);
+  }
+  return result;
 }
 } // namespace clean_slam

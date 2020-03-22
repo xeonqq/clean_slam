@@ -88,6 +88,10 @@ HomographyTransformation::EstimateMotion(const cv::Mat &camera_intrinsics) {
   std::vector<cv::Mat> projection_matrix1_candidates =
       GetProjectionMatrixCandidates(camera_intrinsics, Rs, Ts);
 
+  std::array<int, 4> good_points_numbers;
+  std::array<cv::Mat, 4> good_points_masks;
+  std::array<cv::Mat, 4> points_3ds;
+
   for (size_t i = 0; i < projection_matrix1_candidates.size(); ++i) {
 
     cv::Mat points_3d_homo;
@@ -96,19 +100,17 @@ HomographyTransformation::EstimateMotion(const cv::Mat &camera_intrinsics) {
                           points_3d_homo);
     cv::Mat points_3d_cartisian;
     cv::convertPointsFromHomogeneous(points_3d_homo.t(), points_3d_cartisian);
-
-    points_3d_cartisian = points_3d_cartisian.reshape(1);
+    // points are in rows of points_3d_cartisian, 3 channels
+    good_points_numbers[i] = ValidateTriangulatedPoints(
+        points_3d_cartisian, Rs[i], Ts[i], good_points_masks[i]);
+    points_3ds[i] = points_3d_cartisian;
+    std::cout << "num good points: " << good_points_numbers[i] << std::endl;
     std::cout << "points 3d carti " << points_3d_cartisian.row(0) << std::endl;
-
-    cv::Mat mask_depth_not_positive =
-        (points_3d_cartisian.col(2) <= 0) & _inlier;
-    int number_of_non_positive_depth =
-        cv::countNonZero(mask_depth_not_positive);
-    if (number_of_non_positive_depth == 0) {
-      homogeneous_matrix = CreateHomogeneousMatrix(Rs[i], Ts[i]);
-      std::cout << "good: " << i << std::endl;
-    }
   }
+  const auto it =
+      std::max_element(good_points_numbers.begin(), good_points_numbers.end());
+  int index = std::distance(good_points_numbers.begin(), it);
+  homogeneous_matrix = CreateHomogeneousMatrix(Rs[index], Ts[index]);
   return homogeneous_matrix;
 }
 
