@@ -21,8 +21,8 @@ void SlamSystem::Run() {
                            cv::IMREAD_GRAYSCALE);
       _core.Track(im, image_file.timestamp);
       ++i;
-      if (i == 2)
-        break;
+      //      if (i == 2)
+      //        break;
     }
   }
 }

@@ -4,11 +4,11 @@
 
 #ifndef CLEAN_SLAM_SRC_HOMOGRAPHY_MOTION_ESTIMATOR_H_
 #define CLEAN_SLAM_SRC_HOMOGRAPHY_MOTION_ESTIMATOR_H_
-#include "i_projective_transformation.h"
+#include "projective_transformation.h"
 
 namespace clean_slam {
 
-class HomographyTransformation : public IProjectiveTransformation {
+class HomographyTransformation : public ProjectiveTransformation {
 public:
   HomographyTransformation(
       const cv::Mat m, const std::vector<cv::Point2f> &points_previous_frame,
@@ -37,9 +37,5 @@ private:
                                   const cv::Mat &m,
                                   const cv::Mat &inlies_mask) const;
 };
-std::vector<cv::Mat>
-GetProjectionMatrixCandidates(const cv::Mat &camera_intrinsics,
-                              const std::vector<cv::Mat> &Rs,
-                              const std::vector<cv::Mat> &Ts);
 } // namespace clean_slam
 #endif // CLEAN_SLAM_SRC_HOMOGRAPHY_MOTION_ESTIMATOR_H_

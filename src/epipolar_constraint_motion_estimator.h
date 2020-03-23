@@ -4,11 +4,11 @@
 
 #ifndef CLEAN_SLAM_SRC_EPIPOLAR_CONSTRAINT_MOTION_ESTIMATOR_H_
 #define CLEAN_SLAM_SRC_EPIPOLAR_CONSTRAINT_MOTION_ESTIMATOR_H_
-#include "i_projective_transformation.h"
+#include "projective_transformation.h"
 
 namespace clean_slam {
 
-class EpipolarTransformation : public IProjectiveTransformation {
+class EpipolarTransformation : public ProjectiveTransformation {
 public:
   EpipolarTransformation(const cv::Mat m,
                          const std::vector<cv::Point2f> &points_previous_frame,
