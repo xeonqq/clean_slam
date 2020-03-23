@@ -14,8 +14,11 @@ public:
   bool Initialize(const std::vector<cv::Point2f> &points_previous_frame,
                   const std::vector<cv::Point2f> &points_current_frame);
 
+  HomogeneousMatrix GetHomogeneousMatrix() const;
+
 private:
   CameraMotionEstimator _camera_motion_estimator;
+  PlausibleTransformation _plausible_transformation;
 };
 
 } // namespace clean_slam

@@ -31,7 +31,11 @@ void SlamCore::Track(const cv::Mat &image, double timestamp) {
     const auto &points_previous_frame =
         matched_points_pair_undistorted.GetPointsPrevFrame();
     if (_initializer.Initialize(points_previous_frame, points_current_frame)) {
-      std::cout << "initialized\n";
+      std::cout << "initialized: "
+                << "\n ";
+
+      _trajectory.emplace_back(_initializer.GetHomogeneousMatrix(), timestamp);
+      //      DrawGoodMatches(image, current_frame, good_matches);
     }
 
     //    _trajectory.emplace_back(homogeneous_mat, timestamp);
@@ -51,11 +55,11 @@ void SlamCore::DrawGoodMatches(
     const cv::Mat &image, const Frame &current_frame,
     const std::vector<cv::DMatch> &good_matches) const {
   cv::Mat img_matches;
-  cv::drawMatches(image, current_frame.GetKeyPoints(),
-                  this->_previous_frame.GetImage(), this->_previous_frame.GetKeyPoints(),
-                  good_matches, img_matches, cv::Scalar::all(-1),
-                  cv::Scalar::all(-1), std::vector<char>(),
-                  cv::DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS);
+  cv::drawMatches(
+      image, current_frame.GetKeyPoints(), this->_previous_frame.GetImage(),
+      this->_previous_frame.GetKeyPoints(), good_matches, img_matches,
+      cv::Scalar::all(-1), cv::Scalar::all(-1), std::vector<char>(),
+      cv::DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS);
 
   cv::imshow("Good Matches & Object detection", img_matches);
   cv::waitKey(0);

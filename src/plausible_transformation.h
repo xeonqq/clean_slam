@@ -17,6 +17,7 @@ public:
                           const cv::Mat &good_points_mask,
                           const cv::Mat &triangulated_points,
                           bool has_similar_good);
+  PlausibleTransformation() = default;
   const cv::Mat &R() const;
   const cv::Mat &T() const;
   int GetNumOfGoodPoints() const;
@@ -32,7 +33,7 @@ private:
   cv::Mat good_points_mask;
   cv::Mat _triangulated_points;
   bool _has_similar_good;
-  const int kNumOfGoodPointsThreshold{50};
+  int kNumOfGoodPointsThreshold{50};
 };
 
 } // namespace clean_slam

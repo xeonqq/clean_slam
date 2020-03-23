@@ -3,7 +3,7 @@
 //
 
 #include "slam_system.h"
-
+#include <iostream>
 namespace clean_slam {
 
 const CameraTrajectory &SlamSystem::GetCamTrajectory() const {
@@ -16,10 +16,13 @@ void SlamSystem::Run() {
                      _dataset_loader->GetDistortionCoeffs());
     size_t i = 0;
     for (const auto &image_file : _dataset_loader->GetImageFiles()) {
-      auto im = cv::imread(_dataset_loader->GetDatasetFolder() + '/' +
-                               image_file.image_filename,
-                           cv::IMREAD_GRAYSCALE);
-      _core.Track(im, image_file.timestamp);
+      if (i > 3 && i < 6) {
+
+        auto im = cv::imread(_dataset_loader->GetDatasetFolder() + '/' +
+                                 image_file.image_filename,
+                             cv::IMREAD_GRAYSCALE);
+        _core.Track(im, image_file.timestamp);
+      }
       ++i;
       //      if (i == 2)
       //        break;

@@ -15,9 +15,14 @@ bool Initializer::Initialize(
       _camera_motion_estimator.Estimate(points_previous_frame,
                                         points_current_frame);
   if (plausible_transformation.IsGood()) {
+    _plausible_transformation = plausible_transformation;
     return true;
     // todo: bundle adjustment
   } else
     return false;
 }
+HomogeneousMatrix Initializer::GetHomogeneousMatrix() const {
+  return _plausible_transformation.GetHomogeneousMatrix();
+}
+
 } // namespace clean_slam
