@@ -5,6 +5,7 @@
 #ifndef CLEAN_SLAM_SRC_PROJECTIVE_TRANSFORMATION_H_
 #define CLEAN_SLAM_SRC_PROJECTIVE_TRANSFORMATION_H_
 #include "homogeneous_matrix.h"
+#include "plausible_transformation.h"
 #include <vector>
 
 namespace clean_slam {
@@ -25,7 +26,7 @@ GetProjectionMatrixCandidates(const cv::Mat &camera_intrinsics,
 
 class ProjectiveTransformation {
 public:
-  virtual HomogeneousMatrix
+  virtual PlausibleTransformation
   EstimateMotion(const cv::Mat &camera_intrinsics) = 0;
   ProjectiveTransformation(
       const cv::Mat m, const std::vector<cv::Point2f> &points_previous_frame,
@@ -39,9 +40,10 @@ protected:
                                  const cv::Mat &camera_intrinsics,
                                  cv::Mat &good_points_mask) const;
 
-  HomogeneousMatrix ComputeTransformation(const cv::Mat &camera_intrinsics,
-                                          const std::vector<cv::Mat> &Rs,
-                                          const std::vector<cv::Mat> &Ts) const;
+  PlausibleTransformation
+  ComputeTransformation(const cv::Mat &camera_intrinsics,
+                        const std::vector<cv::Mat> &Rs,
+                        const std::vector<cv::Mat> &Ts) const;
 
 protected:
   const cv::Mat _m; // homography matrix or fundamental matrix

@@ -10,6 +10,17 @@
 
 namespace clean_slam {
 
+bool HasSimilarGood(const std::array<int, 4> &good_points_numbers,
+                    int max_num_good_points) {
+  int similar_good = 0;
+  for (const auto good_points_number : good_points_numbers) {
+    if (good_points_number > 0.7 * max_num_good_points) {
+      ++similar_good;
+    }
+  }
+  return similar_good > 1;
+}
+
 const float ProjectiveTransformation::GetReprojectionError() const {
   return _reprojection_error;
 }
@@ -22,10 +33,9 @@ ProjectiveTransformation::ProjectiveTransformation(
       _points_current_frame(points_current_frame), _inlier(inlier),
       _reprojection_error(reprojection_error) {}
 
-HomogeneousMatrix ProjectiveTransformation::ComputeTransformation(
+PlausibleTransformation ProjectiveTransformation::ComputeTransformation(
     const cv::Mat &camera_intrinsics, const std::vector<cv::Mat> &Rs,
     const std::vector<cv::Mat> &Ts) const {
-  HomogeneousMatrix homogeneous_matrix;
   cv::Mat projection_matrix0 =
       camera_intrinsics * cv::Mat::eye(3, 4, camera_intrinsics.type());
 
@@ -40,28 +50,26 @@ HomogeneousMatrix ProjectiveTransformation::ComputeTransformation(
 
     cv::Mat points_3d_homo;
     cv::triangulatePoints(projection_matrix0, projection_matrix1_candidates[i],
-                          this->_points_previous_frame,
-                          this->_points_current_frame, points_3d_homo);
+                          _points_previous_frame, _points_current_frame,
+                          points_3d_homo);
     cv::Mat points_3d_cartisian;
     cv::convertPointsFromHomogeneous(points_3d_homo.t(), points_3d_cartisian);
     // points are in rows of points_3d_cartisian, 3 channels
-    good_points_numbers[i] = this->ValidateTriangulatedPoints(
-        points_3d_cartisian, Rs[i], Ts[i], camera_intrinsics,
-        good_points_masks[i]);
+    good_points_numbers[i] =
+        ValidateTriangulatedPoints(points_3d_cartisian, Rs[i], Ts[i],
+                                   camera_intrinsics, good_points_masks[i]);
     points_3ds[i] = points_3d_cartisian;
-    std::cout << "num good points: " << good_points_numbers[i] << std::endl;
-    //    std::cout << "points 3d carti " << points_3d_cartisian.row(0) <<
+    //    std::cout << "num good points: " << good_points_numbers[i] <<
     //    std::endl;
-    std::cout << i << std::endl;
   }
-  const auto it =
+  const auto max_it =
       std::max_element(good_points_numbers.begin(), good_points_numbers.end());
-  int index = std::distance(good_points_numbers.begin(), it);
-  if (*it > 20) {
-    std::cout << "!!!!!!!GOOD: " << *it << std::endl;
-  }
-  homogeneous_matrix = CreateHomogeneousMatrix(Rs[index], Ts[index]);
-  return homogeneous_matrix;
+  int index = std::distance(good_points_numbers.begin(), max_it);
+
+  bool b = HasSimilarGood(good_points_numbers, *max_it);
+  return PlausibleTransformation{Rs[index],         Ts[index],
+                                 *max_it,           good_points_masks[index],
+                                 points_3ds[index], b};
 }
 
 int ProjectiveTransformation::ValidateTriangulatedPoints(
@@ -82,11 +90,11 @@ int ProjectiveTransformation::ValidateTriangulatedPoints(
   // early return to save cpu, if num of positive depth points less than 80% of
   // original points
   int num_positive_depth_points = cv::countNonZero(good_points_mask);
-  std::cout << "num_positive_depth_points " << num_positive_depth_points
-            << std::endl;
+  //  std::cout << "num_positive_depth_points " << num_positive_depth_points
+  //            << std::endl;
   const float positive_ratio = 0.8f;
-  //  if (num_positive_depth_points < positive_ratio * triangulated_points.rows)
-  //    return num_positive_depth_points;
+  if (num_positive_depth_points < positive_ratio * triangulated_points.rows)
+    return num_positive_depth_points;
 
   // calculate parallax
   const cv::Mat &previous_camera_to_3d_points_vec = triangulated_points;
@@ -128,8 +136,8 @@ int ProjectiveTransformation::ValidateTriangulatedPoints(
                      good_points_mask;
   //  std::cout << reproj_current_image_points.row(0) << " vs orig: "
   //  <<_points_current_frame[0]<< std::endl;
-  std::cout << "prev_err: " << reproj_error_prev_frame.row(1) << std::endl;
-  std::cout << "curr_err: " << reproj_error_curr_frame.row(1) << std::endl;
+  //  std::cout << "prev_err: " << reproj_error_prev_frame.row(1) << std::endl;
+  //  std::cout << "curr_err: " << reproj_error_curr_frame.row(1) << std::endl;
   return cv::countNonZero(good_points_mask);
 }
 

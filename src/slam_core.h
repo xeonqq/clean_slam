@@ -7,6 +7,7 @@
 
 #include "camera_motion_estimator.h"
 #include "frame.h"
+#include "initializer.h"
 #include "orb_extractor.h"
 #include "orb_feature_matcher.h"
 #include "stamped_transformation.h"
@@ -33,7 +34,7 @@ private:
   OrbExtractor _orb_extractor;
   Frame _previous_frame;
   OrbFeatureMatcher _orb_feature_matcher;
-  CameraMotionEstimator _camera_motion_estimator{_camera_intrinsic};
+  Initializer _initializer{_camera_intrinsic};
   CameraTrajectory _trajectory;
 
 public:

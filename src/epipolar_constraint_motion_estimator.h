@@ -14,7 +14,8 @@ public:
                          const std::vector<cv::Point2f> &points_previous_frame,
                          const std::vector<cv::Point2f> &points_current_frame,
                          const cv::Mat &inlier, const float reprojection_error);
-  HomogeneousMatrix EstimateMotion(const cv::Mat &camera_intrinsics) override;
+  PlausibleTransformation
+  EstimateMotion(const cv::Mat &camera_intrinsics) override;
 };
 
 class EpipolarConstraintMotionEstimator {

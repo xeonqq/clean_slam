@@ -15,19 +15,19 @@ std::vector<cv::DMatch> OrbFeatureMatcher::Match(const Frame &curr_frame,
   _matcher.match(curr_frame.GetDescriptors(), prev_frame.GetDescriptors(),
                  matches);
 
-  double max_dist = 0;
-  double min_dist = 100;
-  //-- Quick calculation of max and min distances between keypoints
-  for (const auto &m : matches) {
-    double dist = m.distance;
-    if (dist < min_dist)
-      min_dist = dist;
-    if (dist > max_dist)
-      max_dist = dist;
-  }
+  /*  double max_dist = 0;
+    double min_dist = 100;
+    //-- Quick calculation of max and min distances between keypoints
+    for (const auto &m : matches) {
+      double dist = m.distance;
+      if (dist < min_dist)
+        min_dist = dist;
+      if (dist > max_dist)
+        max_dist = dist;
+    }*/
 
-  printf("-- Max dist : %f \n", max_dist);
-  printf("-- Min dist : %f \n", min_dist);
+  //  printf("-- Max dist : %f \n", max_dist);
+  //  printf("-- Min dist : %f \n", min_dist);
 
   return ComputeGoodMatches(matches, 20);
 }

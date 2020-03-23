@@ -30,12 +30,11 @@ void SlamCore::Track(const cv::Mat &image, double timestamp) {
         matched_points_pair_undistorted.GetPointsCurrFrame();
     const auto &points_previous_frame =
         matched_points_pair_undistorted.GetPointsPrevFrame();
+    if (_initializer.Initialize(points_previous_frame, points_current_frame)) {
+      std::cout << "initialized\n";
+    }
 
-    const auto homogeneous_mat = _camera_motion_estimator.Estimate(
-        points_previous_frame, points_current_frame);
-    _trajectory.emplace_back(homogeneous_mat, timestamp);
-
-    //        DrawGoodMatches(image, current_frame, good_matches);
+    //    _trajectory.emplace_back(homogeneous_mat, timestamp);
   } else {
     _trajectory.emplace_back(HomogeneousMatrix{}, timestamp);
   }

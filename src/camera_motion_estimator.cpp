@@ -18,7 +18,7 @@ using namespace std::chrono;
 CameraMotionEstimator::CameraMotionEstimator(const cv::Mat &camera_intrinsic)
     : _camera_intrinsic(camera_intrinsic) {}
 
-HomogeneousMatrix CameraMotionEstimator::Estimate(
+PlausibleTransformation CameraMotionEstimator::Estimate(
     const std::vector<cv::Point2f> &points_previous_frame,
     const std::vector<cv::Point2f> &points_current_frame) {
 
@@ -35,8 +35,8 @@ HomogeneousMatrix CameraMotionEstimator::Estimate(
   auto stop = high_resolution_clock::now();
   std::cerr << " total runtime: "
             << duration_cast<microseconds>(stop - start).count() << '\n';
-  //  if (IsHomography(homography_transformation, epipolar_transformation)) {
-  if (false) {
+  if (IsHomography(homography_transformation, epipolar_transformation)) {
+    //  if (false) {
     std::cerr << "Choose H\n";
     return homography_transformation.EstimateMotion(_camera_intrinsic);
   } else {

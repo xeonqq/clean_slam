@@ -95,34 +95,17 @@ EpipolarConstraintMotionEstimator::CalculateRepojectionErrorDemoniator(
   return reprojection_error_demoninator;
 }
 
-HomogeneousMatrix
+PlausibleTransformation
 EpipolarTransformation::EstimateMotion(const cv::Mat &camera_intrinsics) {
   cv::Mat R1, R2, T;
   cv::Mat essential_mat = camera_intrinsics.t() * _m * camera_intrinsics;
   cv::decomposeEssentialMat(essential_mat, R1, R2, T);
   std::vector<cv::Mat> Rs{R1, R1, R2, R2};
   std::vector<cv::Mat> Ts{T, -T, T, -T};
-  HomogeneousMatrix homogeneous_matrix =
+  PlausibleTransformation plausible_transformation =
       ComputeTransformation(camera_intrinsics, Rs, Ts);
-  return homogeneous_matrix;
-  /*
-    cv::Mat r, t, triangulated_points;
-   cv::recoverPose(essential_mat, _points_previous_frame, _points_current_frame,
-                    camera_intrinsics, r, t, std::numeric_limits<double>::max(),
-                    _inlier, triangulated_points);
-    cv::Mat points_3d_cartisian;
-    cv::convertPointsFromHomogeneous(triangulated_points.t(),
-                                     points_3d_cartisian);
-    points_3d_cartisian.convertTo(points_3d_cartisian, CV_32F);
-    cv::Mat good_points_mask;
-  //  int good_points_number = ValidateTriangulatedPoints(
-  //      points_3d_cartisian, r, t, camera_intrinsics, good_points_mask);
-  //  std::cout << "F good_points_number: " << good_points_number << std::endl;
-    std::cout << "from recover pose: " << r << " " << t << std::endl;
-    std::cout << "from my calculation: "
-              << homogeneous_matrix.to_homogeneous_matrix() << std::endl;
-    //  std::cout << points_3d_cartisian << std::endl;
-    return CreateHomogeneousMatrix(r, t);*/
+
+  return plausible_transformation;
 }
 
 EpipolarTransformation::EpipolarTransformation(

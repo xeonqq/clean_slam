@@ -74,22 +74,15 @@ HomographyTransformation::HomographyTransformation(
     : ProjectiveTransformation(m, points_previous_frame, points_current_frame,
                                inlier, reprojection_error) {}
 
-HomogeneousMatrix
+PlausibleTransformation
 HomographyTransformation::EstimateMotion(const cv::Mat &camera_intrinsics) {
   std::vector<cv::Mat> Rs, Ts, Normals;
-  HomogeneousMatrix homogeneous_matrix;
 
   // Get R and T of previous camera pose(world) w.r.t. the current camera pose
   cv::decomposeHomographyMat(_m, camera_intrinsics, Rs, Ts, Normals);
 
-  homogeneous_matrix = ComputeTransformation(camera_intrinsics, Rs, Ts);
-  //  std::cout << "index  " << index << std::endl;
-
-  //  cv::Mat possible_solutions;
-  //  cv::filterHomographyDecompByVisibleRefpoints(Rs, Normals,
-  //  _points_previous_frame, _points_current_frame, possible_solutions,
-  //  _inlier); std::cout << possible_solutions <<std::endl;
-
-  return homogeneous_matrix;
+  PlausibleTransformation plausible_transformation =
+      ComputeTransformation(camera_intrinsics, Rs, Ts);
+  return plausible_transformation;
 }
 } // namespace clean_slam

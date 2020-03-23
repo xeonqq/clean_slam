@@ -17,7 +17,7 @@ namespace clean_slam {
 class CameraMotionEstimator {
 public:
   CameraMotionEstimator(const cv::Mat &camera_intrinsic);
-  HomogeneousMatrix
+  PlausibleTransformation
   Estimate(const std::vector<cv::Point2f> &points_previous_frame,
            const std::vector<cv::Point2f> &points_current_frame);
 
