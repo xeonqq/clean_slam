@@ -7,19 +7,23 @@
 
 #include "dataset_loader.h"
 #include "slam_core.h"
+#include "viewer.h"
+#include <thread>
 
 namespace clean_slam {
 class SlamSystem {
 public:
   SlamSystem() = default;
   SlamSystem(const DatasetLoader *dataset_loader)
-      : _dataset_loader{dataset_loader} {};
+      : _dataset_loader{dataset_loader},
+        _viewer{dataset_loader->GetViewerSettings()} {};
   void Run();
   const CameraTrajectory &GetCamTrajectory() const;
 
 private:
   const DatasetLoader *_dataset_loader;
   SlamCore _core;
+  Viewer _viewer;
 };
 }
 

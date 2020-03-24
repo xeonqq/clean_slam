@@ -12,6 +12,8 @@ const CameraTrajectory &SlamSystem::GetCamTrajectory() const {
 
 void SlamSystem::Run() {
   if (_dataset_loader) {
+    std::thread _viewer_thread(&Viewer::Run, &_viewer);
+
     _core.Initialize(_dataset_loader->GetCameraIntrinsics(),
                      _dataset_loader->GetDistortionCoeffs());
     size_t i = 0;
@@ -27,6 +29,7 @@ void SlamSystem::Run() {
       //      if (i == 2)
       //        break;
     }
+    _viewer_thread.join();
   }
 }
 } // namespace clean_slam

@@ -57,23 +57,36 @@ void DatasetLoader::LoadFreiburgDataset(const std::string &dataset_folder_name,
   LoadRgb(dataset_folder_name);
   LoadFreiburgGroundTruth(dataset_folder_name);
   LoadCameraIntrinsics(path_to_yaml);
+  LoadViewerSettings(path_to_yaml);
 }
 
 void DatasetLoader::LoadCameraIntrinsics(const std::string &path_to_yaml) {
   cv::FileStorage fSettings(path_to_yaml, cv::FileStorage::READ);
   if (fSettings.isOpened()){
 
-  _camera_intrinsics = (cv::Mat_<double>(3, 3) << fSettings["Camera.fx"], 0,
-                        fSettings["Camera.cx"], 0, fSettings["Camera.fy"],
-                        fSettings["Camera.cy"], 0, 0, 1);
-  _distortion_coeffs =
-      (cv::Mat_<double>(5, 1) << fSettings["Camera.k1"], fSettings["Camera.k2"],
-       fSettings["Camera.p1"], fSettings["Camera.p2"], fSettings["Camera.k3"]);
-  } else{
+    _camera_intrinsics = (cv::Mat_<double>(3, 3) << fSettings["Camera.fx"], 0,
+                          fSettings["Camera.cx"], 0, fSettings["Camera.fy"],
+                          fSettings["Camera.cy"], 0, 0, 1);
+    _distortion_coeffs = (cv::Mat_<double>(5, 1) << fSettings["Camera.k1"],
+                          fSettings["Camera.k2"], fSettings["Camera.p1"],
+                          fSettings["Camera.p2"], fSettings["Camera.k3"]);
+  } else {
     throw std::runtime_error("Could not open file: " + path_to_yaml);
   }
 }
 
+void DatasetLoader::LoadViewerSettings(const std::string &path_to_yaml) {
+  cv::FileStorage fSettings(path_to_yaml, cv::FileStorage::READ);
+  if (fSettings.isOpened()) {
+
+    _viewer_settings.view_point_x = fSettings["Viewer.ViewpointX"];
+    _viewer_settings.view_point_y = fSettings["Viewer.ViewpointY"];
+    _viewer_settings.view_point_z = fSettings["Viewer.ViewpointZ"];
+    _viewer_settings.view_point_f = fSettings["Viewer.ViewpointF"];
+  } else {
+    throw std::runtime_error("Could not open file: " + path_to_yaml);
+  }
+}
 void DatasetLoader::LoadImages(const std::string &image_folder,
                                const std::string &path_to_yaml) {
   _dataset_folder = image_folder;
@@ -101,5 +114,8 @@ const cv::Mat &DatasetLoader::GetCameraIntrinsics() const {
 }
 const cv::Mat &DatasetLoader::GetDistortionCoeffs() const {
   return _distortion_coeffs;
+}
+const ViewerSettings &DatasetLoader::GetViewerSettings() const {
+  return _viewer_settings;
 }
 } // namespace clean_slam

@@ -6,6 +6,7 @@
 #define CLEAN_SLAM_SRC_DATASET_LOADER_H_
 
 #include "ground_truth.h"
+#include "viewer_settings.h"
 #include <opencv2/core/mat.hpp>
 #include <string>
 #include <vector>
@@ -32,16 +33,19 @@ public:
   const std::string &GetDatasetFolder() const;
   const cv::Mat &GetCameraIntrinsics() const;
   const cv::Mat &GetDistortionCoeffs() const;
+  const ViewerSettings &GetViewerSettings() const;
 
 private:
   void LoadRgb(const std::string &dataset_folder_name);
   void LoadFreiburgGroundTruth(const std::string &dataset_folder_name);
   void LoadCameraIntrinsics(const std::string &path_to_yaml);
+  void LoadViewerSettings(const std::string &basic_string);
   std::vector<ImageFile> _image_files;
   GroundTruths _ground_truths;
   std::string _dataset_folder;
   cv::Mat _camera_intrinsics;
   cv::Mat _distortion_coeffs;
+  ViewerSettings _viewer_settings;
 };
 } // namespace clean_slam
 #endif // CLEAN_SLAM_SRC_DATASET_LOADER_H_
