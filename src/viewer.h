@@ -10,20 +10,13 @@
 #include <pangolin/pangolin.h>
 
 namespace clean_slam {
-template <typename Derived> class Observer {
 
-public:
-  template <typename... T> void Notify(T... args) {
-    static_cast<Derived>(*this).Notify(std::forward<T>(args)...);
-  };
-};
-
-class Viewer : public Observer<Viewer> {
+class Viewer {
 
 public:
   Viewer(const ViewerSettings &viewer_settings);
   void Run();
-  void Notify(const HomogeneousMatrix &camera_pose);
+  template <typename T> void OnNotify(const T &data);
 
 private:
   ViewerSettings viewer_settings_;

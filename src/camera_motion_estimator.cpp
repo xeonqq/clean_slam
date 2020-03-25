@@ -10,6 +10,7 @@
 #include "eigen_utils.h"
 #include <cv.hpp>
 #include <opencv2/core/eigen.hpp>
+#include <third_party/spdlog/spdlog.h>
 
 namespace clean_slam {
 
@@ -33,14 +34,14 @@ PlausibleTransformation CameraMotionEstimator::Estimate(
           points_previous_frame, points_current_frame);
   auto epipolar_transformation = future.get();
   auto stop = high_resolution_clock::now();
-  std::cerr << " total runtime: "
-            << duration_cast<microseconds>(stop - start).count() << '\n';
+  spdlog::info("H + F total runtime: {}",
+               duration_cast<microseconds>(stop - start).count());
   if (IsHomography(homography_transformation, epipolar_transformation)) {
     //  if (false) {
-    std::cerr << "Choose H\n";
+    spdlog::info("Choose H");
     return homography_transformation.EstimateMotion(_camera_intrinsic);
   } else {
-    std::cerr << "Choose F\n";
+    spdlog::info("Choose F");
     return epipolar_transformation.EstimateMotion(_camera_intrinsic);
   }
 }

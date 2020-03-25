@@ -1,14 +1,15 @@
 //
 // Created by root on 1/20/20.
 //
-#include "epipolar_constraint_motion_estimator.h"
-#include "camera_motion_estimator.h"
-#include "cv_utils.h"
-#include "homography_motion_estimator.h"
 #include <chrono>
-#include <cv.hpp>
 #include <iostream>
 #include <opencv2/calib3d/calib3d.hpp>
+
+#include "camera_motion_estimator.h"
+#include "cv_utils.h"
+#include "epipolar_constraint_motion_estimator.h"
+#include "homography_motion_estimator.h"
+#include "spdlog/spdlog.h"
 
 namespace clean_slam {
 
@@ -28,10 +29,10 @@ EpipolarConstraintMotionEstimator::EstimateProjectiveTransformation(
       CalculateSymmetricTransferError(
           points_previous_frame, points_current_frame, F, fundamental_inlies);
   auto stop = high_resolution_clock::now();
-  std::cerr << "F reproject score:"
-            << epipolar_constraint_average_symmetric_transfer_error
-            << " runtime: " << duration_cast<microseconds>(stop - start).count()
-            << '\n';
+
+  spdlog::info("F reproject score: {}, runtime: {}",
+               epipolar_constraint_average_symmetric_transfer_error,
+               duration_cast<microseconds>(stop - start).count());
 
   //  std::cerr << "F :" << F <<std::endl;
   return EpipolarTransformation{

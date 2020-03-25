@@ -3,6 +3,7 @@
 //
 #include "camera_motion_estimator.h"
 #include "cv_utils.h"
+#include "spdlog/spdlog.h"
 #include <chrono>
 #include <opencv2/calib3d/calib3d.hpp>
 
@@ -23,10 +24,10 @@ HomographyMotionEstimator::EstimateProjectiveTransformation(
   const auto homography_average_symmetric_transfer_error = CalculateScore(
       points_previous_frame, points_current_frame, H, homography_inlies);
   auto stop = high_resolution_clock::now();
-  std::cerr << "H reproject score:"
-            << homography_average_symmetric_transfer_error
-            << " runtime: " << duration_cast<microseconds>(stop - start).count()
-            << '\n';
+
+  spdlog::info("H reproject score: {}, runtime: {}",
+               homography_average_symmetric_transfer_error,
+               duration_cast<microseconds>(stop - start).count());
 
   return HomographyTransformation{H, points_previous_frame,
                                   points_current_frame, homography_inlies,
