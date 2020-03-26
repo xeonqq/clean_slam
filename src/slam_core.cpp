@@ -22,6 +22,7 @@ void SlamCore::Track(const cv::Mat &image, double timestamp) {
 
   Frame current_frame{image, _orb_extractor.DetectAndUndistortKeyPoints(image)};
   HomogeneousMatrix homogeneous_matrix;
+  cv::Mat triangulated_points;
   if (!_previous_frame.GetImage().empty()) {
     const auto good_matches =
         _orb_feature_matcher.Match(current_frame, _previous_frame);
@@ -36,6 +37,7 @@ void SlamCore::Track(const cv::Mat &image, double timestamp) {
     if (_initializer.Initialize(points_previous_frame, points_current_frame)) {
       spdlog::info("Initialized");
       homogeneous_matrix = _initializer.GetHomogeneousMatrix();
+      triangulated_points = _initializer.GetTriangulatedPoints();
       //      DrawGoodMatches(image, current_frame, good_matches);
     }
 
@@ -46,7 +48,7 @@ void SlamCore::Track(const cv::Mat &image, double timestamp) {
   _trajectory.emplace_back(homogeneous_matrix, timestamp);
 
   if (_viewer)
-    _viewer->OnNotify(Content{homogeneous_matrix, cv::Mat{}});
+    _viewer->OnNotify(Content{homogeneous_matrix, triangulated_points});
   //  cv::Mat out_im;
   //  cv::drawKeypoints(image, current_frame.GetKeyPoints(), out_im);
   //  cv::imshow("image", out_im);

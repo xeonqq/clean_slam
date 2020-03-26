@@ -25,5 +25,8 @@ bool Initializer::Initialize(
 HomogeneousMatrix Initializer::GetHomogeneousMatrix() const {
   return _plausible_transformation.GetHomogeneousMatrix();
 }
+cv::Mat Initializer::GetTriangulatedPoints() const {
+  return _plausible_transformation.GetTriangulatedPoints();
+}
 
 } // namespace clean_slam

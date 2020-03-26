@@ -48,7 +48,7 @@ void DrawCamera() {
   glEnd();
 }
 
-void DrawMapPoints(cv::Mat point_3d) {
+void DrawMapPoint(cv::Mat point_3d) {
 
   glPointSize(2);
   glBegin(GL_POINTS);
@@ -56,6 +56,13 @@ void DrawMapPoints(cv::Mat point_3d) {
   glVertex3f(point_3d.at<float>(0), point_3d.at<float>(1),
              point_3d.at<float>(2));
   glEnd();
+}
+
+void DrawMapPoints(cv::Mat points_3d) {
+
+  for (int i = 0; i < points_3d.rows; ++i) {
+    DrawMapPoint(points_3d.row(i));
+  }
 }
 
 void DrawCameraWithCoordinate() {
@@ -111,6 +118,8 @@ void Viewer::Run() {
       glMultMatrixd((double *)camera_pose.data());
       DrawCameraWithCoordinate();
       glPopMatrix();
+
+      DrawMapPoints(content.triangulated_points);
     }
     pangolin::FinishFrame();
   }

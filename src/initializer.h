@@ -15,6 +15,7 @@ public:
                   const std::vector<cv::Point2f> &points_current_frame);
 
   HomogeneousMatrix GetHomogeneousMatrix() const;
+  cv::Mat GetTriangulatedPoints() const;
 
 private:
   CameraMotionEstimator _camera_motion_estimator;
