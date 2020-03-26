@@ -16,14 +16,14 @@ public:
   SlamSystem() = default;
   SlamSystem(const DatasetLoader *dataset_loader)
       : _dataset_loader{dataset_loader},
-        _viewer{dataset_loader->GetViewerSettings()} {};
+        _viewer{dataset_loader->GetViewerSettings()}, _core{&_viewer} {};
   void Run();
   const CameraTrajectory &GetCamTrajectory() const;
 
 private:
   const DatasetLoader *_dataset_loader;
-  SlamCore _core;
   Viewer _viewer;
+  SlamCore _core;
 };
 }
 

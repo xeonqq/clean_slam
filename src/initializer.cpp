@@ -14,6 +14,7 @@ bool Initializer::Initialize(
   PlausibleTransformation plausible_transformation =
       _camera_motion_estimator.Estimate(points_previous_frame,
                                         points_current_frame);
+  //  if (true) {
   if (plausible_transformation.IsGood()) {
     _plausible_transformation = plausible_transformation;
     return true;

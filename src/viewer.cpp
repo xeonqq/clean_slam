@@ -4,6 +4,7 @@
 
 #include "viewer.h"
 #include <cv.hpp>
+#include <thread>
 namespace clean_slam {
 void DrawCartisianCoordinate() {
   glLineWidth(3);
@@ -47,7 +48,7 @@ void DrawCamera() {
   glEnd();
 }
 
-void DrawMapPoint(cv::Mat point_3d) {
+void DrawMapPoints(cv::Mat point_3d) {
 
   glPointSize(2);
   glBegin(GL_POINTS);
@@ -55,6 +56,16 @@ void DrawMapPoint(cv::Mat point_3d) {
   glVertex3f(point_3d.at<float>(0), point_3d.at<float>(1),
              point_3d.at<float>(2));
   glEnd();
+}
+
+void DrawCameraWithCoordinate() {
+  DrawCamera();
+  DrawCartisianCoordinate();
+}
+
+Viewer::Viewer(const ViewerSettings &viewer_settings)
+    : _viewer_settings_(viewer_settings) {
+  //  _contents.push_back(Content{});
 }
 
 void Viewer::Run() {
@@ -69,40 +80,39 @@ void Viewer::Run() {
 
   // Define Camera Render Object (for view / scene browsing)
   pangolin::OpenGlRenderState s_cam(
-      pangolin::ProjectionMatrix(1024, 768, viewer_settings_.view_point_f,
-                                 viewer_settings_.view_point_f, 512, 389, 0.1,
+      pangolin::ProjectionMatrix(1024, 768, _viewer_settings_.view_point_f,
+                                 _viewer_settings_.view_point_f, 512, 389, 0.1,
                                  1000),
       pangolin::ModelViewLookAt(
-          viewer_settings_.view_point_x, viewer_settings_.view_point_y,
-          viewer_settings_.view_point_z, 0, 0, 0, 0.0, -1.0, pangolin::AxisY));
+          _viewer_settings_.view_point_x, _viewer_settings_.view_point_y,
+          _viewer_settings_.view_point_z, 0, 0, 0, 0.0, -1.0, pangolin::AxisY));
   pangolin::Handler3D handler(s_cam);
   pangolin::View &d_cam = pangolin::CreateDisplay()
                               .SetBounds(0.0, 1.0, 0.0, 1.0, -1024.0f / 768.0f)
                               .SetHandler(&handler);
 
   while (!pangolin::ShouldQuit()) {
+    //    Content content;
+    //    {
+    //      std::lock_guard<std::mutex> lock(_mutex);
+    //      content = _contents.front();
+    //      if (_contents.size() > 1)
+    //        _contents.pop();
+    //    }
+
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    d_cam.Activate(s_cam);
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+    d_cam.Activate(s_cam);
+    for (const auto &content : _contents) {
 
-    DrawCartisianCoordinate();
-
-    //    DrawCamera();
-    glPushMatrix();
-    Eigen::Matrix4f m;
-    m << 1, 0, 0, -1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1;
-    // eigen by default use column major, which matches opengl
-    glMultMatrixf((float *)m.data());
-    DrawCamera();
-    DrawCartisianCoordinate();
-
-    glPopMatrix();
-
-    cv::Mat p = (cv::Mat_<float>(1, 3) << 1, 2, 0);
-    DrawMapPoint(p);
+      const auto camera_pose =
+          content.homogeneous_matrix.to_homogeneous_matrix();
+      glPushMatrix();
+      glMultMatrixd((double *)camera_pose.data());
+      DrawCameraWithCoordinate();
+      glPopMatrix();
+    }
     pangolin::FinishFrame();
   }
 }
-Viewer::Viewer(const ViewerSettings &viewer_settings)
-    : viewer_settings_(viewer_settings) {}
 } // namespace clean_slam

@@ -11,6 +11,7 @@
 #include "orb_extractor.h"
 #include "orb_feature_matcher.h"
 #include "stamped_transformation.h"
+#include "viewer.h"
 #include <Eigen/Core>
 #include <opencv2/core/core.hpp>
 
@@ -21,6 +22,7 @@ using CameraTrajectory = std::vector<StampedTransformation>;
 class SlamCore {
 public:
   SlamCore() = default;
+  SlamCore(Viewer *viewer);
   void Initialize(const cv::Mat &camera_intrinsic,
                   const cv::Mat &camera_distortion_coeffs);
   void Track(const cv::Mat &image, double timestamp);
@@ -36,6 +38,7 @@ private:
   OrbFeatureMatcher _orb_feature_matcher;
   Initializer _initializer{_camera_intrinsic};
   CameraTrajectory _trajectory;
+  Viewer *_viewer;
 
 public:
   const CameraTrajectory &GetTrajectory() const;

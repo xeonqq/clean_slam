@@ -12,13 +12,16 @@
 #include <opencv2/features2d/features2d.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/opencv.hpp>
+#include <third_party/spdlog/spdlog.h>
 
 namespace clean_slam {
+
+SlamCore::SlamCore(Viewer *viewer) : _viewer(viewer) {}
 
 void SlamCore::Track(const cv::Mat &image, double timestamp) {
 
   Frame current_frame{image, _orb_extractor.DetectAndUndistortKeyPoints(image)};
-
+  HomogeneousMatrix homogeneous_matrix;
   if (!_previous_frame.GetImage().empty()) {
     const auto good_matches =
         _orb_feature_matcher.Match(current_frame, _previous_frame);
@@ -31,18 +34,19 @@ void SlamCore::Track(const cv::Mat &image, double timestamp) {
     const auto &points_previous_frame =
         matched_points_pair_undistorted.GetPointsPrevFrame();
     if (_initializer.Initialize(points_previous_frame, points_current_frame)) {
-      std::cout << "initialized: "
-                << "\n ";
-
-      _trajectory.emplace_back(_initializer.GetHomogeneousMatrix(), timestamp);
+      spdlog::info("Initialized");
+      homogeneous_matrix = _initializer.GetHomogeneousMatrix();
       //      DrawGoodMatches(image, current_frame, good_matches);
     }
 
     //    _trajectory.emplace_back(homogeneous_mat, timestamp);
   } else {
-    _trajectory.emplace_back(HomogeneousMatrix{}, timestamp);
+    homogeneous_matrix = HomogeneousMatrix{};
   }
+  _trajectory.emplace_back(homogeneous_matrix, timestamp);
 
+  if (_viewer)
+    _viewer->OnNotify(Content{homogeneous_matrix, cv::Mat{}});
   //  cv::Mat out_im;
   //  cv::drawKeypoints(image, current_frame.GetKeyPoints(), out_im);
   //  cv::imshow("image", out_im);
@@ -73,4 +77,5 @@ void SlamCore::Initialize(const cv::Mat &camera_intrinsics,
   //  _camera_distortion_coeffs = camera_distortion_coeffs;
 }
 const CameraTrajectory &SlamCore::GetTrajectory() const { return _trajectory; }
+
 } // namespace clean_slam
