@@ -5,7 +5,8 @@
 #include "initializer.h"
 namespace clean_slam {
 Initializer::Initializer(const cv::Mat &camera_instrinsics)
-    : _camera_motion_estimator{camera_instrinsics} {}
+    : _camera_motion_estimator{camera_instrinsics}, _bundle_adjustment{
+                                                        camera_instrinsics} {}
 
 bool Initializer::Initialize(
     const std::vector<cv::Point2f> &points_previous_frame,
@@ -17,8 +18,9 @@ bool Initializer::Initialize(
   //    if (true) {
   if (plausible_transformation.IsGood()) {
     _plausible_transformation = plausible_transformation;
-    return true;
     // todo: bundle adjustment
+
+    return true;
   } else
     return false;
 }

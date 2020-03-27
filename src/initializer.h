@@ -4,7 +4,9 @@
 
 #ifndef CLEAN_SLAM_SRC_INITIALIZER_H_
 #define CLEAN_SLAM_SRC_INITIALIZER_H_
+#include "bundle_adjustment.h"
 #include "camera_motion_estimator.h"
+
 namespace clean_slam {
 
 class Initializer {
@@ -21,6 +23,7 @@ public:
 private:
   CameraMotionEstimator _camera_motion_estimator;
   PlausibleTransformation _plausible_transformation;
+  BundleAdjustment _bundle_adjustment;
 };
 
 } // namespace clean_slam
