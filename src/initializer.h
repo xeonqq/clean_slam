@@ -16,6 +16,7 @@ public:
 
   HomogeneousMatrix GetHomogeneousMatrix() const;
   cv::Mat GetTriangulatedPoints() const;
+  cv::Mat GetGoodTriangulatedPoints() const;
 
 private:
   CameraMotionEstimator _camera_motion_estimator;

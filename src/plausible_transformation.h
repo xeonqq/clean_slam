@@ -24,6 +24,7 @@ public:
   const cv::Mat &GetGoodPointsMask() const;
   HomogeneousMatrix GetHomogeneousMatrix() const;
   const cv::Mat &GetTriangulatedPoints() const;
+  cv::Mat GetGoodTriangulatedPoints() const;
   bool IsGood() const;
 
 private:

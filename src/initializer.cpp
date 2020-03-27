@@ -28,5 +28,8 @@ HomogeneousMatrix Initializer::GetHomogeneousMatrix() const {
 cv::Mat Initializer::GetTriangulatedPoints() const {
   return _plausible_transformation.GetTriangulatedPoints();
 }
+cv::Mat Initializer::GetGoodTriangulatedPoints() const {
+  return _plausible_transformation.GetGoodTriangulatedPoints();
+}
 
 } // namespace clean_slam

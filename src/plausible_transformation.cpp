@@ -39,4 +39,10 @@ bool PlausibleTransformation::IsGood() const {
           ProjectiveTransformation::kPositivePointsRateThreshold *
               _triangulated_points.rows);
 }
+
+cv::Mat PlausibleTransformation::GetGoodTriangulatedPoints() const {
+  cv::Mat good_triangulated_points;
+  _triangulated_points.copyTo(good_triangulated_points, good_points_mask);
+  return good_triangulated_points;
+}
 } // namespace clean_slam
