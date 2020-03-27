@@ -59,13 +59,12 @@ PlausibleTransformation ProjectiveTransformation::ComputeTransformation(
         ValidateTriangulatedPoints(points_3d_cartisian, Rs[i], Ts[i],
                                    camera_intrinsics, good_points_masks[i]);
     points_3ds[i] = points_3d_cartisian;
-    //    std::cout << "num good points: " << good_points_numbers[i] <<
-    //    std::endl;
+    //        std::cout << "num good points: " << good_points_numbers[i] <<
+    //        std::endl;
   }
   const auto max_it =
       std::max_element(good_points_numbers.begin(), good_points_numbers.end());
   int index = std::distance(good_points_numbers.begin(), max_it);
-
   bool b = HasSimilarGood(good_points_numbers, *max_it);
   return PlausibleTransformation{Rs[index],         Ts[index],
                                  *max_it,           good_points_masks[index],
@@ -90,10 +89,8 @@ int ProjectiveTransformation::ValidateTriangulatedPoints(
   // early return to save cpu, if num of positive depth points less than 80% of
   // original points
   int num_positive_depth_points = cv::countNonZero(good_points_mask);
-  //  std::cout << "num_positive_depth_points " << num_positive_depth_points
-  //            << std::endl;
-  const float positive_ratio = 0.8f;
-  if (num_positive_depth_points < positive_ratio * triangulated_points.rows)
+  if (num_positive_depth_points <
+      kPositivePointsRateThreshold * triangulated_points.rows)
     return num_positive_depth_points;
 
   // calculate parallax

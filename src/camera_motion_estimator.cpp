@@ -37,7 +37,7 @@ PlausibleTransformation CameraMotionEstimator::Estimate(
   spdlog::info("H + F total runtime: {}",
                duration_cast<microseconds>(stop - start).count());
   if (IsHomography(homography_transformation, epipolar_transformation)) {
-    //  if (false) {
+    //      if (true) {
     spdlog::info("Choose H");
     return homography_transformation.EstimateMotion(_camera_intrinsic);
   } else {

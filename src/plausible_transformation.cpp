@@ -3,6 +3,7 @@
 //
 
 #include "plausible_transformation.h"
+#include "projective_transformation.h"
 
 namespace clean_slam {
 PlausibleTransformation::PlausibleTransformation(
@@ -33,6 +34,9 @@ const cv::Mat &PlausibleTransformation::GetTriangulatedPoints() const {
 }
 bool PlausibleTransformation::IsGood() const {
   return (!_has_similar_good) &&
-         (num_of_good_points > kNumOfGoodPointsThreshold);
+         (num_of_good_points > kNumOfGoodPointsThreshold) &&
+         (num_of_good_points >
+          ProjectiveTransformation::kPositivePointsRateThreshold *
+              _triangulated_points.rows);
 }
 } // namespace clean_slam
