@@ -93,12 +93,6 @@ Eigen::Vector2d Point2fToVector2d(const cv::Point2f &point2f) {
   return vec;
 }
 
-Eigen::Vector3d ToVector3d(const cv::Mat &point3f) {
-  Eigen::Vector3d vec(point3f.at<float>(0), point3f.at<float>(1),
-                      point3f.at<float>(2));
-  return vec;
-}
-
 cv::Mat FilterByMask(const cv::Mat &mat, const cv::Mat &mask) {
   assert(mat.rows == mask.rows);
   assert(mask.cols == 1);

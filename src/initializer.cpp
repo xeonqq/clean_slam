@@ -39,8 +39,9 @@ void Initializer::RunBundleAdjustment(
   const cv::Mat good_triangulated_points =
       _plausible_transformation.GetGoodTriangulatedPoints();
   for (int i = 0; i < good_triangulated_points.rows; ++i) {
-    const auto point = good_triangulated_points.row(i);
-    _bundle_adjustment.AddPoint3D(kPoint3DInitialId + i, ToVector3d(point));
+    const auto point_3d = good_triangulated_points.row(i);
+    _bundle_adjustment.AddPoint3D(kPoint3DInitialId + i,
+                                  ToVector3d<float>(point_3d));
   }
   const auto good_key_points_prev_frame =
       FilterByMask(matched_key_points_pair.first,
@@ -51,8 +52,8 @@ void Initializer::RunBundleAdjustment(
 
   std::array<const std::vector<cv::KeyPoint> *, 2> pose_id_to_points = {
       &good_key_points_prev_frame, &good_key_points_curr_frame};
-  for (int pose_id = 0; pose_id < pose_id_to_points.size(); ++pose_id) {
-    for (int point_id = 0; point_id < pose_id_to_points[pose_id]->size();
+  for (size_t pose_id = 0; pose_id < pose_id_to_points.size(); ++pose_id) {
+    for (size_t point_id = 0; point_id < pose_id_to_points[pose_id]->size();
          ++point_id) {
       const auto key_points = *pose_id_to_points[pose_id];
       _bundle_adjustment.AddEdge(kPoint3DInitialId + point_id, pose_id,

@@ -40,7 +40,7 @@ cv::MatExpr ZerosLike(cv::Mat m);
 
 template <typename T, typename V = uint8_t>
 std::vector<T> FilterByMask(const std::vector<T> &vec, cv::Mat mask) {
-  assert(vec.size() == mask.rows);
+  assert(static_cast<int>(vec.size()) == mask.rows);
   assert(mask.cols == 1);
   std::vector<T> result;
   for (int i = 0; i < mask.rows; ++i) {
@@ -64,7 +64,11 @@ std::vector<T> FilterByIndex(const std::vector<T> &vec,
 }
 
 Eigen::Vector2d Point2fToVector2d(const cv::Point2f &point2f);
-Eigen::Vector3d ToVector3d(const cv::Mat &point3f);
+
+template <typename T> Eigen::Vector3d ToVector3d(const cv::Mat &point3) {
+  Eigen::Vector3d vec(point3.at<T>(0), point3.at<T>(1), point3.at<T>(2));
+  return vec;
+}
 
 cv::Mat ToTransformationMatrix(const cv::Mat &R, const cv::Mat &T);
 
