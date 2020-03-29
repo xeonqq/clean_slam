@@ -33,6 +33,7 @@ private:
   int num_of_good_points;
   cv::Mat good_points_mask;
   cv::Mat _triangulated_points;
+  cv::Mat _good_triangulated_points;
   bool _has_similar_good;
   int kNumOfGoodPointsThreshold{50};
 };

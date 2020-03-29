@@ -15,7 +15,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall   -O0 -march=native")
 include(CheckCXXCompilerFlag)
 CHECK_CXX_COMPILER_FLAG("-std=c++17" COMPILER_SUPPORTS_CXX17)
 CHECK_CXX_COMPILER_FLAG("-std=c++0x" COMPILER_SUPPORTS_CXX0X)
-add_definitions(-DEIGEN_DONT_ALIGN) # workaround until eigen aligenment problem is solved
+add_compile_definitions(EIGEN_MAX_STATIC_ALIGN_BYTES=0) # workaround until eigen aligenment problem is solved
 if (COMPILER_SUPPORTS_CXX17)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
     add_definitions(-DCOMPILEDWITHC17)
@@ -31,8 +31,9 @@ endif ()
 LIST(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake_modules)
 
 add_subdirectory (src)
-add_subdirectory (third_party/googletest)
-enable_testing ()
+add_subdirectory(third_party/googletest)
+add_subdirectory(third_party/g2o)
+enable_testing()
 add_subdirectory (test)
 
 

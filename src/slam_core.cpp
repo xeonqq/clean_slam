@@ -24,9 +24,9 @@ void SlamCore::Track(const cv::Mat &image, double timestamp) {
   HomogeneousMatrix homogeneous_matrix;
   cv::Mat good_triangulated_points;
   if (!_previous_frame.GetImage().empty()) {
-    const auto good_matches =
+    const std::vector<cv::DMatch> good_matches =
         _orb_feature_matcher.Match(current_frame, _previous_frame);
-    const auto matched_points_pair_undistorted =
+    const PointsPair matched_points_pair_undistorted =
         OrbFeatureMatcher::GetMatchedPointsPairUndistorted(
             current_frame, _previous_frame, good_matches);
 
@@ -38,10 +38,12 @@ void SlamCore::Track(const cv::Mat &image, double timestamp) {
       spdlog::info("Initialized");
       homogeneous_matrix = _initializer.GetHomogeneousMatrix();
       good_triangulated_points = _initializer.GetGoodTriangulatedPoints();
+      _initializer.RunBundleAdjustment(
+          OrbFeatureMatcher::GetMatchedKeyPointsPairUndistorted(
+              current_frame, _previous_frame, good_matches));
       //      DrawGoodMatches(image, current_frame, good_matches);
     }
 
-    //    _trajectory.emplace_back(homogeneous_mat, timestamp);
   } else {
     homogeneous_matrix = HomogeneousMatrix{};
   }

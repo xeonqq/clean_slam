@@ -9,13 +9,11 @@
 
 namespace clean_slam {
 
-
-
-TEST(SlamSystemHomographyTest, Run) {
+TEST(SlamSystemHomographyTest, DISABLED_Run) {
   // arrange
   DatasetLoader dataset_loader;
-  dataset_loader.LoadImages(
-      TEST_DIR + std::string("/huawei_640x480"), CONFIG_DIR+std::string("/Huawei.yaml"));
+  dataset_loader.LoadImages(TEST_DIR + std::string("/huawei_640x480"),
+                            CONFIG_DIR + std::string("/Huawei.yaml"));
   SlamSystem system{&dataset_loader};
 
   // act

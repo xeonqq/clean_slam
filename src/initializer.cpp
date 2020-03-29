@@ -3,6 +3,9 @@
 //
 
 #include "initializer.h"
+#include "cv_utils.h"
+#include <opencv2/core/eigen.hpp>
+
 namespace clean_slam {
 Initializer::Initializer(const cv::Mat &camera_instrinsics)
     : _camera_motion_estimator{camera_instrinsics}, _bundle_adjustment{
@@ -24,6 +27,41 @@ bool Initializer::Initialize(
   } else
     return false;
 }
+
+void Initializer::RunBundleAdjustment(
+    const KeyPointsPair &matched_key_points_pair) {
+
+  _bundle_adjustment.AddPose(0, g2o::SE3Quat{}, true);
+  _bundle_adjustment.AddPose(1,
+                             _plausible_transformation.GetHomogeneousMatrix());
+
+  const int kPoint3DInitialId = 2;
+  const cv::Mat good_triangulated_points =
+      _plausible_transformation.GetGoodTriangulatedPoints();
+  for (int i = 0; i < good_triangulated_points.rows; ++i) {
+    const auto point = good_triangulated_points.row(i);
+    _bundle_adjustment.AddPoint3D(kPoint3DInitialId + i, ToVector3d(point));
+  }
+  const auto good_key_points_prev_frame =
+      FilterByMask(matched_key_points_pair.first,
+                   _plausible_transformation.GetGoodPointsMask());
+  const auto good_key_points_curr_frame =
+      FilterByMask(matched_key_points_pair.second,
+                   _plausible_transformation.GetGoodPointsMask());
+
+  std::array<const std::vector<cv::KeyPoint> *, 2> pose_id_to_points = {
+      &good_key_points_prev_frame, &good_key_points_curr_frame};
+  for (int pose_id = 0; pose_id < pose_id_to_points.size(); ++pose_id) {
+    for (int point_id = 0; point_id < pose_id_to_points[pose_id]->size();
+         ++point_id) {
+      const auto key_points = *pose_id_to_points[pose_id];
+      _bundle_adjustment.AddEdge(kPoint3DInitialId + point_id, pose_id,
+                                 Point2fToVector2d(key_points[point_id].pt));
+    }
+  }
+  _bundle_adjustment.Optimize(20, true);
+}
+
 HomogeneousMatrix Initializer::GetHomogeneousMatrix() const {
   return _plausible_transformation.GetHomogeneousMatrix();
 }

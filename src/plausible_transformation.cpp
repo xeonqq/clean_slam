@@ -3,6 +3,7 @@
 //
 
 #include "plausible_transformation.h"
+#include "cv_utils.h"
 #include "projective_transformation.h"
 
 namespace clean_slam {
@@ -13,7 +14,11 @@ PlausibleTransformation::PlausibleTransformation(
     : r(r), t(t), num_of_good_points(num_of_good_points),
       good_points_mask(good_points_mask),
       _triangulated_points(triangulated_points),
-      _has_similar_good(has_similar_good) {}
+      _has_similar_good(has_similar_good) {
+
+  _good_triangulated_points =
+      FilterByMask(_triangulated_points, good_points_mask);
+}
 
 const cv::Mat &PlausibleTransformation::R() const { return r; }
 
@@ -41,8 +46,6 @@ bool PlausibleTransformation::IsGood() const {
 }
 
 cv::Mat PlausibleTransformation::GetGoodTriangulatedPoints() const {
-  cv::Mat good_triangulated_points;
-  _triangulated_points.copyTo(good_triangulated_points, good_points_mask);
-  return good_triangulated_points;
+  return _good_triangulated_points;
 }
 } // namespace clean_slam

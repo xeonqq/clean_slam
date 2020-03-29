@@ -15,8 +15,8 @@ public:
   BundleAdjustment(const cv::Mat &camera_intrinsics);
   void AddPose(int id, const g2o::SE3Quat &pose, bool fixed = false);
 
-  void AddPoint3D(int id, const Eigen::Vector3d &point_3d, bool fixed,
-                  bool marginalized);
+  void AddPoint3D(int id, const Eigen::Vector3d &point_3d, bool fixed = false,
+                  bool marginalized = true);
 
   void AddEdge(int point_3d_id, int pose_id, const Eigen::Vector2d &measurement,
                const Eigen::Matrix2d &information = Eigen::Matrix2d::Identity(),

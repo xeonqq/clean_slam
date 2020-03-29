@@ -6,6 +6,7 @@
 #define CLEAN_SLAM_SRC_INITIALIZER_H_
 #include "bundle_adjustment.h"
 #include "camera_motion_estimator.h"
+#include "orb_feature_matcher.h"
 
 namespace clean_slam {
 
@@ -15,6 +16,7 @@ public:
   Initializer(const cv::Mat &camera_instrinsics);
   bool Initialize(const std::vector<cv::Point2f> &points_previous_frame,
                   const std::vector<cv::Point2f> &points_current_frame);
+  void RunBundleAdjustment(const KeyPointsPair &matched_key_points_pair);
 
   HomogeneousMatrix GetHomogeneousMatrix() const;
   cv::Mat GetTriangulatedPoints() const;

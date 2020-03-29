@@ -86,4 +86,37 @@ cv::Mat SumColumns(const cv::Mat &m) {
   }
   return result;
 }
+
+Eigen::Vector2d Point2fToVector2d(const cv::Point2f &point2f) {
+  Eigen::Vector2d vec;
+  vec << static_cast<double>(point2f.x), static_cast<double>(point2f.y);
+  return vec;
+}
+
+Eigen::Vector3d ToVector3d(const cv::Mat &point3f) {
+  Eigen::Vector3d vec(point3f.at<float>(0), point3f.at<float>(1),
+                      point3f.at<float>(2));
+  return vec;
+}
+
+cv::Mat FilterByMask(const cv::Mat &mat, const cv::Mat &mask) {
+  assert(mat.rows == mask.rows);
+  assert(mask.cols == 1);
+  const int num_rows = cv::countNonZero(mask);
+  cv::Mat result = cv::Mat(num_rows, mat.cols, mat.type());
+  int j = 0;
+  for (int i = 0; i < mask.rows; ++i) {
+    if (mask.at<uint8_t>(i) == 1) {
+      mat.row(j).copyTo(result.row(j));
+      ++j;
+    }
+  }
+  assert(num_rows == j);
+  return result;
+}
+
+std::ostream &operator<<(std::ostream &os, const cv::KeyPoint &v) {
+  os << v.pt << " octave: " << v.octave;
+  return os;
+}
 } // namespace clean_slam

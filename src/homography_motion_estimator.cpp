@@ -84,6 +84,7 @@ HomographyTransformation::EstimateMotion(const cv::Mat &camera_intrinsics) {
 
   PlausibleTransformation plausible_transformation =
       ComputeTransformation(camera_intrinsics, Rs, Ts);
+
   return plausible_transformation;
 }
 } // namespace clean_slam

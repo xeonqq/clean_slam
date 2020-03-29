@@ -62,16 +62,28 @@ PointsPair OrbFeatureMatcher::GetMatchedPointsPair(
 PointsPair OrbFeatureMatcher::GetMatchedPointsPairUndistorted(
     const Frame &curr_frame, const Frame &prev_frame,
     const std::vector<cv::DMatch> &matches) {
-  std::vector<cv::Point2f> key_pixels_curr_frame;
+  std::vector<cv::Point2f> key_points_curr_frame;
   cv::KeyPoint::convert(curr_frame.GetKeyPointsUndistorted(),
-                        key_pixels_curr_frame, QueryIdxs{}(matches));
+                        key_points_curr_frame, QueryIdxs{}(matches));
 
-  std::vector<cv::Point2f> key_pixels_prev_frame;
+  std::vector<cv::Point2f> key_points_prev_frame;
   cv::KeyPoint::convert(prev_frame.GetKeyPointsUndistorted(),
-                        key_pixels_prev_frame, TrainIdxs{}(matches));
+                        key_points_prev_frame, TrainIdxs{}(matches));
 
-  return PointsPair{std::move(key_pixels_curr_frame),
-                    std::move(key_pixels_prev_frame)};
+  return PointsPair{std::move(key_points_curr_frame),
+                    std::move(key_points_prev_frame)};
+}
+
+KeyPointsPair OrbFeatureMatcher::GetMatchedKeyPointsPairUndistorted(
+    const Frame &curr_frame, const Frame &prev_frame,
+    const std::vector<cv::DMatch> &matches) {
+  auto matched_key_points_curr =
+      FilterByIndex(curr_frame.GetKeyPointsUndistorted(), QueryIdxs{}(matches));
+  auto matched_key_points_prev =
+      FilterByIndex(curr_frame.GetKeyPointsUndistorted(), TrainIdxs{}(matches));
+
+  return {std::move(matched_key_points_prev),
+          std::move(matched_key_points_curr)};
 }
 
 } // namespace clean_slam

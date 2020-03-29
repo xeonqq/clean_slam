@@ -8,6 +8,8 @@
 #include "frame.h"
 
 namespace clean_slam {
+using KeyPointsPair =
+    std::pair<std::vector<cv::KeyPoint>, std::vector<cv::KeyPoint>>;
 
 class PointsPair {
 public:
@@ -44,6 +46,11 @@ public:
   GetMatchedPointsPairUndistorted(const Frame &curr_frame,
                                   const Frame &prev_frame,
                                   const std::vector<cv::DMatch> &matches);
+
+  static KeyPointsPair
+  GetMatchedKeyPointsPairUndistorted(const Frame &curr_frame,
+                                     const Frame &prev_frame,
+                                     const std::vector<cv::DMatch> &matches);
 
 private:
   std::vector<cv::DMatch>

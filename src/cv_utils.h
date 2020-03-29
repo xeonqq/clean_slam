@@ -5,6 +5,7 @@
 #ifndef CLEAN_SLAM_SRC_CV_UTILS_H_
 #define CLEAN_SLAM_SRC_CV_UTILS_H_
 
+#include <Eigen/Dense>
 #include <iostream>
 #include <opencv2/imgcodecs.hpp>
 #include <string>
@@ -42,20 +43,36 @@ std::vector<T> FilterByMask(const std::vector<T> &vec, cv::Mat mask) {
   assert(vec.size() == mask.rows);
   assert(mask.cols == 1);
   std::vector<T> result;
-  for (size_t i = 0; i < mask.rows; ++i) {
+  for (int i = 0; i < mask.rows; ++i) {
     if (mask.at<V>(i) == 1) {
       result.push_back(vec[i]);
     }
   }
   return result;
 }
+
+cv::Mat FilterByMask(const cv::Mat &mat, const cv::Mat &mask);
+
+template <typename T>
+std::vector<T> FilterByIndex(const std::vector<T> &vec,
+                             const std::vector<int> &indexes) {
+  std::vector<T> result;
+  for (auto index : indexes) {
+    result.push_back(vec[index]);
+  }
+  return result;
+}
+
+Eigen::Vector2d Point2fToVector2d(const cv::Point2f &point2f);
+Eigen::Vector3d ToVector3d(const cv::Mat &point3f);
+
 cv::Mat ToTransformationMatrix(const cv::Mat &R, const cv::Mat &T);
 
 cv::Mat NormPoints(const cv::Mat &m);
 cv::Mat SumChannels(const cv::Mat &m);
 cv::Mat SumColumns(const cv::Mat &m);
 
-template <class T>
+template <typename T>
 std::ostream &operator<<(std::ostream &os, const std::vector<T> &values) {
   os << "[";
   for (const auto &v : values) {
@@ -64,6 +81,8 @@ std::ostream &operator<<(std::ostream &os, const std::vector<T> &values) {
   os << "]";
   return os;
 }
+
+std::ostream &operator<<(std::ostream &os, const cv::KeyPoint &v);
 
 } // namespace clean_slam
 #endif // CLEAN_SLAM_SRC_CV_UTILS_H_
