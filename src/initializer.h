@@ -6,6 +6,7 @@
 #define CLEAN_SLAM_SRC_INITIALIZER_H_
 #include "bundle_adjustment.h"
 #include "camera_motion_estimator.h"
+#include "octave_sigma_scales.h"
 #include "orb_feature_matcher.h"
 
 namespace clean_slam {
@@ -26,6 +27,7 @@ private:
   CameraMotionEstimator _camera_motion_estimator;
   PlausibleTransformation _plausible_transformation;
   BundleAdjustment _bundle_adjustment;
+  const OctaveSigmaScales _octave_sigma_scales;
 };
 
 } // namespace clean_slam

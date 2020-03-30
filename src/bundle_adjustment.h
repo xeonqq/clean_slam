@@ -24,6 +24,8 @@ public:
 
   void Optimize(int iterations = 20, bool verbose = false);
 
+  const g2o::SE3Quat &GetOptimizedPose() const;
+
 private:
   g2o::SparseOptimizer _optimizer;
   const cv::Mat &_camera_intrinsics;

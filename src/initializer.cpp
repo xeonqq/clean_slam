@@ -5,6 +5,7 @@
 #include "initializer.h"
 #include "cv_utils.h"
 #include <opencv2/core/eigen.hpp>
+#include <third_party/spdlog/spdlog.h>
 
 namespace clean_slam {
 Initializer::Initializer(const cv::Mat &camera_instrinsics)
@@ -56,11 +57,16 @@ void Initializer::RunBundleAdjustment(
     for (size_t point_id = 0; point_id < pose_id_to_points[pose_id]->size();
          ++point_id) {
       const auto key_points = *pose_id_to_points[pose_id];
-      _bundle_adjustment.AddEdge(kPoint3DInitialId + point_id, pose_id,
-                                 Point2fToVector2d(key_points[point_id].pt));
+      _bundle_adjustment.AddEdge(
+          kPoint3DInitialId + point_id, pose_id,
+          Point2fToVector2d(key_points[point_id].pt),
+          Eigen::Matrix2d::Identity() *
+              _octave_sigma_scales[key_points[point_id].octave]);
     }
   }
   _bundle_adjustment.Optimize(20, true);
+  //  spdlog::info("pose after bundle adjustment: {}", );
+  std::cerr << _bundle_adjustment.GetOptimizedPose() << std::endl;
 }
 
 HomogeneousMatrix Initializer::GetHomogeneousMatrix() const {

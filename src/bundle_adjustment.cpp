@@ -73,6 +73,11 @@ void BundleAdjustment::Optimize(int iterations, bool verbose) {
   _optimizer.optimize(iterations);
 }
 
+const g2o::SE3Quat &BundleAdjustment::GetOptimizedPose() const {
+  const g2o::VertexSE3Expmap *vertex_SE3 =
+      static_cast<const g2o::VertexSE3Expmap *>(_optimizer.vertex(1));
+  return vertex_SE3->estimate();
+}
 //    def vertex_estimate(self, vertex_id):
 //        vertex = self._optimizer.vertex(vertex_id)
 //        return vertex.estimate()
