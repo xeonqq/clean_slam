@@ -34,14 +34,30 @@ void SlamCore::Track(const cv::Mat &image, double timestamp) {
         matched_points_pair_undistorted.GetPointsCurrFrame();
     const auto &points_previous_frame =
         matched_points_pair_undistorted.GetPointsPrevFrame();
+
     if (_initializer.Initialize(points_previous_frame, points_current_frame)) {
       spdlog::info("Initialized");
-      homogeneous_matrix = _initializer.GetHomogeneousMatrix();
-      good_triangulated_points = _initializer.GetGoodTriangulatedPoints();
-      _initializer.RunBundleAdjustment(
+      const auto plausible_transformation =
+          _initializer.GetPlausibleTransformation();
+
+      const auto key_points_pairs =
           OrbFeatureMatcher::GetMatchedKeyPointsPairUndistorted(
-              current_frame, _previous_frame, good_matches));
+              current_frame, _previous_frame, good_matches);
+      const auto good_key_points_prev_frame = FilterByMask(
+          key_points_pairs.first, plausible_transformation.GetGoodPointsMask());
+      const auto good_key_points_curr_frame =
+          FilterByMask(key_points_pairs.second,
+                       plausible_transformation.GetGoodPointsMask());
+      KeyPointsPair good_key_points_pair = {
+          std::move(good_key_points_prev_frame),
+          std::move(good_key_points_curr_frame)};
+
+      OptimizedResult optimized_result = _optimizer.Optimize(
+          plausible_transformation.GetHomogeneousMatrix(), good_key_points_pair,
+          plausible_transformation.GetGoodTriangulatedPoints());
       //      DrawGoodMatches(image, current_frame, good_matches);
+      homogeneous_matrix = optimized_result.optimized_Tcw;
+      good_triangulated_points = optimized_result.optimized_points;
     }
 
   } else {

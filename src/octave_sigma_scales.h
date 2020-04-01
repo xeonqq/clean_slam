@@ -10,7 +10,8 @@ namespace clean_slam {
 
 class OctaveSigmaScales {
 public:
-  constexpr OctaveSigmaScales() : _octave_sigma_scale{} {
+  constexpr OctaveSigmaScales(float per_octave_scale)
+      : kOctaveBasicScale{per_octave_scale}, _octave_sigma_scale{} {
 
     _octave_sigma_scale[0] = 1;
     for (size_t i = 1; i < _octave_sigma_scale.size(); ++i) {
@@ -25,8 +26,8 @@ public:
   float operator[](size_t i) const;
 
 private:
+  const float kOctaveBasicScale;
   std::array<float, 8> _octave_sigma_scale;
-  const float kOctaveBasicScale = 1.2;
 };
 
 } // namespace clean_slam

@@ -39,7 +39,7 @@ struct TrainIdxs {
 cv::MatExpr ZerosLike(cv::Mat m);
 
 template <typename T, typename V = uint8_t>
-std::vector<T> FilterByMask(const std::vector<T> &vec, cv::Mat mask) {
+std::vector<T> FilterByMask(const std::vector<T> &vec, const cv::Mat &mask) {
   assert(static_cast<int>(vec.size()) == mask.rows);
   assert(mask.cols == 1);
   std::vector<T> result;

@@ -8,6 +8,7 @@
 #include "camera_motion_estimator.h"
 #include "frame.h"
 #include "initializer.h"
+#include "optimizer.h"
 #include "orb_extractor.h"
 #include "orb_feature_matcher.h"
 #include "stamped_transformation.h"
@@ -39,6 +40,7 @@ private:
   Initializer _initializer{_camera_intrinsic};
   CameraTrajectory _trajectory;
   Viewer *_viewer;
+  Optimizer _optimizer{_camera_intrinsic};
 
 public:
   const CameraTrajectory &GetTrajectory() const;

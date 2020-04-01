@@ -80,7 +80,7 @@ KeyPointsPair OrbFeatureMatcher::GetMatchedKeyPointsPairUndistorted(
   auto matched_key_points_curr =
       FilterByIndex(curr_frame.GetKeyPointsUndistorted(), QueryIdxs{}(matches));
   auto matched_key_points_prev =
-      FilterByIndex(curr_frame.GetKeyPointsUndistorted(), TrainIdxs{}(matches));
+      FilterByIndex(prev_frame.GetKeyPointsUndistorted(), TrainIdxs{}(matches));
 
   return {std::move(matched_key_points_prev),
           std::move(matched_key_points_curr)};

@@ -17,17 +17,15 @@ public:
   Initializer(const cv::Mat &camera_instrinsics);
   bool Initialize(const std::vector<cv::Point2f> &points_previous_frame,
                   const std::vector<cv::Point2f> &points_current_frame);
-  void RunBundleAdjustment(const KeyPointsPair &matched_key_points_pair);
 
   HomogeneousMatrix GetHomogeneousMatrix() const;
   cv::Mat GetTriangulatedPoints() const;
   const std::vector<Eigen::Vector3d> &GetGoodTriangulatedPoints() const;
+  const PlausibleTransformation &GetPlausibleTransformation() const;
 
 private:
   CameraMotionEstimator _camera_motion_estimator;
   PlausibleTransformation _plausible_transformation;
-  BundleAdjustment _bundle_adjustment;
-  const OctaveSigmaScales _octave_sigma_scales;
 };
 
 } // namespace clean_slam
