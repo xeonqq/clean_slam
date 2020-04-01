@@ -51,6 +51,9 @@ std::vector<T> FilterByMask(const std::vector<T> &vec, cv::Mat mask) {
   return result;
 }
 
+std::vector<Eigen::Vector3d> ToStdVectorByMask(const cv::Mat &mat,
+                                               const cv::Mat &mask);
+
 cv::Mat FilterByMask(const cv::Mat &mat, const cv::Mat &mask);
 
 template <typename T>

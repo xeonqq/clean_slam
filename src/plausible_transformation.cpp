@@ -17,7 +17,7 @@ PlausibleTransformation::PlausibleTransformation(
       _has_similar_good(has_similar_good) {
 
   _good_triangulated_points =
-      FilterByMask(_triangulated_points, good_points_mask);
+      ToStdVectorByMask(_triangulated_points, good_points_mask);
 }
 
 const cv::Mat &PlausibleTransformation::R() const { return r; }
@@ -45,7 +45,9 @@ bool PlausibleTransformation::IsGood() const {
               _triangulated_points.rows);
 }
 
-cv::Mat PlausibleTransformation::GetGoodTriangulatedPoints() const {
+const std::vector<Eigen::Vector3d> &
+PlausibleTransformation::GetGoodTriangulatedPoints() const {
   return _good_triangulated_points;
 }
+
 } // namespace clean_slam

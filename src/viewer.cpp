@@ -48,20 +48,19 @@ void DrawCamera() {
   glEnd();
 }
 
-void DrawMapPoint(cv::Mat point_3d) {
+void DrawMapPoint(const Eigen::Vector3d &point_3d) {
 
   glPointSize(2);
   glBegin(GL_POINTS);
   glColor3f(1.0, 0.0, 0.0);
-  glVertex3f(point_3d.at<float>(0), point_3d.at<float>(1),
-             point_3d.at<float>(2));
+  glVertex3f(point_3d[0], point_3d[1], point_3d[2]);
   glEnd();
 }
 
-void DrawMapPoints(cv::Mat points_3d) {
+void DrawMapPoints(const std::vector<Eigen::Vector3d> &points_3d) {
 
-  for (int i = 0; i < points_3d.rows; ++i) {
-    DrawMapPoint(points_3d.row(i));
+  for (const auto &point_3d : points_3d) {
+    DrawMapPoint(point_3d);
   }
 }
 

@@ -21,7 +21,7 @@ public:
 
   HomogeneousMatrix GetHomogeneousMatrix() const;
   cv::Mat GetTriangulatedPoints() const;
-  cv::Mat GetGoodTriangulatedPoints() const;
+  const std::vector<Eigen::Vector3d> &GetGoodTriangulatedPoints() const;
 
 private:
   CameraMotionEstimator _camera_motion_estimator;

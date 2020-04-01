@@ -14,7 +14,7 @@ namespace clean_slam {
 
 struct Content {
   HomogeneousMatrix homogeneous_matrix;
-  cv::Mat triangulated_points;
+  std::vector<Eigen::Vector3d> triangulated_points;
 };
 
 class Viewer {

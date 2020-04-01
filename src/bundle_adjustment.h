@@ -24,7 +24,8 @@ public:
 
   void Optimize(int iterations = 20, bool verbose = false);
 
-  const g2o::SE3Quat &GetOptimizedPose() const;
+  const g2o::SE3Quat &GetOptimizedPose(int id) const;
+  const Eigen::Vector3d &GetOptimizedPoint(int id) const;
 
 private:
   g2o::SparseOptimizer _optimizer;

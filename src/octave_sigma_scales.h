@@ -26,7 +26,7 @@ public:
 
 private:
   std::array<float, 8> _octave_sigma_scale;
-  const float kOctaveBasicScale = 1.2f;
+  const float kOctaveBasicScale = 1.2;
 };
 
 } // namespace clean_slam

@@ -22,8 +22,6 @@ bool Initializer::Initialize(
   //    if (true) {
   if (plausible_transformation.IsGood()) {
     _plausible_transformation = plausible_transformation;
-    // todo: bundle adjustment
-
     return true;
   } else
     return false;
@@ -33,16 +31,15 @@ void Initializer::RunBundleAdjustment(
     const KeyPointsPair &matched_key_points_pair) {
 
   _bundle_adjustment.AddPose(0, g2o::SE3Quat{}, true);
-  _bundle_adjustment.AddPose(1,
-                             _plausible_transformation.GetHomogeneousMatrix());
+  _bundle_adjustment.AddPose(
+      1, _plausible_transformation.GetHomogeneousMatrix(), false);
 
   const int kPoint3DInitialId = 2;
-  const cv::Mat good_triangulated_points =
+  const auto &good_triangulated_points =
       _plausible_transformation.GetGoodTriangulatedPoints();
-  for (int i = 0; i < good_triangulated_points.rows; ++i) {
-    const auto point_3d = good_triangulated_points.row(i);
+  for (size_t i = 0; i < good_triangulated_points.size(); ++i) {
     _bundle_adjustment.AddPoint3D(kPoint3DInitialId + i,
-                                  ToVector3d<float>(point_3d));
+                                  good_triangulated_points[i]);
   }
   const auto good_key_points_prev_frame =
       FilterByMask(matched_key_points_pair.first,
@@ -66,7 +63,23 @@ void Initializer::RunBundleAdjustment(
   }
   _bundle_adjustment.Optimize(20, true);
   //  spdlog::info("pose after bundle adjustment: {}", );
-  std::cerr << _bundle_adjustment.GetOptimizedPose() << std::endl;
+  const auto optimized_pose = _bundle_adjustment.GetOptimizedPose(1);
+  std::cerr << optimized_pose << std::endl;
+  std::vector<Eigen::Vector3d> optimized_points;
+  for (size_t point_id = 0; point_id < good_triangulated_points.size();
+       ++point_id) {
+    optimized_points.push_back(
+        _bundle_adjustment.GetOptimizedPoint(point_id + kPoint3DInitialId));
+  }
+  const auto rotation =
+      optimized_pose.to_homogeneous_matrix().block<3, 3>(0, 0);
+  const auto euler_angles = rotation.eulerAngles(0, 1, 2);
+  //
+  std::cout << "euler angle calculated: \n";
+  std::cout << euler_angles << std::endl;
+
+  //  std::cerr << optimized_points << std::endl;
+  //  std::cerr << good_triangulated_points << std::endl;
 }
 
 HomogeneousMatrix Initializer::GetHomogeneousMatrix() const {
@@ -75,7 +88,8 @@ HomogeneousMatrix Initializer::GetHomogeneousMatrix() const {
 cv::Mat Initializer::GetTriangulatedPoints() const {
   return _plausible_transformation.GetTriangulatedPoints();
 }
-cv::Mat Initializer::GetGoodTriangulatedPoints() const {
+const std::vector<Eigen::Vector3d> &
+Initializer::GetGoodTriangulatedPoints() const {
   return _plausible_transformation.GetGoodTriangulatedPoints();
 }
 

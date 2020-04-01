@@ -24,7 +24,7 @@ public:
   const cv::Mat &GetGoodPointsMask() const;
   HomogeneousMatrix GetHomogeneousMatrix() const;
   const cv::Mat &GetTriangulatedPoints() const;
-  cv::Mat GetGoodTriangulatedPoints() const;
+  const std::vector<Eigen::Vector3d> &GetGoodTriangulatedPoints() const;
   bool IsGood() const;
 
 private:
@@ -33,7 +33,9 @@ private:
   int num_of_good_points;
   cv::Mat good_points_mask;
   cv::Mat _triangulated_points;
-  cv::Mat _good_triangulated_points;
+  std::vector<Eigen::Vector3d> _good_triangulated_points;
+
+private:
   bool _has_similar_good;
   int kNumOfGoodPointsThreshold{50};
 };

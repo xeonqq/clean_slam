@@ -101,7 +101,7 @@ cv::Mat FilterByMask(const cv::Mat &mat, const cv::Mat &mask) {
   int j = 0;
   for (int i = 0; i < mask.rows; ++i) {
     if (mask.at<uint8_t>(i) == 1) {
-      mat.row(j).copyTo(result.row(j));
+      mat.row(i).copyTo(result.row(j));
       ++j;
     }
   }
@@ -112,5 +112,18 @@ cv::Mat FilterByMask(const cv::Mat &mat, const cv::Mat &mask) {
 std::ostream &operator<<(std::ostream &os, const cv::KeyPoint &v) {
   os << v.pt << " octave: " << v.octave;
   return os;
+}
+std::vector<Eigen::Vector3d> ToStdVectorByMask(const cv::Mat &mat,
+                                               const cv::Mat &mask) {
+  assert(mat.rows == mask.rows);
+  assert(mask.cols == 1);
+  std::vector<Eigen::Vector3d> result;
+  result.reserve(mask.rows);
+  for (int i = 0; i < mask.rows; ++i) {
+    if (mask.at<uint8_t>(i) == 1) {
+      result.push_back(ToVector3d<float>(mat.row(i)));
+    }
+  }
+  return result;
 }
 } // namespace clean_slam

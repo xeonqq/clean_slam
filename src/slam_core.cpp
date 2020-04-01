@@ -22,7 +22,7 @@ void SlamCore::Track(const cv::Mat &image, double timestamp) {
 
   Frame current_frame{image, _orb_extractor.DetectAndUndistortKeyPoints(image)};
   HomogeneousMatrix homogeneous_matrix;
-  cv::Mat good_triangulated_points;
+  std::vector<Eigen::Vector3d> good_triangulated_points;
   if (!_previous_frame.GetImage().empty()) {
     const std::vector<cv::DMatch> good_matches =
         _orb_feature_matcher.Match(current_frame, _previous_frame);
