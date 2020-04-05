@@ -4,7 +4,6 @@
 
 #include "viewer.h"
 #include <cv.hpp>
-#include <thread>
 namespace clean_slam {
 void DrawCartisianCoordinate() {
   glLineWidth(3);
@@ -96,7 +95,7 @@ void Viewer::Run() {
   pangolin::View &d_cam = pangolin::CreateDisplay()
                               .SetBounds(0.0, 1.0, 0.0, 1.0, -1024.0f / 768.0f)
                               .SetHandler(&handler);
-
+  cv::namedWindow("Clean-SLAM: Current Frame");
   while (!pangolin::ShouldQuit()) {
     //    Content content;
     //    {
@@ -121,6 +120,14 @@ void Viewer::Run() {
       DrawMapPoints(content.triangulated_points);
     }
     pangolin::FinishFrame();
+    if (!_contents.empty()) {
+      const auto current_frame = _contents.back().current_frame;
+      cv::Mat img_with_key_points;
+      cv::drawKeypoints(current_frame.GetImage(), current_frame.GetKeyPoints(),
+                        img_with_key_points);
+      cv::imshow("Clean-SLAM: Current Frame", img_with_key_points);
+      cv::waitKey(_viewer_settings_.display_interval_ms);
+    }
   }
 }
 } // namespace clean_slam

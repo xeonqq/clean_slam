@@ -62,7 +62,7 @@ void DatasetLoader::LoadFreiburgDataset(const std::string &dataset_folder_name,
 
 void DatasetLoader::LoadCameraIntrinsics(const std::string &path_to_yaml) {
   cv::FileStorage fSettings(path_to_yaml, cv::FileStorage::READ);
-  if (fSettings.isOpened()){
+  if (fSettings.isOpened()) {
 
     _camera_intrinsics = (cv::Mat_<double>(3, 3) << fSettings["Camera.fx"], 0,
                           fSettings["Camera.cx"], 0, fSettings["Camera.fy"],
@@ -83,6 +83,8 @@ void DatasetLoader::LoadViewerSettings(const std::string &path_to_yaml) {
     _viewer_settings.view_point_y = fSettings["Viewer.ViewpointY"];
     _viewer_settings.view_point_z = fSettings["Viewer.ViewpointZ"];
     _viewer_settings.view_point_f = fSettings["Viewer.ViewpointF"];
+    _viewer_settings.display_interval_ms =
+        1.0f / static_cast<float>(fSettings["Camera.fps"]) * 1000.f;
   } else {
     throw std::runtime_error("Could not open file: " + path_to_yaml);
   }

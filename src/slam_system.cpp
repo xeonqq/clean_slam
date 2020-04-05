@@ -26,7 +26,7 @@ void SlamSystem::Run() {
     for (const auto &image_file : _dataset_loader->GetImageFiles()) {
 
       using namespace std::chrono;
-      if (i >= 22 && i <= 23) {
+      if (i >= 0 && i <= 23) {
 
         auto start = high_resolution_clock::now();
         auto im = cv::imread(_dataset_loader->GetDatasetFolder() + '/' +
@@ -42,6 +42,7 @@ void SlamSystem::Run() {
       //        break;
     }
     _viewer_thread.join();
+    cv::destroyAllWindows();
   }
 }
 } // namespace clean_slam

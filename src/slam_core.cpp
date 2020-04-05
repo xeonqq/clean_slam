@@ -55,7 +55,7 @@ void SlamCore::Track(const cv::Mat &image, double timestamp) {
       OptimizedResult optimized_result = _optimizer.Optimize(
           plausible_transformation.GetHomogeneousMatrix(), good_key_points_pair,
           plausible_transformation.GetGoodTriangulatedPoints());
-      //      DrawGoodMatches(image, current_frame, good_matches);
+      //      DrawGoodMatches(current_frame, good_matches);
       homogeneous_matrix = optimized_result.optimized_Tcw;
       good_triangulated_points = optimized_result.optimized_points;
       //      std::cerr << "before: \n";
@@ -73,7 +73,8 @@ void SlamCore::Track(const cv::Mat &image, double timestamp) {
   _trajectory.emplace_back(homogeneous_matrix, timestamp);
 
   if (_viewer)
-    _viewer->OnNotify(Content{homogeneous_matrix, good_triangulated_points});
+    _viewer->OnNotify(
+        Content{homogeneous_matrix, good_triangulated_points, current_frame});
   //  cv::Mat out_im;
   //  cv::drawKeypoints(image, current_frame.GetKeyPoints(), out_im);
   //  cv::imshow("image", out_im);
@@ -83,14 +84,14 @@ void SlamCore::Track(const cv::Mat &image, double timestamp) {
 }
 
 void SlamCore::DrawGoodMatches(
-    const cv::Mat &image, const Frame &current_frame,
+    const Frame &current_frame,
     const std::vector<cv::DMatch> &good_matches) const {
   cv::Mat img_matches;
   cv::drawMatches(
-      image, current_frame.GetKeyPoints(), this->_previous_frame.GetImage(),
-      this->_previous_frame.GetKeyPoints(), good_matches, img_matches,
-      cv::Scalar::all(-1), cv::Scalar::all(-1), std::vector<char>(),
-      cv::DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS);
+      current_frame.GetImage(), current_frame.GetKeyPoints(),
+      this->_previous_frame.GetImage(), this->_previous_frame.GetKeyPoints(),
+      good_matches, img_matches, cv::Scalar::all(-1), cv::Scalar::all(-1),
+      std::vector<char>(), cv::DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS);
 
   cv::imshow("Good Matches & Object detection", img_matches);
   cv::waitKey(0);

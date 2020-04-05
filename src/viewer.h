@@ -5,6 +5,7 @@
 #ifndef CLEAN_SLAM_SRC_VIEWER_H_
 #define CLEAN_SLAM_SRC_VIEWER_H_
 
+#include "frame.h"
 #include "homogeneous_matrix.h"
 #include "viewer_settings.h"
 #include <pangolin/pangolin.h>
@@ -15,6 +16,7 @@ namespace clean_slam {
 struct Content {
   HomogeneousMatrix homogeneous_matrix;
   std::vector<Eigen::Vector3d> triangulated_points;
+  Frame current_frame;
 };
 
 class Viewer {
