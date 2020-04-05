@@ -33,7 +33,7 @@ public:
       const std::vector<cv::Point2f> &points_current_frame,
       const cv::Mat &inlier, const float reprojection_error);
   const float GetReprojectionError() const;
-  static constexpr float kPositivePointsRateThreshold = 0.8f;
+  static constexpr float kPositivePointsRateThreshold = 0.80f;
 
 protected:
   int ValidateTriangulatedPoints(const cv::Mat &triangulated_points,

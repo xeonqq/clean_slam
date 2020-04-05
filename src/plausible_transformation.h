@@ -37,7 +37,7 @@ private:
 
 private:
   bool _has_similar_good;
-  int kNumOfGoodPointsThreshold{50};
+  static constexpr int kNumOfGoodPointsThreshold{50};
 };
 
 } // namespace clean_slam

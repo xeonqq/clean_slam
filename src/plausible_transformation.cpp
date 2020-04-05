@@ -5,6 +5,7 @@
 #include "plausible_transformation.h"
 #include "cv_utils.h"
 #include "projective_transformation.h"
+#include <third_party/spdlog/spdlog.h>
 
 namespace clean_slam {
 PlausibleTransformation::PlausibleTransformation(
@@ -38,6 +39,8 @@ const cv::Mat &PlausibleTransformation::GetTriangulatedPoints() const {
   return _triangulated_points;
 }
 bool PlausibleTransformation::IsGood() const {
+  //  spdlog::info("has similar: {}, num_good_points: {}, all: {}",
+  //  _has_similar_good, num_of_good_points, _triangulated_points.rows);
   return (!_has_similar_good) &&
          (num_of_good_points > kNumOfGoodPointsThreshold) &&
          (num_of_good_points >

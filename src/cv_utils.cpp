@@ -126,4 +126,14 @@ std::vector<Eigen::Vector3d> ToStdVectorByMask(const cv::Mat &mat,
   }
   return result;
 }
+
+cv::Mat ToMat(const std::vector<Eigen::Vector3d> &vec) {
+  cv::Mat mat(vec.size(), 3, CV_32FC1);
+  for (size_t i = 0; i < vec.size(); ++i) {
+    mat.row(i).at<float>(0) = vec[i][0];
+    mat.row(i).at<float>(1) = vec[i][1];
+    mat.row(i).at<float>(2) = vec[i][2];
+  }
+  return mat;
+}
 } // namespace clean_slam

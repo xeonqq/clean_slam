@@ -14,7 +14,7 @@ bool HasSimilarGood(const std::array<int, 4> &good_points_numbers,
                     int max_num_good_points) {
   int similar_good = 0;
   for (const auto good_points_number : good_points_numbers) {
-    if (good_points_number > 0.7 * max_num_good_points) {
+    if (good_points_number > 0.75 * max_num_good_points) {
       ++similar_good;
     }
   }

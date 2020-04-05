@@ -50,7 +50,7 @@ std::vector<T> FilterByMask(const std::vector<T> &vec, const cv::Mat &mask) {
   }
   return result;
 }
-
+cv::Mat ToMat(const std::vector<Eigen::Vector3d> &vec);
 std::vector<Eigen::Vector3d> ToStdVectorByMask(const cv::Mat &mat,
                                                const cv::Mat &mask);
 
