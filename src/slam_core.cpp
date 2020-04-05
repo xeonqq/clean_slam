@@ -4,10 +4,7 @@
 
 #include "slam_core.h"
 #include "cv_utils.h"
-#include "transfer_error.h"
-#include <chrono>
 #include <iterator>
-#include <opencv2/calib3d/calib3d.hpp>
 #include <opencv2/core/core.hpp>
 #include <opencv2/features2d/features2d.hpp>
 #include <opencv2/highgui/highgui.hpp>
@@ -55,6 +52,8 @@ void SlamCore::Track(const cv::Mat &image, double timestamp) {
       OptimizedResult optimized_result = _optimizer.Optimize(
           plausible_transformation.GetHomogeneousMatrix(), good_key_points_pair,
           plausible_transformation.GetGoodTriangulatedPoints());
+      optimized_result.NormalizeBaseLine();
+
       //      DrawGoodMatches(current_frame, good_matches);
       homogeneous_matrix = optimized_result.optimized_Tcw;
       good_triangulated_points = optimized_result.optimized_points;
