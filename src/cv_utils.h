@@ -9,6 +9,7 @@
 #include <iostream>
 #include <opencv2/imgcodecs.hpp>
 #include <string>
+#include <third_party/g2o/g2o/types/se3quat.h>
 #include <vector>
 
 namespace clean_slam {
@@ -78,6 +79,9 @@ cv::Mat ToTransformationMatrix(const cv::Mat &R, const cv::Mat &T);
 cv::Mat NormPoints(const cv::Mat &m);
 cv::Mat SumChannels(const cv::Mat &m);
 cv::Mat SumColumns(const cv::Mat &m);
+
+g2o::SE3Quat GetVelocity(const g2o::SE3Quat &Tcw_current,
+                         const g2o::SE3Quat &Tcw_prev);
 
 template <typename T>
 std::ostream &operator<<(std::ostream &os, const std::vector<T> &values) {

@@ -136,4 +136,8 @@ cv::Mat ToMat(const std::vector<Eigen::Vector3d> &vec) {
   }
   return mat;
 }
+g2o::SE3Quat GetVelocity(const g2o::SE3Quat &Tcw_current,
+                         const g2o::SE3Quat &Tcw_prev) {
+  return Tcw_current * Tcw_prev.inverse();
+}
 } // namespace clean_slam

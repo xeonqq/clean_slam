@@ -53,8 +53,9 @@ void SlamCore::Track(const cv::Mat &image, double timestamp) {
           plausible_transformation.GetHomogeneousMatrix(), good_key_points_pair,
           plausible_transformation.GetGoodTriangulatedPoints());
       optimized_result.NormalizeBaseLine();
-
-      //      DrawGoodMatches(current_frame, good_matches);
+      //      std::cerr << "Vel: " <<
+      //      GetVelocity(optimized_result.optimized_Tcw, g2o::SE3Quat{}) <<
+      //      std::endl; DrawGoodMatches(current_frame, good_matches);
       homogeneous_matrix = optimized_result.optimized_Tcw;
       good_triangulated_points = optimized_result.optimized_points;
       //      std::cerr << "before: \n";
