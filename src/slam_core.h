@@ -12,6 +12,7 @@
 #include "orb_extractor.h"
 #include "orb_feature_matcher.h"
 #include "stamped_transformation.h"
+#include "third_party/tinyfsm.hpp"
 #include "viewer.h"
 #include <Eigen/Core>
 #include <opencv2/core/core.hpp>
@@ -19,6 +20,11 @@
 namespace clean_slam {
 
 using CameraTrajectory = std::vector<StampedTransformation>;
+struct SLAM : tinyfsm::Fsm<SLAM> {};
+
+struct Init : SLAM {
+  void entry(){};
+};
 
 class SlamCore {
 public:
