@@ -15,7 +15,7 @@ OrbFeatures OrbExtractor::Detect(cv::Mat image) {
   return OrbFeatures{std::move(key_points), descriptors};
 }
 
-OrbFeatures OrbExtractor::DetectAndUndistortKeyPoints(cv::Mat image) {
+OrbFeatures OrbExtractor::DetectAndUndistortKeyPoints(const cv::Mat &image) {
   std::vector<cv::KeyPoint> key_points;
   cv::Mat descriptors;
   _detector->detectAndCompute(image, cv::noArray(), key_points, descriptors);
@@ -25,8 +25,8 @@ OrbFeatures OrbExtractor::DetectAndUndistortKeyPoints(cv::Mat image) {
 
 void OrbExtractor::SetCameraIntrinsicsAndDistortionCoeffs(
     const cv::Mat &camera_intrinsics, const cv::Mat &camera_distortion_coeffs) {
-  _camera_intrinsics = camera_intrinsics;
-  _camera_distortion_coeffs = camera_distortion_coeffs;
+  _camera_intrinsics = camera_intrinsics.clone();
+  _camera_distortion_coeffs = camera_distortion_coeffs.clone();
 }
 
 OrbFeatures::OrbFeatures(std::vector<cv::KeyPoint> &&key_points,

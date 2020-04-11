@@ -15,11 +15,11 @@ namespace clean_slam {
 
 SlamCore::SlamCore(Viewer *viewer) : _viewer(viewer) {}
 
-void SlamCore::Track(const cv::Mat &image, double timestamp) {
-
+bool SlamCore::InitializeCameraPose(const cv::Mat &image, double timestamp) {
   Frame current_frame{image, _orb_extractor.DetectAndUndistortKeyPoints(image)};
   HomogeneousMatrix homogeneous_matrix;
   std::vector<Eigen::Vector3d> good_triangulated_points;
+  bool initialized = false;
   if (!_previous_frame.GetImage().empty()) {
     const std::vector<cv::DMatch> good_matches =
         _orb_feature_matcher.Match(current_frame, _previous_frame);
@@ -34,6 +34,7 @@ void SlamCore::Track(const cv::Mat &image, double timestamp) {
 
     if (_initializer.Initialize(points_previous_frame, points_current_frame)) {
       spdlog::info("Initialized");
+      initialized = true;
       const auto plausible_transformation =
           _initializer.GetPlausibleTransformation();
 
@@ -54,8 +55,8 @@ void SlamCore::Track(const cv::Mat &image, double timestamp) {
           plausible_transformation.GetGoodTriangulatedPoints());
       optimized_result.NormalizeBaseLine();
       //      std::cerr << "Vel: " <<
-      //      GetVelocity(optimized_result.optimized_Tcw, g2o::SE3Quat{}) <<
-      //      std::endl; DrawGoodMatches(current_frame, good_matches);
+      _velocity = GetVelocity(optimized_result.optimized_Tcw, g2o::SE3Quat{});
+      //      DrawGoodMatches(current_frame, good_matches);
       homogeneous_matrix = optimized_result.optimized_Tcw;
       good_triangulated_points = optimized_result.optimized_points;
       //      std::cerr << "before: \n";
@@ -75,14 +76,21 @@ void SlamCore::Track(const cv::Mat &image, double timestamp) {
   if (_viewer)
     _viewer->OnNotify(
         Content{homogeneous_matrix, good_triangulated_points, current_frame});
-  //  cv::Mat out_im;
-  //  cv::drawKeypoints(image, current_frame.GetKeyPoints(), out_im);
-  //  cv::imshow("image", out_im);
-  //  cv::waitKey(0);
+  //    cv::Mat out_im;
+  //    cv::drawKeypoints(image, current_frame.GetKeyPoints(), out_im);
+  //    cv::imshow("image", out_im);
+  //    cv::waitKey(0);
 
   _previous_frame = std::move(current_frame);
+  return initialized;
 }
-
+void SlamCore::TrackByMotion(const cv::Mat &image, double timestamp) {
+  Frame current_frame{image, _orb_extractor.DetectAndUndistortKeyPoints(image)};
+  // const velocity model
+  const auto current_pose = _velocity * _trajectory.back().GetTransformation();
+  // todo: project 3d points (along with its feature descriptor) to current
+  // frame
+}
 void SlamCore::DrawGoodMatches(
     const Frame &current_frame,
     const std::vector<cv::DMatch> &good_matches) const {
@@ -97,12 +105,12 @@ void SlamCore::DrawGoodMatches(
   cv::waitKey(0);
 }
 
-void SlamCore::Initialize(const cv::Mat &camera_intrinsics,
+void SlamCore::Initialize(Viewer *viewer, const cv::Mat &camera_intrinsics,
                           const cv::Mat &camera_distortion_coeffs) {
   _orb_extractor.SetCameraIntrinsicsAndDistortionCoeffs(
       camera_intrinsics, camera_distortion_coeffs);
   _camera_intrinsic = camera_intrinsics;
-  //  _camera_distortion_coeffs = camera_distortion_coeffs;
+  _viewer = viewer;
 }
 const CameraTrajectory &SlamCore::GetTrajectory() const { return _trajectory; }
 

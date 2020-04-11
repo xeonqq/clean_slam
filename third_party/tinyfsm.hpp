@@ -113,8 +113,8 @@ public:
     enter();
   }
 
-  template <typename E> static void dispatch(E const &event) {
-    current_state_ptr->react(event);
+  template <typename... E> static void dispatch(E &&... event) {
+    current_state_ptr->react(std::forward<E>(event)...);
   }
 
   /// state transition functions

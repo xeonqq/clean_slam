@@ -20,25 +20,26 @@
 namespace clean_slam {
 
 using CameraTrajectory = std::vector<StampedTransformation>;
-struct SLAM : tinyfsm::Fsm<SLAM> {};
-
-struct Init : SLAM {
-  void entry(){};
-};
+// struct SLAM : tinyfsm::Fsm<SLAM> {};
+//
+// struct Init : SLAM {
+//  void entry(){};
+//};
 
 class SlamCore {
 public:
   SlamCore() = default;
   SlamCore(Viewer *viewer);
-  void Initialize(const cv::Mat &camera_intrinsic,
+  void Initialize(Viewer *viewer, const cv::Mat &camera_intrinsics,
                   const cv::Mat &camera_distortion_coeffs);
-  void Track(const cv::Mat &image, double timestamp);
+  bool InitializeCameraPose(const cv::Mat &image, double timestamp);
+  void TrackByMotion(const cv::Mat &image, double timestamp);
+  const CameraTrajectory &GetTrajectory() const;
 
 private:
   void DrawGoodMatches(const Frame &current_frame,
                        const std::vector<cv::DMatch> &good_matches) const;
   cv::Mat _camera_intrinsic;
-  //  cv::Mat _camera_distortion_coeffs;
   OrbExtractor _orb_extractor;
   Frame _previous_frame;
   OrbFeatureMatcher _orb_feature_matcher;
@@ -46,9 +47,7 @@ private:
   CameraTrajectory _trajectory;
   Viewer *_viewer;
   Optimizer _optimizer{_camera_intrinsic};
-
-public:
-  const CameraTrajectory &GetTrajectory() const;
+  g2o::SE3Quat _velocity;
 };
 } // namespace clean_slam
 #endif // CLEAN_SLAM_SRC_SLAM_CORE_H_

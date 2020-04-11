@@ -44,7 +44,7 @@ public:
       const cv::Mat &camera_intrinsics,
       const cv::Mat &camera_distortion_coeffs);
   OrbFeatures Detect(cv::Mat image);
-  OrbFeatures DetectAndUndistortKeyPoints(cv::Mat image);
+  OrbFeatures DetectAndUndistortKeyPoints(const cv::Mat &image);
 
 private:
   cv::Ptr<cv::Feature2D> _detector;

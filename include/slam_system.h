@@ -16,7 +16,7 @@ public:
   SlamSystem() = default;
   SlamSystem(const DatasetLoader *dataset_loader)
       : _dataset_loader{dataset_loader},
-        _viewer{dataset_loader->GetViewerSettings()}, _core{&_viewer} {};
+        _viewer{dataset_loader->GetViewerSettings()} {}
   void Run();
   const CameraTrajectory &GetCamTrajectory() const;
 
