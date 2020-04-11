@@ -140,4 +140,12 @@ g2o::SE3Quat GetVelocity(const g2o::SE3Quat &Tcw_current,
                          const g2o::SE3Quat &Tcw_prev) {
   return Tcw_current * Tcw_prev.inverse();
 }
+
+cv::Mat FilterByIndex(const cv::Mat &mat, const std::vector<int> &indexes) {
+  cv::Mat result(indexes.size(), mat.cols, mat.type());
+  for (int i = 0; i < indexes.size(); ++i) {
+    mat.row(indexes[i]).copyTo(result.row(i));
+  }
+  return result;
+}
 } // namespace clean_slam

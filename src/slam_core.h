@@ -8,6 +8,7 @@
 #include "camera_motion_estimator.h"
 #include "frame.h"
 #include "initializer.h"
+#include "key_frame.h"
 #include "optimizer.h"
 #include "orb_extractor.h"
 #include "orb_feature_matcher.h"
@@ -48,6 +49,9 @@ private:
   Viewer *_viewer;
   Optimizer _optimizer{_camera_intrinsic};
   g2o::SE3Quat _velocity;
+
+  std::vector<KeyFrame> _key_frames;
+  const KeyFrame *_reference_key_frame;
 };
 } // namespace clean_slam
 #endif // CLEAN_SLAM_SRC_SLAM_CORE_H_

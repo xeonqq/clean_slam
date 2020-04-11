@@ -52,6 +52,10 @@ public:
                                      const Frame &prev_frame,
                                      const std::vector<cv::DMatch> &matches);
 
+  static std::pair<cv::Mat, cv::Mat>
+  GetMatchedDescriptors(const Frame &curr_frame, const Frame &prev_frame,
+                        const std::vector<cv::DMatch> &matches);
+
 private:
   std::vector<cv::DMatch>
   ComputeGoodMatches(const std::vector<cv::DMatch> &matches,

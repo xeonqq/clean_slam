@@ -56,7 +56,8 @@ struct Initialization : SLAMStateMachine {
 struct TrackByMotion : SLAMStateMachine {
   void entry() override { spdlog::info("State: TrackByMotion"); };
   void react(const cv::Mat &image, double timestamp, SlamCore &core){
-      //    transit<Initialization>();
+    core.TrackByMotion(image, timestamp);
+    //    transit<Initialization>();
   };
 };
 } // namespace clean_slam

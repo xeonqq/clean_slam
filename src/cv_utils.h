@@ -67,6 +67,8 @@ std::vector<T> FilterByIndex(const std::vector<T> &vec,
   return result;
 }
 
+cv::Mat FilterByIndex(const cv::Mat &mat, const std::vector<int> &indexes);
+
 Eigen::Vector2d Point2fToVector2d(const cv::Point2f &point2f);
 
 template <typename T> Eigen::Vector3d ToVector3d(const cv::Mat &point3) {

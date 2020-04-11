@@ -86,4 +86,15 @@ KeyPointsPair OrbFeatureMatcher::GetMatchedKeyPointsPairUndistorted(
           std::move(matched_key_points_curr)};
 }
 
+std::pair<cv::Mat, cv::Mat> OrbFeatureMatcher::GetMatchedDescriptors(
+    const Frame &curr_frame, const Frame &prev_frame,
+    const std::vector<cv::DMatch> &matches) {
+
+  auto matched_descriptor_curr =
+      FilterByIndex(curr_frame.GetDescriptors(), QueryIdxs{}(matches));
+  auto matched_descriptor_prev =
+      FilterByIndex(prev_frame.GetDescriptors(), TrainIdxs{}(matches));
+  return {matched_descriptor_prev, matched_descriptor_curr};
+}
+
 } // namespace clean_slam

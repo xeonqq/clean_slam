@@ -54,18 +54,19 @@ bool SlamCore::InitializeCameraPose(const cv::Mat &image, double timestamp) {
           plausible_transformation.GetHomogeneousMatrix(), good_key_points_pair,
           plausible_transformation.GetGoodTriangulatedPoints());
       optimized_result.NormalizeBaseLine();
-      //      std::cerr << "Vel: " <<
       _velocity = GetVelocity(optimized_result.optimized_Tcw, g2o::SE3Quat{});
       //      DrawGoodMatches(current_frame, good_matches);
       homogeneous_matrix = optimized_result.optimized_Tcw;
-      good_triangulated_points = optimized_result.optimized_points;
-      //      std::cerr << "before: \n";
-      //      std::cerr << plausible_transformation.GetHomogeneousMatrix() <<
-      //      std::endl; std::cerr << "after: \n"; std::cerr <<
-      //      homogeneous_matrix << std::endl; std::cerr << "diff: \n";
-      //      std::cerr <<
-      //      plausible_transformation.GetHomogeneousMatrix().to_homogeneous_matrix()
-      //      - homogeneous_matrix.to_homogeneous_matrix() << std::endl;
+
+      auto matched_descriptors = OrbFeatureMatcher::GetMatchedDescriptors(
+          current_frame, _previous_frame, good_matches);
+      const auto good_descriptors_current_frame =
+          FilterByMask(matched_descriptors.second,
+                       plausible_transformation.GetGoodPointsMask());
+      _key_frames.emplace_back(optimized_result.optimized_Tcw,
+                               std::move(optimized_result.optimized_points),
+                               good_descriptors_current_frame);
+      _reference_key_frame = &_key_frames.back();
     }
 
   } else {
@@ -84,13 +85,17 @@ bool SlamCore::InitializeCameraPose(const cv::Mat &image, double timestamp) {
   _previous_frame = std::move(current_frame);
   return initialized;
 }
+
 void SlamCore::TrackByMotion(const cv::Mat &image, double timestamp) {
   Frame current_frame{image, _orb_extractor.DetectAndUndistortKeyPoints(image)};
   // const velocity model
   const auto current_pose = _velocity * _trajectory.back().GetTransformation();
   // todo: project 3d points (along with its feature descriptor) to current
-  // frame
+
+  if (_viewer)
+    _viewer->OnNotify(Content{current_pose, {}, current_frame});
 }
+
 void SlamCore::DrawGoodMatches(
     const Frame &current_frame,
     const std::vector<cv::DMatch> &good_matches) const {
