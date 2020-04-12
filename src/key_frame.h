@@ -20,6 +20,13 @@ public:
 private:
   g2o::SE3Quat _Tcw;
   std::vector<Eigen::Vector3d> _points_3d;
+
+public:
+  const g2o::SE3Quat &GetTcw() const;
+  const std::vector<Eigen::Vector3d> &GetPoints3D() const;
+  const cv::Mat &GetDescriptors() const;
+
+private:
   // descriptors are 500*32 8UC1 mat, each row is a descriptor
   // in the case of ORB, the descriptor is binary, meaning, 32*8 = 256bit
   // hamming distance needs to be used to compare descriptors

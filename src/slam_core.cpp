@@ -91,6 +91,24 @@ void SlamCore::TrackByMotion(const cv::Mat &image, double timestamp) {
   // const velocity model
   const auto current_pose = _velocity * _trajectory.back().GetTransformation();
   // todo: project 3d points (along with its feature descriptor) to current
+  const auto points_3d = _reference_key_frame->GetPoints3D();
+  std::vector<Eigen::Vector2d> points_reprojected =
+      ReprojectPoints3d(points_3d, current_pose, _camera_intrinsic);
+  const int h = image.rows;
+  const int w = image.cols;
+  std::vector<bool> mask(points_reprojected.size(), false);
+
+  for (size_t i = 0; i < points_reprojected.size(); ++i) {
+    const auto &point = points_reprojected[i];
+    mask[i] =
+        (point[0] < w) && (point[1] < h) && (point[0] > 0) && (point[1] > 0);
+  }
+
+  //  projection_matrix = current_pose;
+  //  cv::Mat reprojected_image_points;
+  //  cv::transform(points_3d, reprojected_image_points, projection_matrix);
+  //  cv::convertPointsFromHomogeneous(reprojected_image_points.t(),
+  //                                   reprojected_image_points);
 
   if (_viewer)
     _viewer->OnNotify(Content{current_pose, {}, current_frame});
@@ -117,6 +135,7 @@ void SlamCore::Initialize(Viewer *viewer, const cv::Mat &camera_intrinsics,
   _camera_intrinsic = camera_intrinsics;
   _viewer = viewer;
 }
+
 const CameraTrajectory &SlamCore::GetTrajectory() const { return _trajectory; }
 
 } // namespace clean_slam
