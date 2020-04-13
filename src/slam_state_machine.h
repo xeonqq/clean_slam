@@ -28,7 +28,7 @@ struct SLAMStateMachine : tinyfsm::Fsm<SLAMStateMachine> {
   // virtual void react(Toggle const &) = 0;
   //  virtual void
   //  react(const ImageStamped &image_stamped) = 0; //{
-  //  transit<TrackByMotion>(); };
+  //  transit<TrackByMotionModel>(); };
 
   virtual void react(const cv::Mat &image, double timestamp, SlamCore &core){};
 
@@ -54,9 +54,9 @@ struct Initialization : SLAMStateMachine {
 };
 
 struct TrackByMotion : SLAMStateMachine {
-  void entry() override { spdlog::info("State: TrackByMotion"); };
-  void react(const cv::Mat &image, double timestamp, SlamCore &core){
-    core.TrackByMotion(image, timestamp);
+  void entry() override { spdlog::info("State: TrackByMotionModel"); };
+  void react(const cv::Mat &image, double timestamp, SlamCore &core) {
+    core.TrackByMotionModel(image, timestamp);
     //    transit<Initialization>();
   };
 };

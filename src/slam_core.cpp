@@ -86,7 +86,7 @@ bool SlamCore::InitializeCameraPose(const cv::Mat &image, double timestamp) {
   return initialized;
 }
 
-void SlamCore::TrackByMotion(const cv::Mat &image, double timestamp) {
+void SlamCore::TrackByMotionModel(const cv::Mat &image, double timestamp) {
   Frame current_frame{image, _orb_extractor.DetectAndUndistortKeyPoints(image)};
   // const velocity model
   const auto current_pose = _velocity * _trajectory.back().GetTransformation();
@@ -100,6 +100,10 @@ void SlamCore::TrackByMotion(const cv::Mat &image, double timestamp) {
 
   for (size_t i = 0; i < points_reprojected.size(); ++i) {
     const auto &point = points_reprojected[i];
+    // todo: 1. check points in undistorted range
+    //      2. check new depth of points (wrt to new camera pose) is within
+    //      scale pyramid range
+
     mask[i] =
         (point[0] < w) && (point[1] < h) && (point[0] > 0) && (point[1] > 0);
   }

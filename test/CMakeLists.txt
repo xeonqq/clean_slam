@@ -25,7 +25,7 @@ include_directories (
         )
 
 set(BINARY ${CMAKE_PROJECT_NAME}_test)
-add_executable(${BINARY} test_dataset_loader.cpp test_slam_system_freiburg.cpp test_slam_system_homography.cpp)
+add_executable(${BINARY} test_dataset_loader.cpp test_slam_system_freiburg.cpp test_slam_system_homography.cpp test_opencv_functions.cpp)
 add_test(NAME ${BINARY} COMMAND ${BINARY})
 target_link_libraries (
         ${BINARY}

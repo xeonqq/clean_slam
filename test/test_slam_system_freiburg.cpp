@@ -3,9 +3,7 @@
 //
 
 #include "slam_system.h"
-#include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include <cv.hpp>
 
 namespace clean_slam {
 
@@ -79,4 +77,5 @@ TEST(SlamSystemFreiburgTest, Run) {
   }
   //  EXPECT_EQ(trajectory[0], groundtruths[0].GetTransformation());
 }
+
 } // namespace clean_slam

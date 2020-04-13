@@ -21,11 +21,6 @@
 namespace clean_slam {
 
 using CameraTrajectory = std::vector<StampedTransformation>;
-// struct SLAM : tinyfsm::Fsm<SLAM> {};
-//
-// struct Init : SLAM {
-//  void entry(){};
-//};
 
 class SlamCore {
 public:
@@ -34,7 +29,7 @@ public:
   void Initialize(Viewer *viewer, const cv::Mat &camera_intrinsics,
                   const cv::Mat &camera_distortion_coeffs);
   bool InitializeCameraPose(const cv::Mat &image, double timestamp);
-  void TrackByMotion(const cv::Mat &image, double timestamp);
+  void TrackByMotionModel(const cv::Mat &image, double timestamp);
   const CameraTrajectory &GetTrajectory() const;
 
 private:
