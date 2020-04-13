@@ -7,7 +7,7 @@
 
 #include "frame.h"
 #include "homogeneous_matrix.h"
-#include "viewer_settings.h"
+#include "settings.h"
 #include <pangolin/pangolin.h>
 #include <queue>
 

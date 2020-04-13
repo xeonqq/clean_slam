@@ -56,8 +56,10 @@ void DatasetLoader::LoadFreiburgDataset(const std::string &dataset_folder_name,
                                         const std::string &path_to_yaml) {
   LoadRgb(dataset_folder_name);
   LoadFreiburgGroundTruth(dataset_folder_name);
+
   LoadCameraIntrinsics(path_to_yaml);
   LoadViewerSettings(path_to_yaml);
+  LoadOrbExtractorSettings(path_to_yaml);
 }
 
 void DatasetLoader::LoadCameraIntrinsics(const std::string &path_to_yaml) {
@@ -89,6 +91,20 @@ void DatasetLoader::LoadViewerSettings(const std::string &path_to_yaml) {
     throw std::runtime_error("Could not open file: " + path_to_yaml);
   }
 }
+
+void DatasetLoader::LoadOrbExtractorSettings(const std::string &path_to_yaml) {
+  cv::FileStorage fSettings(path_to_yaml, cv::FileStorage::READ);
+  if (fSettings.isOpened()) {
+
+    _orb_extractor_settings.num_features = fSettings["ORBExtractor.nFeatures"];
+    _orb_extractor_settings.scale_factor =
+        fSettings["ORBExtractor.scaleFactor"];
+    _orb_extractor_settings.num_levels = fSettings["ORBExtractor.nLevels"];
+  } else {
+    throw std::runtime_error("Could not open file: " + path_to_yaml);
+  }
+}
+
 void DatasetLoader::LoadImages(const std::string &image_folder,
                                const std::string &path_to_yaml) {
   _dataset_folder = image_folder;
