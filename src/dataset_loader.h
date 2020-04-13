@@ -8,6 +8,7 @@
 #include "ground_truth.h"
 #include "settings.h"
 #include <opencv2/core/mat.hpp>
+#include <opencv2/core/persistence.hpp>
 #include <string>
 #include <vector>
 
@@ -38,9 +39,9 @@ public:
 private:
   void LoadRgb(const std::string &dataset_folder_name);
   void LoadFreiburgGroundTruth(const std::string &dataset_folder_name);
-  void LoadCameraIntrinsics(const std::string &path_to_yaml);
-  void LoadViewerSettings(const std::string &basic_string);
-  void LoadOrbExtractorSettings(const std::string &path_to_yaml);
+  void LoadCameraIntrinsics(const cv::FileStorage &fSettings);
+  void LoadViewerSettings(const cv::FileStorage &fSettings);
+  void LoadOrbExtractorSettings(const cv::FileStorage &fSettings);
 
 private:
   std::vector<ImageFile> _image_files;

@@ -57,59 +57,55 @@ void DatasetLoader::LoadFreiburgDataset(const std::string &dataset_folder_name,
   LoadRgb(dataset_folder_name);
   LoadFreiburgGroundTruth(dataset_folder_name);
 
-  LoadCameraIntrinsics(path_to_yaml);
-  LoadViewerSettings(path_to_yaml);
-  LoadOrbExtractorSettings(path_to_yaml);
-}
-
-void DatasetLoader::LoadCameraIntrinsics(const std::string &path_to_yaml) {
   cv::FileStorage fSettings(path_to_yaml, cv::FileStorage::READ);
   if (fSettings.isOpened()) {
 
-    _camera_intrinsics = (cv::Mat_<double>(3, 3) << fSettings["Camera.fx"], 0,
-                          fSettings["Camera.cx"], 0, fSettings["Camera.fy"],
-                          fSettings["Camera.cy"], 0, 0, 1);
-    _distortion_coeffs = (cv::Mat_<double>(5, 1) << fSettings["Camera.k1"],
-                          fSettings["Camera.k2"], fSettings["Camera.p1"],
-                          fSettings["Camera.p2"], fSettings["Camera.k3"]);
+    LoadCameraIntrinsics(fSettings);
+    LoadViewerSettings(fSettings);
+    LoadOrbExtractorSettings(fSettings);
+
   } else {
     throw std::runtime_error("Could not open file: " + path_to_yaml);
   }
 }
 
-void DatasetLoader::LoadViewerSettings(const std::string &path_to_yaml) {
-  cv::FileStorage fSettings(path_to_yaml, cv::FileStorage::READ);
-  if (fSettings.isOpened()) {
+void DatasetLoader::LoadCameraIntrinsics(const cv::FileStorage &fSettings) {
 
-    _viewer_settings.view_point_x = fSettings["Viewer.ViewpointX"];
-    _viewer_settings.view_point_y = fSettings["Viewer.ViewpointY"];
-    _viewer_settings.view_point_z = fSettings["Viewer.ViewpointZ"];
-    _viewer_settings.view_point_f = fSettings["Viewer.ViewpointF"];
-    _viewer_settings.display_interval_ms =
-        1.0f / static_cast<float>(fSettings["Camera.fps"]) * 1000.f;
-  } else {
-    throw std::runtime_error("Could not open file: " + path_to_yaml);
-  }
+  _camera_intrinsics = (cv::Mat_<double>(3, 3) << fSettings["Camera.fx"], 0,
+                        fSettings["Camera.cx"], 0, fSettings["Camera.fy"],
+                        fSettings["Camera.cy"], 0, 0, 1);
+  _distortion_coeffs =
+      (cv::Mat_<double>(5, 1) << fSettings["Camera.k1"], fSettings["Camera.k2"],
+       fSettings["Camera.p1"], fSettings["Camera.p2"], fSettings["Camera.k3"]);
 }
 
-void DatasetLoader::LoadOrbExtractorSettings(const std::string &path_to_yaml) {
-  cv::FileStorage fSettings(path_to_yaml, cv::FileStorage::READ);
-  if (fSettings.isOpened()) {
+void DatasetLoader::LoadViewerSettings(const cv::FileStorage &fSettings) {
 
-    _orb_extractor_settings.num_features = fSettings["ORBExtractor.nFeatures"];
-    _orb_extractor_settings.scale_factor =
-        fSettings["ORBExtractor.scaleFactor"];
-    _orb_extractor_settings.num_levels = fSettings["ORBExtractor.nLevels"];
-  } else {
-    throw std::runtime_error("Could not open file: " + path_to_yaml);
-  }
+  _viewer_settings.view_point_x = fSettings["Viewer.ViewpointX"];
+  _viewer_settings.view_point_y = fSettings["Viewer.ViewpointY"];
+  _viewer_settings.view_point_z = fSettings["Viewer.ViewpointZ"];
+  _viewer_settings.view_point_f = fSettings["Viewer.ViewpointF"];
+  _viewer_settings.display_interval_ms =
+      1.0f / static_cast<float>(fSettings["Camera.fps"]) * 1000.f;
+}
+
+void DatasetLoader::LoadOrbExtractorSettings(const cv::FileStorage &fSettings) {
+  _orb_extractor_settings.num_features = fSettings["ORBExtractor.nFeatures"];
+  _orb_extractor_settings.scale_factor = fSettings["ORBExtractor.scaleFactor"];
+  _orb_extractor_settings.num_levels = fSettings["ORBExtractor.nLevels"];
 }
 
 void DatasetLoader::LoadImages(const std::string &image_folder,
                                const std::string &path_to_yaml) {
   _dataset_folder = image_folder;
   LoadRgb(image_folder);
-  LoadCameraIntrinsics(path_to_yaml);
+
+  cv::FileStorage fSettings(path_to_yaml, cv::FileStorage::READ);
+  if (fSettings.isOpened()) {
+    LoadCameraIntrinsics(fSettings);
+  } else {
+    throw std::runtime_error("Could not open file: " + path_to_yaml);
+  }
 }
 
 const std::vector<ImageFile> &DatasetLoader::GetImageFiles() const {
