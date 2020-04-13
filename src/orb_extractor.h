@@ -38,11 +38,11 @@ private:
 
 class OrbExtractor {
 public:
-  OrbExtractor();
+  OrbExtractor() = default;
+  OrbExtractor(cv::Ptr<cv::Feature2D> &&detector,
+               const cv::Mat &camera_intrinsics,
+               const cv::Mat &camera_distortion_coeffs);
 
-  void SetCameraIntrinsicsAndDistortionCoeffs(
-      const cv::Mat &camera_intrinsics,
-      const cv::Mat &camera_distortion_coeffs);
   OrbFeatures Detect(cv::Mat image);
   OrbFeatures DetectAndUndistortKeyPoints(const cv::Mat &image);
 

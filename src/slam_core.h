@@ -24,10 +24,9 @@ using CameraTrajectory = std::vector<StampedTransformation>;
 
 class SlamCore {
 public:
-  SlamCore() = default;
-  SlamCore(Viewer *viewer);
-  void Initialize(Viewer *viewer, const cv::Mat &camera_intrinsics,
-                  const cv::Mat &camera_distortion_coeffs);
+  SlamCore(const cv::Mat &camera_intrinsics,
+           const cv::Mat &camera_distortion_coeffs, OrbExtractor *orb_extractor,
+           Viewer *viewer);
   bool InitializeCameraPose(const cv::Mat &image, double timestamp);
   void TrackByMotionModel(const cv::Mat &image, double timestamp);
   const CameraTrajectory &GetTrajectory() const;
@@ -36,13 +35,14 @@ private:
   void DrawGoodMatches(const Frame &current_frame,
                        const std::vector<cv::DMatch> &good_matches) const;
   cv::Mat _camera_intrinsic;
-  OrbExtractor _orb_extractor;
+  OrbExtractor *_orb_extractor;
+
   Frame _previous_frame;
   OrbFeatureMatcher _orb_feature_matcher;
-  Initializer _initializer{_camera_intrinsic};
-  CameraTrajectory _trajectory;
   Viewer *_viewer;
-  Optimizer _optimizer{_camera_intrinsic};
+  Initializer _initializer;
+  CameraTrajectory _trajectory;
+  Optimizer _optimizer;
   g2o::SE3Quat _velocity;
 
   std::vector<KeyFrame> _key_frames;

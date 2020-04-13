@@ -90,9 +90,9 @@ void DatasetLoader::LoadViewerSettings(const cv::FileStorage &fSettings) {
 }
 
 void DatasetLoader::LoadOrbExtractorSettings(const cv::FileStorage &fSettings) {
-  _orb_extractor_settings.num_features = fSettings["ORBExtractor.nFeatures"];
-  _orb_extractor_settings.scale_factor = fSettings["ORBExtractor.scaleFactor"];
-  _orb_extractor_settings.num_levels = fSettings["ORBExtractor.nLevels"];
+  _orb_extractor_settings.num_features = fSettings["ORBextractor.nFeatures"];
+  _orb_extractor_settings.scale_factor = fSettings["ORBextractor.scaleFactor"];
+  _orb_extractor_settings.num_levels = fSettings["ORBextractor.nLevels"];
 }
 
 void DatasetLoader::LoadImages(const std::string &image_folder,
@@ -131,5 +131,8 @@ const cv::Mat &DatasetLoader::GetDistortionCoeffs() const {
 }
 const ViewerSettings &DatasetLoader::GetViewerSettings() const {
   return _viewer_settings;
+}
+const OrbExtractorSettings &DatasetLoader::GetOrbExtractorSettings() const {
+  return _orb_extractor_settings;
 }
 } // namespace clean_slam

@@ -35,6 +35,7 @@ public:
   const cv::Mat &GetCameraIntrinsics() const;
   const cv::Mat &GetDistortionCoeffs() const;
   const ViewerSettings &GetViewerSettings() const;
+  const OrbExtractorSettings &GetOrbExtractorSettings() const;
 
 private:
   void LoadRgb(const std::string &dataset_folder_name);

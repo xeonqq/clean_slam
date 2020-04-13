@@ -11,7 +11,7 @@
 namespace clean_slam {
 
 const CameraTrajectory &SlamSystem::GetCamTrajectory() const {
-  return _core.GetTrajectory();
+  return _core->GetTrajectory();
 }
 
 void SlamSystem::Run() {
@@ -20,10 +20,8 @@ void SlamSystem::Run() {
 
   SLAMStateMachine::start();
   if (_dataset_loader) {
-    std::thread _viewer_thread(&Viewer::Run, &_viewer);
+    std::thread viewer_thread = _ioc_factory.CreateViewerThread();
 
-    _core.Initialize(&_viewer, _dataset_loader->GetCameraIntrinsics(),
-                     _dataset_loader->GetDistortionCoeffs());
     size_t i = 0;
     for (const auto &image_file : _dataset_loader->GetImageFiles()) {
 
@@ -34,16 +32,16 @@ void SlamSystem::Run() {
         auto im = cv::imread(_dataset_loader->GetDatasetFolder() + '/' +
                                  image_file.image_filename,
                              cv::IMREAD_GRAYSCALE);
-        SLAMStateMachine::dispatch(im, image_file.timestamp, _core);
+        SLAMStateMachine::dispatch(im, image_file.timestamp, *_core.get());
         auto stop = high_resolution_clock::now();
         spdlog::info("{} slam runtime per step: {}", i,
                      duration_cast<microseconds>(stop - start).count());
       }
       ++i;
-      //      if (i == 2)
-      //        break;
+      if (i > 24)
+        break;
     }
-    _viewer_thread.join();
+    viewer_thread.join();
     cv::destroyAllWindows();
   }
 }

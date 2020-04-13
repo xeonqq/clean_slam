@@ -24,7 +24,7 @@ public:
 private:
   HomographyMotionEstimator _homography_motion_estimator;
   EpipolarConstraintMotionEstimator _epipolar_constraint_motion_estimator;
-  const cv::Mat &_camera_intrinsic;
+  cv::Mat _camera_intrinsic;
 };
 
 float ScoreFromChiSquareDistribution(const cv::Mat &transfer_errors,

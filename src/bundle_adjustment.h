@@ -29,7 +29,7 @@ public:
 
 private:
   g2o::SparseOptimizer _optimizer;
-  const cv::Mat &_camera_intrinsics;
+  cv::Mat _camera_intrinsics;
 };
 
 } // namespace clean_slam

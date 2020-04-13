@@ -6,7 +6,11 @@
 
 namespace clean_slam {
 
-OrbExtractor::OrbExtractor() : _detector{cv::ORB::create()} {}
+OrbExtractor::OrbExtractor(cv::Ptr<cv::Feature2D> &&detector,
+                           const cv::Mat &camera_intrinsics,
+                           const cv::Mat &camera_distortion_coeffs)
+    : _detector(std::move(detector)), _camera_intrinsics(camera_intrinsics),
+      _camera_distortion_coeffs(camera_distortion_coeffs) {}
 
 OrbFeatures OrbExtractor::Detect(cv::Mat image) {
   std::vector<cv::KeyPoint> key_points;
@@ -23,11 +27,6 @@ OrbFeatures OrbExtractor::DetectAndUndistortKeyPoints(const cv::Mat &image) {
                      _camera_distortion_coeffs};
 }
 
-void OrbExtractor::SetCameraIntrinsicsAndDistortionCoeffs(
-    const cv::Mat &camera_intrinsics, const cv::Mat &camera_distortion_coeffs) {
-  _camera_intrinsics = camera_intrinsics.clone();
-  _camera_distortion_coeffs = camera_distortion_coeffs.clone();
-}
 
 OrbFeatures::OrbFeatures(std::vector<cv::KeyPoint> &&key_points,
                          const cv::Mat &descriptors)
