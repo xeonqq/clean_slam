@@ -7,7 +7,6 @@
 
 #include "camera_motion_estimator.h"
 #include "frame.h"
-#include "initializer.h"
 #include "key_frame.h"
 #include "optimizer.h"
 #include "orb_extractor.h"
@@ -39,9 +38,9 @@ private:
   Optimizer *_optimizer;
   Viewer *_viewer;
 
+  CameraMotionEstimator _camera_motion_estimator;
   Frame _previous_frame;
   OrbFeatureMatcher _orb_feature_matcher;
-  Initializer _initializer;
   CameraTrajectory _trajectory;
   g2o::SE3Quat _velocity;
 

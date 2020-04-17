@@ -19,7 +19,7 @@ SlamCore::SlamCore(const cv::Mat &camera_intrinsics,
                    Viewer *viewer)
     : _camera_intrinsic(camera_intrinsics),
       _orb_extractor(orb_extractor), _optimizer{optimizer},
-      _viewer(viewer), _initializer{camera_intrinsics} {}
+      _viewer(viewer), _camera_motion_estimator{camera_intrinsics} {}
 
 bool SlamCore::InitializeCameraPose(const cv::Mat &image, double timestamp) {
   Frame current_frame{image,
@@ -38,13 +38,11 @@ bool SlamCore::InitializeCameraPose(const cv::Mat &image, double timestamp) {
         matched_points_pair_undistorted.GetPointsCurrFrame();
     const auto &points_previous_frame =
         matched_points_pair_undistorted.GetPointsPrevFrame();
-
-    if (_initializer.Initialize(points_previous_frame, points_current_frame)) {
+    const auto plausible_transformation = _camera_motion_estimator.Estimate(
+        points_previous_frame, points_current_frame);
+    if (plausible_transformation.IsGood()) {
       spdlog::info("Initialized");
       initialized = true;
-      const auto plausible_transformation =
-          _initializer.GetPlausibleTransformation();
-
       const auto key_points_pairs =
           OrbFeatureMatcher::GetMatchedKeyPointsPairUndistorted(
               current_frame, _previous_frame, good_matches);
