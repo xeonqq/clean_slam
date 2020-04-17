@@ -42,8 +42,10 @@ private:
 
 class Optimizer {
 public:
-  Optimizer(const cv::Mat &camera_intrinsics)
-      : _bundle_adjustment{camera_intrinsics} {}
+  Optimizer(const cv::Mat &camera_intrinsics,
+            const OctaveSigmaScales &octave_sigmal_scales)
+      : _bundle_adjustment{camera_intrinsics}, _octave_sigma_scales{
+                                                   octave_sigmal_scales} {}
   OptimizedResult
   Optimize(const g2o::SE3Quat &Tcw,
            const KeyPointsPair &key_points_observations,
@@ -51,7 +53,7 @@ public:
 
 private:
   BundleAdjustment _bundle_adjustment;
-  const OctaveSigmaScales _octave_sigma_scales{1.2f};
+  const OctaveSigmaScales &_octave_sigma_scales;
 };
 } // namespace clean_slam
 

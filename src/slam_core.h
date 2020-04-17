@@ -26,7 +26,7 @@ class SlamCore {
 public:
   SlamCore(const cv::Mat &camera_intrinsics,
            const cv::Mat &camera_distortion_coeffs, OrbExtractor *orb_extractor,
-           Viewer *viewer);
+           Optimizer *optimizer, Viewer *viewer);
   bool InitializeCameraPose(const cv::Mat &image, double timestamp);
   void TrackByMotionModel(const cv::Mat &image, double timestamp);
   const CameraTrajectory &GetTrajectory() const;
@@ -36,13 +36,13 @@ private:
                        const std::vector<cv::DMatch> &good_matches) const;
   cv::Mat _camera_intrinsic;
   OrbExtractor *_orb_extractor;
+  Optimizer *_optimizer;
+  Viewer *_viewer;
 
   Frame _previous_frame;
   OrbFeatureMatcher _orb_feature_matcher;
-  Viewer *_viewer;
   Initializer _initializer;
   CameraTrajectory _trajectory;
-  Optimizer _optimizer;
   g2o::SE3Quat _velocity;
 
   std::vector<KeyFrame> _key_frames;

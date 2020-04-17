@@ -6,8 +6,12 @@
 namespace clean_slam {
 
 IocFactory::IocFactory(const DatasetLoader *dataset_loader)
-    : dataset_loader(dataset_loader), _viewer{
-                                          dataset_loader->GetViewerSettings()} {
+    : dataset_loader(dataset_loader),
+      _viewer{dataset_loader->GetViewerSettings()},
+      _octave_sigma_scales{
+          dataset_loader->GetOrbExtractorSettings().scale_factor},
+      _optimizer{dataset_loader->GetCameraIntrinsics(), _octave_sigma_scales} {
+
   const auto &orb_extractor_settings =
       dataset_loader->GetOrbExtractorSettings();
 
@@ -22,7 +26,7 @@ IocFactory::IocFactory(const DatasetLoader *dataset_loader)
 std::unique_ptr<SlamCore> IocFactory::CreateSlamCore() {
   return std::make_unique<SlamCore>(dataset_loader->GetCameraIntrinsics(),
                                     dataset_loader->GetDistortionCoeffs(),
-                                    &_orb_extractor, &_viewer);
+                                    &_orb_extractor, &_optimizer, &_viewer);
 }
 
 std::thread IocFactory::CreateViewerThread() {

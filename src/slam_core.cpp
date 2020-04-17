@@ -15,10 +15,11 @@ namespace clean_slam {
 
 SlamCore::SlamCore(const cv::Mat &camera_intrinsics,
                    const cv::Mat &camera_distortion_coeffs,
-                   OrbExtractor *orb_extractor, Viewer *viewer)
-    : _camera_intrinsic(camera_intrinsics), _orb_extractor(orb_extractor),
-      _viewer(viewer), _initializer{camera_intrinsics},
-      _optimizer{camera_intrinsics} {}
+                   OrbExtractor *orb_extractor, Optimizer *optimizer,
+                   Viewer *viewer)
+    : _camera_intrinsic(camera_intrinsics),
+      _orb_extractor(orb_extractor), _optimizer{optimizer},
+      _viewer(viewer), _initializer{camera_intrinsics} {}
 
 bool SlamCore::InitializeCameraPose(const cv::Mat &image, double timestamp) {
   Frame current_frame{image,
@@ -56,7 +57,7 @@ bool SlamCore::InitializeCameraPose(const cv::Mat &image, double timestamp) {
           std::move(good_key_points_prev_frame),
           std::move(good_key_points_curr_frame)};
 
-      OptimizedResult optimized_result = _optimizer.Optimize(
+      OptimizedResult optimized_result = _optimizer->Optimize(
           plausible_transformation.GetHomogeneousMatrix(), good_key_points_pair,
           plausible_transformation.GetGoodTriangulatedPoints());
       optimized_result.NormalizeBaseLine();
