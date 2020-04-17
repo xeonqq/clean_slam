@@ -19,7 +19,7 @@ private:
   const DatasetLoader *dataset_loader;
   OrbExtractor _orb_extractor;
   Viewer _viewer;
-  OctaveSigmaScales _octave_sigma_scales;
+  OctaveScales _octave_scales;
   Optimizer _optimizer;
 };
 } // namespace clean_slam

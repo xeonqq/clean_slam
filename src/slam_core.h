@@ -26,8 +26,9 @@ class SlamCore {
 public:
   SlamCore(const cv::Mat &camera_intrinsics,
            const cv::Mat &camera_distortion_coeffs, OrbExtractor *orb_extractor,
-           Optimizer *optimizer, Viewer *viewer);
-  bool ProcessFirstImage(const cv::Mat &image, double timestamp);
+           Optimizer *optimizer, Viewer *viewer,
+           const OctaveScales &octave_scale);
+  void ProcessFirstImage(const cv::Mat &image, double timestamp);
   bool InitializeCameraPose(const cv::Mat &image, double timestamp);
   void TrackByMotionModel(const cv::Mat &image, double timestamp);
   const CameraTrajectory &GetTrajectory() const;
@@ -42,6 +43,8 @@ private:
 
   CameraMotionEstimator _camera_motion_estimator;
   UndistortedImageBoundary _undistorted_image_boundary;
+
+  const OctaveScales &_octave_scales;
 
   Frame _previous_frame;
   OrbFeatureMatcher _orb_feature_matcher;

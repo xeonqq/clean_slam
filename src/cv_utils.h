@@ -90,6 +90,10 @@ ReprojectPoints3d(const std::vector<Eigen::Vector3d> &points_3d,
                   const g2o::SE3Quat &current_pose,
                   const cv::Mat &camera_intrinsic);
 
+bool IsPointWithInBounds(const Eigen::Vector2d &point,
+                         const std::pair<float, float> &x_bounds,
+                         const std::pair<float, float> &y_bounds);
+
 template <template <typename, typename> class Container, typename Value,
           typename Allocator = std::allocator<Value>>
 std::ostream &operator<<(std::ostream &os,

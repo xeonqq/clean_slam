@@ -7,7 +7,9 @@
 
 namespace clean_slam {
 
-float OctaveSigmaScales::operator[](size_t i) const {
-  return _octave_sigma_scale[i];
+float OctaveScales::operator[](size_t i) const { return _octave_scales[i]; }
+
+const std::array<float, 8> &OctaveScales::GetOctaveSigmaScales() const {
+  return _octave_sigma_scales;
 }
 } // namespace clean_slam

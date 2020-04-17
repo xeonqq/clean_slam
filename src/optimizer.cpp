@@ -25,10 +25,11 @@ Optimizer::Optimize(const g2o::SE3Quat &Tcw,
          ++point_id) {
       const auto &key_points = *(pose_id_to_points[pose_id]);
       const auto &key_point = key_points[point_id];
-      _bundle_adjustment.AddEdge(kPoint3DInitialId + point_id, pose_id,
-                                 Point2fToVector2d(key_point.pt),
-                                 Eigen::Matrix2d::Identity() *
-                                     _octave_sigma_scales[key_point.octave]);
+      _bundle_adjustment.AddEdge(
+          kPoint3DInitialId + point_id, pose_id,
+          Point2fToVector2d(key_point.pt),
+          Eigen::Matrix2d::Identity() *
+              _octave_scales.GetOctaveSigmaScales()[key_point.octave]);
     }
   }
   _bundle_adjustment.Optimize(20, true);

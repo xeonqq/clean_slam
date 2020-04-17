@@ -8,26 +8,26 @@
 #include <array>
 namespace clean_slam {
 
-class OctaveSigmaScales {
+class OctaveScales {
 public:
-  constexpr OctaveSigmaScales(float per_octave_scale)
-      : kOctaveBasicScale{per_octave_scale}, _octave_sigma_scale{} {
+  constexpr OctaveScales(float per_octave_scale)
+      : kOctaveBasicScale{per_octave_scale}, _octave_sigma_scales{},
+        _octave_scales{} {
 
-    _octave_sigma_scale[0] = 1;
-    for (size_t i = 1; i < _octave_sigma_scale.size(); ++i) {
-      _octave_sigma_scale[i] = _octave_sigma_scale[i - 1] * kOctaveBasicScale;
+    _octave_sigma_scales[0] = _octave_scales[0] = 1;
+    for (size_t i = 1; i < _octave_scales.size(); ++i) {
+      _octave_scales[i] = _octave_scales[i - 1] * kOctaveBasicScale;
+      _octave_sigma_scales[i] = 1.0f / (_octave_scales[i] * _octave_scales[i]);
     }
-    std::for_each(_octave_sigma_scale.begin(), _octave_sigma_scale.end(),
-                  [](auto &scale) {
-                    scale *= scale;
-                    scale = 1.0f / scale;
-                  });
   }
   float operator[](size_t i) const;
+  const std::array<float, 8> &GetOctaveSigmaScales() const;
+  size_t size() const { return _octave_scales.size(); }
 
 private:
   const float kOctaveBasicScale;
-  std::array<float, 8> _octave_sigma_scale;
+  std::array<float, 8> _octave_sigma_scales;
+  std::array<float, 8> _octave_scales;
 };
 
 } // namespace clean_slam
