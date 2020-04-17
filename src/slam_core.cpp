@@ -19,7 +19,20 @@ SlamCore::SlamCore(const cv::Mat &camera_intrinsics,
                    Viewer *viewer)
     : _camera_intrinsic(camera_intrinsics),
       _orb_extractor(orb_extractor), _optimizer{optimizer},
-      _viewer(viewer), _camera_motion_estimator{camera_intrinsics} {}
+      _viewer(viewer), _camera_motion_estimator{camera_intrinsics},
+      _undistorted_image_boundary{camera_intrinsics, camera_distortion_coeffs} {
+}
+
+bool SlamCore::ProcessFirstImage(const cv::Mat &image, double timestamp) {
+  _undistorted_image_boundary.ComputeUndistortedCorners(image);
+  _previous_frame = {image, _orb_extractor->DetectAndUndistortKeyPoints(image)};
+
+  HomogeneousMatrix homogeneous_matrix;
+  _trajectory.emplace_back(homogeneous_matrix, timestamp);
+
+  if (_viewer)
+    _viewer->OnNotify(Content{homogeneous_matrix, {}, _previous_frame});
+}
 
 bool SlamCore::InitializeCameraPose(const cv::Mat &image, double timestamp) {
   Frame current_frame{image,
@@ -27,56 +40,51 @@ bool SlamCore::InitializeCameraPose(const cv::Mat &image, double timestamp) {
   HomogeneousMatrix homogeneous_matrix;
   std::vector<Eigen::Vector3d> good_triangulated_points;
   bool initialized = false;
-  if (!_previous_frame.GetImage().empty()) {
-    const std::vector<cv::DMatch> good_matches =
-        _orb_feature_matcher.Match(current_frame, _previous_frame);
-    const PointsPair matched_points_pair_undistorted =
-        OrbFeatureMatcher::GetMatchedPointsPairUndistorted(
-            current_frame, _previous_frame, good_matches);
-
-    const auto &points_current_frame =
-        matched_points_pair_undistorted.GetPointsCurrFrame();
-    const auto &points_previous_frame =
-        matched_points_pair_undistorted.GetPointsPrevFrame();
-    const auto plausible_transformation = _camera_motion_estimator.Estimate(
-        points_previous_frame, points_current_frame);
-    if (plausible_transformation.IsGood()) {
-      spdlog::info("Initialized");
-      initialized = true;
-      const auto key_points_pairs =
-          OrbFeatureMatcher::GetMatchedKeyPointsPairUndistorted(
-              current_frame, _previous_frame, good_matches);
-      const auto good_key_points_prev_frame = FilterByMask(
-          key_points_pairs.first, plausible_transformation.GetGoodPointsMask());
-      const auto good_key_points_curr_frame =
-          FilterByMask(key_points_pairs.second,
-                       plausible_transformation.GetGoodPointsMask());
-      KeyPointsPair good_key_points_pair = {
-          std::move(good_key_points_prev_frame),
-          std::move(good_key_points_curr_frame)};
-
-      OptimizedResult optimized_result = _optimizer->Optimize(
-          plausible_transformation.GetHomogeneousMatrix(), good_key_points_pair,
-          plausible_transformation.GetGoodTriangulatedPoints());
-      optimized_result.NormalizeBaseLine();
-      _velocity = GetVelocity(optimized_result.optimized_Tcw, g2o::SE3Quat{});
-      //      DrawGoodMatches(current_frame, good_matches);
-      homogeneous_matrix = optimized_result.optimized_Tcw;
-
-      auto matched_descriptors = OrbFeatureMatcher::GetMatchedDescriptors(
+  const std::vector<cv::DMatch> good_matches =
+      _orb_feature_matcher.Match(current_frame, _previous_frame);
+  const PointsPair matched_points_pair_undistorted =
+      OrbFeatureMatcher::GetMatchedPointsPairUndistorted(
           current_frame, _previous_frame, good_matches);
-      const auto good_descriptors_current_frame =
-          FilterByMask(matched_descriptors.second,
-                       plausible_transformation.GetGoodPointsMask());
-      _key_frames.emplace_back(optimized_result.optimized_Tcw,
-                               std::move(optimized_result.optimized_points),
-                               good_descriptors_current_frame);
-      _reference_key_frame = &_key_frames.back();
-    }
 
-  } else {
-    homogeneous_matrix = HomogeneousMatrix{};
+  const auto &points_current_frame =
+      matched_points_pair_undistorted.GetPointsCurrFrame();
+  const auto &points_previous_frame =
+      matched_points_pair_undistorted.GetPointsPrevFrame();
+  const auto plausible_transformation = _camera_motion_estimator.Estimate(
+      points_previous_frame, points_current_frame);
+  if (plausible_transformation.IsGood()) {
+    spdlog::info("Initialized");
+    initialized = true;
+    const auto key_points_pairs =
+        OrbFeatureMatcher::GetMatchedKeyPointsPairUndistorted(
+            current_frame, _previous_frame, good_matches);
+    const auto good_key_points_prev_frame = FilterByMask(
+        key_points_pairs.first, plausible_transformation.GetGoodPointsMask());
+    const auto good_key_points_curr_frame = FilterByMask(
+        key_points_pairs.second, plausible_transformation.GetGoodPointsMask());
+    KeyPointsPair good_key_points_pair = {
+        std::move(good_key_points_prev_frame),
+        std::move(good_key_points_curr_frame)};
+
+    OptimizedResult optimized_result = _optimizer->Optimize(
+        plausible_transformation.GetHomogeneousMatrix(), good_key_points_pair,
+        plausible_transformation.GetGoodTriangulatedPoints());
+    optimized_result.NormalizeBaseLine();
+    _velocity = GetVelocity(optimized_result.optimized_Tcw, g2o::SE3Quat{});
+    //      DrawGoodMatches(current_frame, good_matches);
+    homogeneous_matrix = optimized_result.optimized_Tcw;
+
+    auto matched_descriptors = OrbFeatureMatcher::GetMatchedDescriptors(
+        current_frame, _previous_frame, good_matches);
+    const auto good_descriptors_current_frame =
+        FilterByMask(matched_descriptors.second,
+                     plausible_transformation.GetGoodPointsMask());
+    _key_frames.emplace_back(optimized_result.optimized_Tcw,
+                             std::move(optimized_result.optimized_points),
+                             good_descriptors_current_frame);
+    _reference_key_frame = &_key_frames.back();
   }
+
   _trajectory.emplace_back(homogeneous_matrix, timestamp);
 
   if (_viewer)

@@ -13,6 +13,7 @@
 #include "orb_feature_matcher.h"
 #include "stamped_transformation.h"
 #include "third_party/tinyfsm.hpp"
+#include "undistorted_image_boundary.h"
 #include "viewer.h"
 #include <Eigen/Core>
 #include <opencv2/core/core.hpp>
@@ -26,6 +27,7 @@ public:
   SlamCore(const cv::Mat &camera_intrinsics,
            const cv::Mat &camera_distortion_coeffs, OrbExtractor *orb_extractor,
            Optimizer *optimizer, Viewer *viewer);
+  bool ProcessFirstImage(const cv::Mat &image, double timestamp);
   bool InitializeCameraPose(const cv::Mat &image, double timestamp);
   void TrackByMotionModel(const cv::Mat &image, double timestamp);
   const CameraTrajectory &GetTrajectory() const;
@@ -39,6 +41,8 @@ private:
   Viewer *_viewer;
 
   CameraMotionEstimator _camera_motion_estimator;
+  UndistortedImageBoundary _undistorted_image_boundary;
+
   Frame _previous_frame;
   OrbFeatureMatcher _orb_feature_matcher;
   CameraTrajectory _trajectory;

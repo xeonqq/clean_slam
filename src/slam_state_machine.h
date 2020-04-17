@@ -45,20 +45,19 @@ struct SLAMStateMachine : tinyfsm::Fsm<SLAMStateMachine> {
 
 struct Initialization : SLAMStateMachine {
   void entry() override { spdlog::info("State: Initialization"); }
-
-  void react(const cv::Mat &image, double timestamp, SlamCore &core) {
-    const bool initialized = core.InitializeCameraPose(image, timestamp);
-    if (initialized)
-      transit<TrackByMotion>();
-  };
+  void react(const cv::Mat &image, double timestamp, SlamCore &core);
+  ;
+};
+struct ProcessFirstImage : SLAMStateMachine {
+  void entry() override { spdlog::info("State: ProcessFirstImage"); }
+  void react(const cv::Mat &image, double timestamp, SlamCore &core);
+  ;
 };
 
 struct TrackByMotion : SLAMStateMachine {
   void entry() override { spdlog::info("State: TrackByMotionModel"); };
-  void react(const cv::Mat &image, double timestamp, SlamCore &core) {
-    core.TrackByMotionModel(image, timestamp);
-    //    transit<Initialization>();
-  };
+  void react(const cv::Mat &image, double timestamp, SlamCore &core);
+  ;
 };
 } // namespace clean_slam
 #endif // CLEAN_SLAM_SRC_SLAM_STATE_MACHINE_H_

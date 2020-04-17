@@ -89,8 +89,11 @@ std::vector<Eigen::Vector2d>
 ReprojectPoints3d(const std::vector<Eigen::Vector3d> &points_3d,
                   const g2o::SE3Quat &current_pose,
                   const cv::Mat &camera_intrinsic);
-template <typename T>
-std::ostream &operator<<(std::ostream &os, const std::vector<T> &values) {
+
+template <template <typename, typename> class Container, typename Value,
+          typename Allocator = std::allocator<Value>>
+std::ostream &operator<<(std::ostream &os,
+                         const Container<Value, Allocator> &values) {
   os << "[";
   for (const auto &v : values) {
     os << v << "; \n";
@@ -99,6 +102,15 @@ std::ostream &operator<<(std::ostream &os, const std::vector<T> &values) {
   return os;
 }
 
+template <typename T, size_t N>
+std::ostream &operator<<(std::ostream &os, const std::array<T, N> &values) {
+  os << "[";
+  for (const auto &v : values) {
+    os << v << "; \n";
+  }
+  os << "]";
+  return os;
+}
 std::ostream &operator<<(std::ostream &os, const cv::KeyPoint &v);
 
 } // namespace clean_slam
