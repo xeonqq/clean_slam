@@ -83,13 +83,7 @@ cv::Mat NormPoints(const cv::Mat &m);
 cv::Mat SumChannels(const cv::Mat &m);
 cv::Mat SumColumns(const cv::Mat &m);
 
-g2o::SE3Quat GetVelocity(const g2o::SE3Quat &Tcw_current,
-                         const g2o::SE3Quat &Tcw_prev);
 
-std::vector<Eigen::Vector2d>
-ReprojectPoints3d(const std::vector<Eigen::Vector3d> &points_3d,
-                  const g2o::SE3Quat &current_pose,
-                  const cv::Mat &camera_intrinsic);
 
 bool IsPointWithInBounds(const Eigen::Vector2d &point, const Bound &x_bounds,
                          const Bound &y_bounds);

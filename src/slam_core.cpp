@@ -3,6 +3,7 @@
 //
 
 #include "slam_core.h"
+#include "cv_algorithms.h"
 #include "cv_utils.h"
 #include <iterator>
 #include <opencv2/core/core.hpp>
@@ -108,7 +109,7 @@ void SlamCore::TrackByMotionModel(const cv::Mat &image, double timestamp) {
   const auto Tcw = _velocity * homogeneous_matrix.GetTransformation();
   const auto camera_pose_in_world = Tcw.inverse();
   // todo: project 3d points (along with its feature descriptor) to current
-  const auto points_3d = _reference_key_frame->GetPoints3D();
+  const auto &points_3d = _reference_key_frame->GetPoints3D();
   std::vector<Eigen::Vector2d> points_reprojected =
       ReprojectPoints3d(points_3d, Tcw, _camera_intrinsic);
   std::vector<bool> mask(points_reprojected.size(), false);
@@ -134,6 +135,8 @@ void SlamCore::TrackByMotionModel(const cv::Mat &image, double timestamp) {
 
     mask[i] = true;
   }
+  //  SearchByProjection(points_reprojected,
+  //  _reference_key_frame->GetDescriptors(), current_frame.GetKeyPoints());
 
   if (_viewer)
     _viewer->OnNotify(Content{Tcw, {}, current_frame});
