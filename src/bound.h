@@ -8,6 +8,7 @@
 namespace clean_slam {
 class Bound {
 public:
+  Bound() = default;
   Bound(float low, float high);
   bool IsWithIn(float value) const;
 

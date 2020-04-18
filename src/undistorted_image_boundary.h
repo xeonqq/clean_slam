@@ -5,6 +5,7 @@
 #ifndef CLEAN_SLAM_SRC_UNDISTORTED_IMAGE_BOUNDARY_H_
 #define CLEAN_SLAM_SRC_UNDISTORTED_IMAGE_BOUNDARY_H_
 
+#include "bound.h"
 #include <array>
 #include <opencv2/core/mat.hpp>
 namespace clean_slam {
@@ -25,8 +26,8 @@ public:
 
   const ImageCorners &ComputeUndistortedCorners(const cv::Mat &image);
   const ImageCorners &GetUndistortedCorners() const;
-  const std::pair<float, float> &GetXBounds() const;
-  const std::pair<float, float> &GetYBounds() const;
+  const Bound &GetXBounds() const;
+  const Bound &GetYBounds() const;
 
 private:
   void ComputeBounds();
@@ -35,8 +36,8 @@ private:
   cv::Mat _camera_distortion_coeffs;
   cv::Mat _camera_intrinsics;
   ImageCorners _undistorted_corners;
-  std::pair<float, float> _x_bounds;
-  std::pair<float, float> _y_bounds;
+  Bound _x_bounds;
+  Bound _y_bounds;
 };
 
 } // namespace clean_slam

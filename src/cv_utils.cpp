@@ -170,12 +170,8 @@ cv::Mat FilterByIndex(const cv::Mat &mat, const std::vector<int> &indexes) {
   return result;
 }
 
-bool IsPointWithInBounds(const Eigen::Vector2d &point,
-                         const std::pair<float, float> &x_bounds,
-                         const std::pair<float, float> &y_bounds) {
-  const auto ptx = point[0];
-  const auto pty = point[1];
-  return ptx > x_bounds.first && ptx < x_bounds.second &&
-         pty > y_bounds.first && pty < y_bounds.second;
+bool IsPointWithInBounds(const Eigen::Vector2d &point, const Bound &x_bounds,
+                         const Bound &y_bounds) {
+  return x_bounds.IsWithIn(point[0]) && y_bounds.IsWithIn(point[1]);
 }
 } // namespace clean_slam

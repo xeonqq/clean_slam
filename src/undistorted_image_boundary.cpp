@@ -54,11 +54,7 @@ void UndistortedImageBoundary::ComputeBounds() {
 const ImageCorners &UndistortedImageBoundary::GetUndistortedCorners() const {
   return _undistorted_corners;
 }
-const std::pair<float, float> &UndistortedImageBoundary::GetXBounds() const {
-  return _x_bounds;
-}
-const std::pair<float, float> &UndistortedImageBoundary::GetYBounds() const {
-  return _y_bounds;
-}
+const Bound &UndistortedImageBoundary::GetXBounds() const { return _x_bounds; }
+const Bound &UndistortedImageBoundary::GetYBounds() const { return _y_bounds; }
 
 } // namespace clean_slam

@@ -125,8 +125,8 @@ void SlamCore::TrackByMotionModel(const cv::Mat &image, double timestamp) {
     if (!IsPointWithInBounds(point, x_bounds, y_bounds))
       continue;
 
-    //      2. check new depth of points (wrt to new camera pose) is within
-    //      scale pyramid range
+    //  2. check new depth of points (wrt to new camera pose) is within
+    //  scale pyramid range
     const auto depth =
         (points_3d[i] - camera_pose_in_world.translation()).norm();
     if (!distance_bounds[i].IsWithIn(depth))
