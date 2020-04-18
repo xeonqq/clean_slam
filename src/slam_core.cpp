@@ -133,10 +133,13 @@ void SlamCore::TrackByMotionModel(const cv::Mat &image, double timestamp) {
     if (!distance_bounds[i].IsWithIn(depth))
       continue;
 
+    int predicted_octave_level =
+        _octave_scales.MapDistanceToOctaveLevel(depth, distance_bounds[i]);
+
     mask[i] = true;
   }
-  //  SearchByProjection(points_reprojected,
-  //  _reference_key_frame->GetDescriptors(), current_frame.GetKeyPoints());
+  SearchByProjection(current_frame.GetKeyPoints(), points_reprojected,
+                     _reference_key_frame->GetDescriptors(), mask);
 
   if (_viewer)
     _viewer->OnNotify(Content{Tcw, {}, current_frame});

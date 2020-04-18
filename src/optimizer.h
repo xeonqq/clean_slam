@@ -5,7 +5,7 @@
 #ifndef CLEAN_SLAM_SRC_OPTIMIZER_H_
 #define CLEAN_SLAM_SRC_OPTIMIZER_H_
 #include "bundle_adjustment.h"
-#include "octave_sigma_scales.h"
+#include "octave_scales.h"
 #include "orb_feature_matcher.h"
 
 namespace clean_slam {

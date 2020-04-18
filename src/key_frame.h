@@ -6,7 +6,7 @@
 #define CLEAN_SLAM_SRC_KEY_FRAME_H_
 
 #include "bound.h"
-#include "octave_sigma_scales.h"
+#include "octave_scales.h"
 #include <Eigen/src/Core/Matrix.h>
 #include <opencv2/core/mat.hpp>
 #include <third_party/g2o/g2o/types/se3quat.h>

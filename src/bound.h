@@ -11,6 +11,8 @@ public:
   Bound() = default;
   Bound(float low, float high);
   bool IsWithIn(float value) const;
+  float GetLow() const;
+  float GetHigh() const;
 
 private:
   float _low;

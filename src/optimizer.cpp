@@ -29,7 +29,7 @@ Optimizer::Optimize(const g2o::SE3Quat &Tcw,
           kPoint3DInitialId + point_id, pose_id,
           Point2fToVector2d(key_point.pt),
           Eigen::Matrix2d::Identity() *
-              _octave_scales.GetOctaveSigmaScales()[key_point.octave]);
+              _octave_scales.GetOctaveInvSigma2Scales()[key_point.octave]);
     }
   }
   _bundle_adjustment.Optimize(20, true);

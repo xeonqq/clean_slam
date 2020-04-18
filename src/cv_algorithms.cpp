@@ -32,4 +32,11 @@ ReprojectPoints3d(const std::vector<Eigen::Vector3d> &points_3d,
   return points_reprojected;
 }
 
+void SearchByProjection(const std::vector<cv::KeyPoint> &key_points,
+                        const std::vector<Eigen::Vector2d> &points_reprojected,
+                        const cv::Mat &descriptors,
+                        const std::vector<bool> &mask) {
+  for (std::size_t i = 0; i < points_reprojected.size(); ++i) {
+  }
+}
 } // namespace clean_slam
