@@ -20,10 +20,8 @@ ReprojectPoints3d(const std::vector<Eigen::Vector3d> &points_3d,
                   const g2o::SE3Quat &current_pose,
                   const cv::Mat &camera_intrinsic);
 
-void SearchByProjection(const std::vector<cv::KeyPoint> &key_points,
-                        const std::vector<Eigen::Vector2d> &points_reprojected,
-                        const cv::Mat &descriptors,
-                        const std::vector<bool> &mask);
+std::vector<int> GetPointsInArea(const Eigen::Vector2d &center, float radius,
+                                 const std::vector<cv::KeyPoint> &key_points);
 
 } // namespace clean_slam
 #endif // CLEAN_SLAM_SRC_CV_ALGORITHMS_H_

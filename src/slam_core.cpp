@@ -26,17 +26,16 @@ SlamCore::SlamCore(const cv::Mat &camera_intrinsics,
 
 void SlamCore::ProcessFirstImage(const cv::Mat &image, double timestamp) {
   _undistorted_image_boundary.ComputeUndistortedCorners(image);
-  _previous_frame = {image, _orb_extractor->DetectAndUndistortKeyPoints(image)};
+  _previous_frame = {_orb_extractor->DetectAndUndistortKeyPoints(image)};
 
   HomogeneousMatrix homogeneous_matrix;
   _trajectory.emplace_back(homogeneous_matrix, timestamp);
 
-  _viewer->OnNotify(Content{homogeneous_matrix, {}, _previous_frame});
+  _viewer->OnNotify(Content{homogeneous_matrix, {}, _previous_frame, image});
 }
 
 bool SlamCore::InitializeCameraPose(const cv::Mat &image, double timestamp) {
-  Frame current_frame{image,
-                      _orb_extractor->DetectAndUndistortKeyPoints(image)};
+  Frame current_frame{_orb_extractor->DetectAndUndistortKeyPoints(image)};
   HomogeneousMatrix homogeneous_matrix;
   std::vector<Eigen::Vector3d> good_triangulated_points;
   bool initialized = false;
@@ -71,7 +70,6 @@ bool SlamCore::InitializeCameraPose(const cv::Mat &image, double timestamp) {
         plausible_transformation.GetGoodTriangulatedPoints());
     optimized_result.NormalizeBaseLine();
     _velocity = GetVelocity(optimized_result.optimized_Tcw, g2o::SE3Quat{});
-    //      DrawGoodMatches(current_frame, good_matches);
     homogeneous_matrix = optimized_result.optimized_Tcw;
 
     auto matched_descriptors = OrbFeatureMatcher::GetMatchedDescriptors(
@@ -90,8 +88,8 @@ bool SlamCore::InitializeCameraPose(const cv::Mat &image, double timestamp) {
   _trajectory.emplace_back(homogeneous_matrix, timestamp);
 
   if (_viewer)
-    _viewer->OnNotify(
-        Content{homogeneous_matrix, good_triangulated_points, current_frame});
+    _viewer->OnNotify(Content{homogeneous_matrix, good_triangulated_points,
+                              current_frame, image});
   //    cv::Mat out_im;
   //    cv::drawKeypoints(image, current_frame.GetKeyPoints(), out_im);
   //    cv::imshow("image", out_im);
@@ -102,8 +100,7 @@ bool SlamCore::InitializeCameraPose(const cv::Mat &image, double timestamp) {
 }
 
 void SlamCore::TrackByMotionModel(const cv::Mat &image, double timestamp) {
-  Frame current_frame{image,
-                      _orb_extractor->DetectAndUndistortKeyPoints(image)};
+  Frame current_frame{_orb_extractor->DetectAndUndistortKeyPoints(image)};
   // const velocity model
   const auto &homogeneous_matrix = _trajectory.back();
   const auto Tcw = _velocity * homogeneous_matrix.GetTransformation();
@@ -138,25 +135,11 @@ void SlamCore::TrackByMotionModel(const cv::Mat &image, double timestamp) {
 
     mask[i] = true;
   }
-  SearchByProjection(current_frame.GetKeyPoints(), points_reprojected,
-                     _reference_key_frame->GetDescriptors(), mask);
+  //  SearchByProjection(current_frame.GetKeyPoints(), points_reprojected,
+  //                     _reference_key_frame->GetDescriptors(), mask);
 
   if (_viewer)
-    _viewer->OnNotify(Content{Tcw, {}, current_frame});
-}
-
-void SlamCore::DrawGoodMatches(
-    const Frame &current_frame,
-    const std::vector<cv::DMatch> &good_matches) const {
-  cv::Mat img_matches;
-  cv::drawMatches(
-      current_frame.GetImage(), current_frame.GetKeyPoints(),
-      this->_previous_frame.GetImage(), this->_previous_frame.GetKeyPoints(),
-      good_matches, img_matches, cv::Scalar::all(-1), cv::Scalar::all(-1),
-      std::vector<char>(), cv::DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS);
-
-  cv::imshow("Good Matches & Object detection", img_matches);
-  cv::waitKey(0);
+    _viewer->OnNotify(Content{Tcw, {}, current_frame, image});
 }
 
 const CameraTrajectory &SlamCore::GetTrajectory() const { return _trajectory; }

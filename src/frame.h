@@ -11,28 +11,20 @@ namespace clean_slam {
 class Frame {
 public:
   Frame() = default;
-  Frame(const cv::Mat &image, const OrbFeatures &orb_features)
-      : _image(image), _orb_features(orb_features) {}
+  Frame(const OrbFeatures &orb_features) : _orb_features(orb_features) {}
 
-  Frame(const cv::Mat &image, OrbFeatures &&orb_features)
-      : _image(image), _orb_features(std::move(orb_features)) {}
+  Frame(OrbFeatures &&orb_features) : _orb_features(std::move(orb_features)) {}
 
   Frame(Frame const &frame) = default;
-  Frame(Frame &&frame) {
-    _image = frame._image;
-    _orb_features = std::move(frame._orb_features);
-  }
+  Frame(Frame &&frame) { _orb_features = std::move(frame._orb_features); }
   Frame &operator=(const Frame &frame) {
-    _image = frame._image;
     _orb_features = frame._orb_features;
     return *this;
   }
   Frame &operator=(Frame &&frame) {
-    _image = frame._image;
     _orb_features = std::move(frame._orb_features);
     return *this;
   }
-  const cv::Mat &GetImage() const { return _image; }
   const cv::Mat GetDescriptors() const {
     return _orb_features.GetDescriptors();
   }
@@ -44,7 +36,6 @@ public:
   }
 
 private:
-  cv::Mat _image;
   OrbFeatures _orb_features;
 };
 } // namespace clean_slam

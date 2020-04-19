@@ -121,9 +121,10 @@ void Viewer::Run() {
     }
     pangolin::FinishFrame();
     if (!_contents.empty()) {
-      const auto current_frame = _contents.back().current_frame;
+      const auto &content = _contents.back();
+      const auto current_frame = content.current_frame;
       cv::Mat img_with_key_points;
-      cv::drawKeypoints(current_frame.GetImage(), current_frame.GetKeyPoints(),
+      cv::drawKeypoints(content.image, current_frame.GetKeyPoints(),
                         img_with_key_points);
       cv::imshow("Clean-SLAM: Current Frame", img_with_key_points);
       cv::waitKey(_viewer_settings_.display_interval_ms);

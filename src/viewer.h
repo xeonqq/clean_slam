@@ -17,6 +17,7 @@ struct Content {
   HomogeneousMatrix homogeneous_matrix;
   std::vector<Eigen::Vector3d> triangulated_points;
   Frame current_frame;
+  cv::Mat image;
 };
 
 class Viewer {

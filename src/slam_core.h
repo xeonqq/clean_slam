@@ -34,8 +34,6 @@ public:
   const CameraTrajectory &GetTrajectory() const;
 
 private:
-  void DrawGoodMatches(const Frame &current_frame,
-                       const std::vector<cv::DMatch> &good_matches) const;
   cv::Mat _camera_intrinsic;
   OrbExtractor *_orb_extractor;
   Optimizer *_optimizer;
