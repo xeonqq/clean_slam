@@ -4,7 +4,6 @@
 #include <chrono>
 #include <iostream>
 
-#include "slam_state_machine.h"
 #include "slam_system.h"
 #include "spdlog/spdlog.h"
 
@@ -18,7 +17,6 @@ void SlamSystem::Run() {
 
   spdlog::set_level(spdlog::level::info); // Set global log level to debug
 
-  SLAMStateMachine::start();
   if (_dataset_loader) {
     std::thread viewer_thread = _ioc_factory.CreateViewerThread();
 
@@ -32,7 +30,7 @@ void SlamSystem::Run() {
         auto im = cv::imread(_dataset_loader->GetDatasetFolder() + '/' +
                                  image_file.image_filename,
                              cv::IMREAD_GRAYSCALE);
-        SLAMStateMachine::dispatch(im, image_file.timestamp, *_core.get());
+        _core->process_event(NewImage{im, image_file.timestamp});
         auto stop = high_resolution_clock::now();
         spdlog::info("{} slam runtime per step: {}", i,
                      duration_cast<microseconds>(stop - start).count());

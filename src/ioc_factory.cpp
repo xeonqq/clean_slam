@@ -3,6 +3,7 @@
 //
 
 #include "ioc_factory.h"
+
 namespace clean_slam {
 
 IocFactory::IocFactory(const DatasetLoader *dataset_loader)
@@ -22,11 +23,12 @@ IocFactory::IocFactory(const DatasetLoader *dataset_loader)
                                 dataset_loader->GetDistortionCoeffs());
 }
 
-std::unique_ptr<SlamCore> IocFactory::CreateSlamCore() {
-  return std::make_unique<SlamCore>(dataset_loader->GetCameraIntrinsics(),
-                                    dataset_loader->GetDistortionCoeffs(),
-                                    &_orb_extractor, &_optimizer, &_viewer,
-                                    _octave_scales);
+std::unique_ptr<boost::msm::back::state_machine<SlamCore>>
+IocFactory::CreateSlamCore() {
+  return std::make_unique<boost::msm::back::state_machine<SlamCore>>(
+      dataset_loader->GetCameraIntrinsics(),
+      dataset_loader->GetDistortionCoeffs(), &_orb_extractor, &_optimizer,
+      &_viewer, _octave_scales);
 }
 
 std::thread IocFactory::CreateViewerThread() {

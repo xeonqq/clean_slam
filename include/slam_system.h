@@ -9,6 +9,8 @@
 #include "ioc_factory.h"
 #include "slam_core.h"
 #include "viewer.h"
+
+#include <boost/msm/back/state_machine.hpp>
 #include <thread>
 
 namespace clean_slam {
@@ -25,8 +27,8 @@ public:
 private:
   const DatasetLoader *_dataset_loader;
   IocFactory _ioc_factory;
-  std::unique_ptr<SlamCore> _core;
+  std::unique_ptr<boost::msm::back::state_machine<SlamCore>> _core;
 };
-}
+} // namespace clean_slam
 
 #endif // CLEAN_SLAM_SLAMSYSTEM_H

@@ -6,13 +6,15 @@
 #define CLEAN_SLAM_SRC_IOC_FACTORY_H_
 #include "dataset_loader.h"
 #include "slam_core.h"
+
+#include <boost/msm/back/state_machine.hpp>
 #include <thread>
 
 namespace clean_slam {
 class IocFactory {
 public:
   IocFactory(const DatasetLoader *dataset_loader);
-  std::unique_ptr<SlamCore> CreateSlamCore();
+  std::unique_ptr<boost::msm::back::state_machine<SlamCore>> CreateSlamCore();
   std::thread CreateViewerThread();
 
 private:
