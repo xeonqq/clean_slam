@@ -120,12 +120,9 @@ void Viewer::Run() {
       DrawMapPoints(content.triangulated_points);
     }
     pangolin::FinishFrame();
-    if (!_contents.empty()) {
-      const auto &content = _contents.back();
-      const auto current_frame = content.current_frame;
+    if (!_image.empty()) {
       cv::Mat img_with_key_points;
-      cv::drawKeypoints(content.image, current_frame.GetKeyPoints(),
-                        img_with_key_points);
+      cv::drawKeypoints(_image, _features.GetKeyPoints(), img_with_key_points);
       cv::imshow("Clean-SLAM: Current Frame", img_with_key_points);
       cv::waitKey(_viewer_settings_.display_interval_ms);
     }

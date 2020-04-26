@@ -37,8 +37,8 @@ private:
 class OrbFeatureMatcher {
 public:
   OrbFeatureMatcher();
-  std::vector<cv::DMatch> Match(const Frame &curr_frame,
-                                const Frame &prev_frame);
+  std::vector<cv::DMatch> Match(const OrbFeatures &curr_frame,
+                                const OrbFeatures &prev_frame);
   static PointsPair
   GetMatchedPointsPair(const Frame &curr_frame, const Frame &prev_frame,
                        const std::vector<cv::DMatch> &matches);

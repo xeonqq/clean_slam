@@ -5,6 +5,21 @@ project(clean_slam VERSION 0.0.1)
 IF (NOT CMAKE_BUILD_TYPE)
     SET(CMAKE_BUILD_TYPE Release)
 ENDIF ()
+#set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+#set( CMAKE_VERBOSE_MAKEFILE on )
+
+set(USE_CCACHE ON CACHE BOOL "Use ccache to accelerate build")
+find_program(CCACHE_PROGRAM ccache)
+if (CCACHE_PROGRAM)
+    set(CMAKE_CXX_COMPILER_LAUNCHER "${CCACHE_PROGRAM}")
+    message(STATUS "ccache: Enabled" ${CMAKE_CXX_COMPILER_LAUNCHER})
+endif ()
+
+#find_program(DISTCC_PROGRAM distcc)
+#if(DISTCC_PROGRAM)
+#    set(CMAKE_CXX_COMPILER_LAUNCHER "${DISTCC_PROGRAM}")
+#    message(STATUS "distcc: Enabled")
+#endif()
 
 MESSAGE("Build type: " ${CMAKE_BUILD_TYPE})
 

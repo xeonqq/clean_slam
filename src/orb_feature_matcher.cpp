@@ -9,8 +9,9 @@ OrbFeatureMatcher::OrbFeatureMatcher()
     : _matcher{cv::FlannBasedMatcher(
           cv::makePtr<cv::flann::LshIndexParams>(12, 20, 2))} {}
 
-std::vector<cv::DMatch> OrbFeatureMatcher::Match(const Frame &curr_frame,
-                                                 const Frame &prev_frame) {
+std::vector<cv::DMatch>
+OrbFeatureMatcher::Match(const OrbFeatures &curr_frame,
+                         const OrbFeatures &prev_frame) {
   std::vector<cv::DMatch> matches;
   _matcher.match(curr_frame.GetDescriptors(), prev_frame.GetDescriptors(),
                  matches);

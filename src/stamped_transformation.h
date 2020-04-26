@@ -9,6 +9,7 @@
 namespace clean_slam {
 class StampedTransformation {
 public:
+  StampedTransformation() = default;
   StampedTransformation(const HomogeneousMatrix &transformation,
                         double timestamp)
       : _transformation(transformation), _timestamp(timestamp) {}

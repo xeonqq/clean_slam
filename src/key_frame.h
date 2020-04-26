@@ -15,6 +15,7 @@
 namespace clean_slam {
 class KeyFrame {
 public:
+  KeyFrame() = default;
   KeyFrame(const g2o::SE3Quat &Tcw, std::vector<Eigen::Vector3d> &&points_3d,
            const cv::Mat &descriptors, std::vector<Bound> &&distance_bounds);
 
