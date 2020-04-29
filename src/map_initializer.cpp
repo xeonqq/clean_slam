@@ -64,6 +64,7 @@ bool MapInitializer::InitializeCameraPose(const cv::Mat &image,
 
     auto matched_descriptors = OrbFeatureMatcher::GetMatchedDescriptors(
         current_orb_features, _previous_orb_features, good_matches);
+
     const auto good_descriptors_current_frame =
         FilterByMask(matched_descriptors.second,
                      plausible_transformation.GetGoodPointsMask());
@@ -86,6 +87,7 @@ bool MapInitializer::InitializeCameraPose(const cv::Mat &image,
   _viewer->OnNotify(image, current_orb_features);
   _previous_orb_features = std::move(current_orb_features);
   _previous_timestamp = timestamp;
+
   return initialized;
 }
 

@@ -34,8 +34,8 @@ PlausibleTransformation CameraMotionEstimator::Estimate(
           points_previous_frame, points_current_frame);
   auto epipolar_transformation = future.get();
   auto stop = high_resolution_clock::now();
-  spdlog::info("H + F total runtime: {}",
-               duration_cast<microseconds>(stop - start).count());
+  spdlog::info("H + F total runtime: {} ms",
+               duration_cast<microseconds>(stop - start).count() / 1000.F);
   if (IsHomography(homography_transformation, epipolar_transformation)) {
     //  if (false) {
     spdlog::info("Choose H");

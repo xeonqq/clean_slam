@@ -32,8 +32,9 @@ void SlamSystem::Run() {
                              cv::IMREAD_GRAYSCALE);
         _core->process_event(NewImage{im, image_file.timestamp});
         auto stop = high_resolution_clock::now();
-        spdlog::info("{} slam runtime per step: {}", i,
-                     duration_cast<microseconds>(stop - start).count());
+        spdlog::info("{} slam runtime per step: {} ms", i,
+                     duration_cast<microseconds>(stop - start).count() /
+                         1000.f);
       }
       ++i;
       if (i > 24)

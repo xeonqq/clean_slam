@@ -30,9 +30,9 @@ EpipolarConstraintMotionEstimator::EstimateProjectiveTransformation(
           points_previous_frame, points_current_frame, F, fundamental_inlies);
   auto stop = high_resolution_clock::now();
 
-  spdlog::info("F reproject score: {}, runtime: {}",
+  spdlog::info("F reproject score: {}, runtime: {} ms",
                epipolar_constraint_average_symmetric_transfer_error,
-               duration_cast<microseconds>(stop - start).count());
+               duration_cast<microseconds>(stop - start).count() / 1000.f);
 
   //  std::cerr << "F :" << F <<std::endl;
   return EpipolarTransformation{

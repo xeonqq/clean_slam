@@ -23,14 +23,14 @@ struct NewImage {
 
 struct Init : public state {
   template <class Event, class Fsm> void on_exit(Event const &event, Fsm &fsm) {
-    spdlog::info("exit: FirstImageProcess");
+    spdlog::info("Exit: FirstImageProcess..");
   }
 };
 
 struct MapInitialization : public state {
   template <class Event, class Fsm>
   void on_entry(Event const &event, Fsm &fsm) {
-    spdlog::info("entering: Initialization");
+    spdlog::info("Entering: Initialization..");
     _map_initializer = std::make_unique<MapInitializer>(
         fsm._orb_extractor, fsm._optimizer, fsm._camera_intrinsic,
         fsm._octave_scales, fsm._viewer);
@@ -38,7 +38,7 @@ struct MapInitialization : public state {
   }
 
   template <class Event, class Fsm> void on_exit(Event const &event, Fsm &fsm) {
-    spdlog::info("exit: Initialization");
+    spdlog::info("Exit: Initialization...");
     _map_initializer.release();
   }
 

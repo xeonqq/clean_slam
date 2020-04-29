@@ -7,30 +7,32 @@ IF (NOT CMAKE_BUILD_TYPE)
 ENDIF ()
 #set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 #set( CMAKE_VERBOSE_MAKEFILE on )
+find_program(DISTCC_PROGRAM distcc)
+if (DISTCC_PROGRAM)
+    #    set(CMAKE_CXX_COMPILER_LAUNCHER "${DISTCC_PROGRAM}")
+    message(STATUS "distcc: Enabled")
+endif ()
 
 set(USE_CCACHE ON CACHE BOOL "Use ccache to accelerate build")
 find_program(CCACHE_PROGRAM ccache)
 if (CCACHE_PROGRAM)
     set(CMAKE_CXX_COMPILER_LAUNCHER "${CCACHE_PROGRAM}")
-    message(STATUS "ccache: Enabled" ${CMAKE_CXX_COMPILER_LAUNCHER})
+    message(STATUS "ccache: Enabled")
 endif ()
+message(STATUS "DISTCC HOSTS:" $ENV{DISTCC_HOSTS})
 
-#find_program(DISTCC_PROGRAM distcc)
-#if(DISTCC_PROGRAM)
-#    set(CMAKE_CXX_COMPILER_LAUNCHER "${DISTCC_PROGRAM}")
-#    message(STATUS "distcc: Enabled")
-#endif()
 
 MESSAGE("Build type: " ${CMAKE_BUILD_TYPE})
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}  -Wall  -O0 -march=native ")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall   -O0 -march=native")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}  -Wall")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
 
 # Check C++17 or C++0x support
 include(CheckCXXCompilerFlag)
 CHECK_CXX_COMPILER_FLAG("-std=c++17" COMPILER_SUPPORTS_CXX17)
 CHECK_CXX_COMPILER_FLAG("-std=c++0x" COMPILER_SUPPORTS_CXX0X)
-add_compile_definitions(EIGEN_MAX_STATIC_ALIGN_BYTES=0) # workaround until eigen aligenment problem is solved
+#the following define align is needed when we set CFLAGS -march=native
+#add_compile_definitions(EIGEN_MAX_STATIC_ALIGN_BYTES=0) # workaround until eigen aligenment problem is solved
 if (COMPILER_SUPPORTS_CXX17)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
     add_definitions(-DCOMPILEDWITHC17)

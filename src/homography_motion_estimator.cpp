@@ -25,9 +25,9 @@ HomographyMotionEstimator::EstimateProjectiveTransformation(
       points_previous_frame, points_current_frame, H, homography_inlies);
   auto stop = high_resolution_clock::now();
 
-  spdlog::info("H reproject score: {}, runtime: {}",
+  spdlog::info("H reproject score: {}, runtime: {} ms",
                homography_average_symmetric_transfer_error,
-               duration_cast<microseconds>(stop - start).count());
+               duration_cast<microseconds>(stop - start).count() / 1000.F);
 
   return HomographyTransformation{H, points_previous_frame,
                                   points_current_frame, homography_inlies,
