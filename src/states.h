@@ -32,7 +32,7 @@ struct MapInitialization : public state {
   void on_entry(Event const &event, Fsm &fsm) {
     spdlog::info("Entering: Initialization..");
     _map_initializer = std::make_unique<MapInitializer>(
-        fsm._orb_extractor, fsm._optimizer, fsm._camera_intrinsic,
+        fsm._orb_extractor, fsm._optimizer, fsm._camera_intrinsic, &fsm._map,
         fsm._octave_scales, fsm._viewer);
     _map_initializer->ProcessFirstImage(event.image, event.timestamp);
   }
@@ -47,6 +47,7 @@ struct MapInitialization : public state {
     if (_map_initializer->InitializeCameraPose(event.image, event.timestamp)) {
       fsm._key_frames.push_back(_map_initializer->GetKeyFrameOwnership());
       fsm._reference_key_frame = &fsm._key_frames.back();
+      fsm._previous_frame = &fsm._key_frames.back();
       fsm._velocity = _map_initializer->GetVelocity();
       const auto &stamped_transformations =
           _map_initializer->GetStampedTransformations();

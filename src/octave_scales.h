@@ -6,6 +6,7 @@
 #define CLEAN_SLAM_SRC_OCTAVE_SCALES_H_
 
 #include <array>
+#include <cmath>
 
 #include "bound.h"
 

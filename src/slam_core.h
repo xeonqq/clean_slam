@@ -8,6 +8,7 @@
 #include "camera_motion_estimator.h"
 #include "frame.h"
 #include "key_frame.h"
+#include "map.h"
 #include "optimizer.h"
 #include "orb_extractor.h"
 #include "orb_feature_matcher.h"
@@ -82,11 +83,14 @@ private:
 
   const OctaveScales &_octave_scales;
 
+  Map _map;
+
   CameraTrajectory _trajectory;
   g2o::SE3Quat _velocity;
 
   std::vector<KeyFrame> _key_frames;
   const KeyFrame *_reference_key_frame;
+  const KeyFrame *_previous_frame;
 };
 } // namespace clean_slam
 #endif // CLEAN_SLAM_SRC_SLAM_CORE_H_

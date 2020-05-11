@@ -9,6 +9,7 @@
 
 #include "camera_motion_estimator.h"
 #include "key_frame.h"
+#include "map.h"
 #include "optimizer.h"
 #include "orb_extractor.h"
 #include "stamped_transformation.h"
@@ -19,7 +20,7 @@ namespace clean_slam {
 class MapInitializer {
 public:
   MapInitializer(OrbExtractor *orb_extractor, Optimizer *optimizer,
-                 const cv::Mat &camera_intrinsic,
+                 const cv::Mat &camera_intrinsic, Map *map,
                  const OctaveScales &octave_scales, Viewer *viewer);
 
   void ProcessFirstImage(const cv::Mat &image, double timestamp);
@@ -27,6 +28,7 @@ public:
 
   const g2o::SE3Quat &GetVelocity() const;
   const KeyFrame &GetKeyFrame() const;
+  const Frame &GetFrame() const;
   KeyFrame GetKeyFrameOwnership();
   const std::array<StampedTransformation, 2> &GetStampedTransformations() const;
 
@@ -34,6 +36,7 @@ private:
   OrbExtractor *_orb_extractor;
   Optimizer *_optimizer;
   CameraMotionEstimator _camera_motion_estimator;
+  Map *_map;
   const OctaveScales &_octave_scales;
   Viewer *_viewer;
   OrbFeatureMatcher _orb_feature_matcher;
@@ -41,6 +44,7 @@ private:
   double _previous_timestamp;
   g2o::SE3Quat _velocity;
   KeyFrame _key_frame;
+  Frame _frame;
   std::array<StampedTransformation, 2> _stamped_transformations;
 };
 } // namespace clean_slam

@@ -31,6 +31,7 @@ void SlamCore::ProcessFirstImage(const cv::Mat &image, double timestamp) {
 void SlamCore::TrackByMotionModel(const cv::Mat &image, double timestamp) {
   const auto orb_features = _orb_extractor->DetectAndUndistortKeyPoints(image);
   // const velocity model
+  /*
   const auto &prev_Tcw = _reference_key_frame->GetTcw();
   const auto Tcw = _velocity * prev_Tcw;
   const auto camera_pose_in_world = Tcw.inverse();
@@ -43,7 +44,7 @@ void SlamCore::TrackByMotionModel(const cv::Mat &image, double timestamp) {
   const auto &x_bounds = _undistorted_image_boundary.GetXBounds();
   const auto &y_bounds = _undistorted_image_boundary.GetYBounds();
 
-  const auto &distance_bounds = _reference_key_frame->GetDistanceBounds();
+//  const auto &distance_bounds = _reference_key_frame->GetDistanceBounds();
 
   for (size_t i = 0; i < points_reprojected.size(); ++i) {
     const auto &point = points_reprojected[i];
@@ -56,11 +57,11 @@ void SlamCore::TrackByMotionModel(const cv::Mat &image, double timestamp) {
     //  scale pyramid range
     const auto depth =
         (points_3d[i] - camera_pose_in_world.translation()).norm();
-    if (!distance_bounds[i].IsWithIn(depth))
-      continue;
-
-    int predicted_octave_level =
-        _octave_scales.MapDistanceToOctaveLevel(depth, distance_bounds[i]);
+//    if (!distance_bounds[i].IsWithIn(depth))
+//      continue;
+//
+//    int predicted_octave_level =
+//        _octave_scales.MapDistanceToOctaveLevel(depth, distance_bounds[i]);
 
     mask[i] = true;
   }
@@ -71,6 +72,7 @@ void SlamCore::TrackByMotionModel(const cv::Mat &image, double timestamp) {
     _viewer->OnNotify(Content{Tcw, {}});
     _viewer->OnNotify(image, orb_features);
   }
+   */
 }
 
 const CameraTrajectory &SlamCore::GetTrajectory() const { return _trajectory; }

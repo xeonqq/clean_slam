@@ -46,7 +46,7 @@ OrbFeatureMatcher::ComputeGoodMatches(const std::vector<cv::DMatch> &matches,
 }
 
 PointsPair OrbFeatureMatcher::GetMatchedPointsPair(
-    const Frame &curr_frame, const Frame &prev_frame,
+    const OrbFeatures &curr_frame, const OrbFeatures &prev_frame,
     const std::vector<cv::DMatch> &matches) {
   std::vector<cv::Point2f> key_pixels_curr_frame;
   cv::KeyPoint::convert(curr_frame.GetKeyPoints(), key_pixels_curr_frame,
@@ -61,14 +61,14 @@ PointsPair OrbFeatureMatcher::GetMatchedPointsPair(
 }
 
 PointsPair OrbFeatureMatcher::GetMatchedPointsPairUndistorted(
-    const Frame &curr_frame, const Frame &prev_frame,
+    const OrbFeatures &curr_frame, const OrbFeatures &prev_frame,
     const std::vector<cv::DMatch> &matches) {
   std::vector<cv::Point2f> key_points_curr_frame;
-  cv::KeyPoint::convert(curr_frame.GetKeyPointsUndistorted(),
+  cv::KeyPoint::convert(curr_frame.GetUndistortedKeyPoints(),
                         key_points_curr_frame, QueryIdxs{}(matches));
 
   std::vector<cv::Point2f> key_points_prev_frame;
-  cv::KeyPoint::convert(prev_frame.GetKeyPointsUndistorted(),
+  cv::KeyPoint::convert(prev_frame.GetUndistortedKeyPoints(),
                         key_points_prev_frame, TrainIdxs{}(matches));
 
   return PointsPair{std::move(key_points_curr_frame),
@@ -76,19 +76,19 @@ PointsPair OrbFeatureMatcher::GetMatchedPointsPairUndistorted(
 }
 
 KeyPointsPair OrbFeatureMatcher::GetMatchedKeyPointsPairUndistorted(
-    const Frame &curr_frame, const Frame &prev_frame,
+    const OrbFeatures &curr_frame, const OrbFeatures &prev_frame,
     const std::vector<cv::DMatch> &matches) {
   auto matched_key_points_curr =
-      FilterByIndex(curr_frame.GetKeyPointsUndistorted(), QueryIdxs{}(matches));
+      FilterByIndex(curr_frame.GetUndistortedKeyPoints(), QueryIdxs{}(matches));
   auto matched_key_points_prev =
-      FilterByIndex(prev_frame.GetKeyPointsUndistorted(), TrainIdxs{}(matches));
+      FilterByIndex(prev_frame.GetUndistortedKeyPoints(), TrainIdxs{}(matches));
 
   return {std::move(matched_key_points_prev),
           std::move(matched_key_points_curr)};
 }
 
 std::pair<cv::Mat, cv::Mat> OrbFeatureMatcher::GetMatchedDescriptors(
-    const Frame &curr_frame, const Frame &prev_frame,
+    const OrbFeatures &curr_frame, const OrbFeatures &prev_frame,
     const std::vector<cv::DMatch> &matches) {
 
   auto matched_descriptor_curr =

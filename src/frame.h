@@ -4,6 +4,7 @@
 
 #ifndef CLEAN_SLAM_SRC_FRAME_H_
 #define CLEAN_SLAM_SRC_FRAME_H_
+#include "map.h"
 #include "orb_extractor.h"
 #include <opencv2/core/core.hpp>
 
@@ -11,32 +12,17 @@ namespace clean_slam {
 class Frame {
 public:
   Frame() = default;
-  Frame(const OrbFeatures &orb_features) : _orb_features(orb_features) {}
+  Frame(std::vector<size_t> &&map_point_indexes, const Map *map,
+        const g2o::SE3Quat &Tcw)
+      : _map_point_indexes(std::move(map_point_indexes)), _map{map}, _Tcw{Tcw} {
+  }
 
-  Frame(OrbFeatures &&orb_features) : _orb_features(std::move(orb_features)) {}
-
-  Frame(Frame const &frame) = default;
-  Frame(Frame &&frame) { _orb_features = std::move(frame._orb_features); }
-  Frame &operator=(const Frame &frame) {
-    _orb_features = frame._orb_features;
-    return *this;
-  }
-  Frame &operator=(Frame &&frame) {
-    _orb_features = std::move(frame._orb_features);
-    return *this;
-  }
-  const cv::Mat GetDescriptors() const {
-    return _orb_features.GetDescriptors();
-  }
-  const std::vector<cv::KeyPoint> &GetKeyPoints() const {
-    return _orb_features.GetKeyPoints();
-  }
-  const std::vector<cv::KeyPoint> &GetKeyPointsUndistorted() const {
-    return _orb_features.GetUndistortedKeyPoints();
-  }
+  const g2o::SE3Quat &GetTcw() const { return _Tcw; }
 
 private:
-  OrbFeatures _orb_features;
+  std::vector<size_t> _map_point_indexes;
+  const Map *_map;
+  g2o::SE3Quat _Tcw;
 };
 } // namespace clean_slam
 

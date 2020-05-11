@@ -40,20 +40,22 @@ public:
   std::vector<cv::DMatch> Match(const OrbFeatures &curr_frame,
                                 const OrbFeatures &prev_frame);
   static PointsPair
-  GetMatchedPointsPair(const Frame &curr_frame, const Frame &prev_frame,
+  GetMatchedPointsPair(const OrbFeatures &curr_frame,
+                       const OrbFeatures &prev_frame,
                        const std::vector<cv::DMatch> &matches);
   static PointsPair
-  GetMatchedPointsPairUndistorted(const Frame &curr_frame,
-                                  const Frame &prev_frame,
+  GetMatchedPointsPairUndistorted(const OrbFeatures &curr_frame,
+                                  const OrbFeatures &prev_frame,
                                   const std::vector<cv::DMatch> &matches);
 
   static KeyPointsPair
-  GetMatchedKeyPointsPairUndistorted(const Frame &curr_frame,
-                                     const Frame &prev_frame,
+  GetMatchedKeyPointsPairUndistorted(const OrbFeatures &curr_frame,
+                                     const OrbFeatures &prev_frame,
                                      const std::vector<cv::DMatch> &matches);
 
   static std::pair<cv::Mat, cv::Mat>
-  GetMatchedDescriptors(const Frame &curr_frame, const Frame &prev_frame,
+  GetMatchedDescriptors(const OrbFeatures &curr_frame,
+                        const OrbFeatures &prev_frame,
                         const std::vector<cv::DMatch> &matches);
 
 private:
