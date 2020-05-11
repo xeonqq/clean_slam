@@ -26,8 +26,9 @@ void MapInitializer::ProcessFirstImage(const cv::Mat &image, double timestamp) {
   _viewer->OnNotify(image, _previous_orb_features);
 }
 
-bool MapInitializer::InitializeCameraPose(const cv::Mat &image,
-                                          double timestamp) {
+boost::optional<Frame>
+MapInitializer::InitializeCameraPose(const cv::Mat &image, double timestamp) {
+  boost::optional<Frame> frame;
   auto current_orb_features =
       _orb_extractor->DetectAndUndistortKeyPoints(image);
   std::vector<Eigen::Vector3d> good_triangulated_points;
@@ -78,8 +79,8 @@ bool MapInitializer::InitializeCameraPose(const cv::Mat &image,
                     std::move(optimized_result.optimized_points),
                     good_descriptors_current_frame, key_points_pairs.second,
                     _octave_scales);
-    _frame = Frame{std::move(map_point_indexes), _map,
-                   optimized_result.optimized_Tcw};
+    frame = Frame{std::move(map_point_indexes), _map,
+                  optimized_result.optimized_Tcw};
     _velocity =
         clean_slam::GetVelocity(optimized_result.optimized_Tcw, g2o::SE3Quat{});
     _stamped_transformations[0] =
@@ -94,7 +95,7 @@ bool MapInitializer::InitializeCameraPose(const cv::Mat &image,
   _previous_orb_features = std::move(current_orb_features);
   _previous_timestamp = timestamp;
 
-  return initialized;
+  return frame;
 }
 
 const g2o::SE3Quat &MapInitializer::GetVelocity() const { return _velocity; }

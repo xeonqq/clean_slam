@@ -44,10 +44,10 @@ struct MapInitialization : public state {
 
   template <class Event, class Fsm>
   void InitializeCameraPose(const Event &event, Fsm &fsm) {
-    if (_map_initializer->InitializeCameraPose(event.image, event.timestamp)) {
-      fsm._key_frames.push_back(_map_initializer->GetKeyFrameOwnership());
-      fsm._reference_key_frame = &fsm._key_frames.back();
-      fsm._previous_frame = &fsm._key_frames.back();
+    const auto frame =
+        _map_initializer->InitializeCameraPose(event.image, event.timestamp);
+    if (frame) {
+      fsm._frames.push_back(frame.value());
       fsm._velocity = _map_initializer->GetVelocity();
       const auto &stamped_transformations =
           _map_initializer->GetStampedTransformations();

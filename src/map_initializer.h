@@ -14,6 +14,7 @@
 #include "orb_extractor.h"
 #include "stamped_transformation.h"
 #include "viewer.h"
+#include <boost/optional.hpp>
 
 namespace clean_slam {
 
@@ -24,7 +25,8 @@ public:
                  const OctaveScales &octave_scales, Viewer *viewer);
 
   void ProcessFirstImage(const cv::Mat &image, double timestamp);
-  bool InitializeCameraPose(const cv::Mat &image, double timestamp);
+  boost::optional<Frame> InitializeCameraPose(const cv::Mat &image,
+                                              double timestamp);
 
   const g2o::SE3Quat &GetVelocity() const;
   const KeyFrame &GetKeyFrame() const;
