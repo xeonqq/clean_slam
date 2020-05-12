@@ -22,7 +22,7 @@ public:
     _core = _ioc_factory.CreateSlamCore();
   }
   void Run();
-  const CameraTrajectory &GetCamTrajectory() const;
+  CameraTrajectory GetCamTrajectory() const;
 
 private:
   const DatasetLoader *_dataset_loader;

@@ -36,14 +36,10 @@ public:
                                   const std::vector<cv::KeyPoint> &key_points,
                                   std::vector<Eigen::Vector3d> &points_3d,
                                   const OctaveScales &octave_scales);
-
-private:
-  std::vector<Eigen::Vector3d> _points_3d;
-
-public:
   const std::vector<Eigen::Vector3d> &GetPoints3D() const;
 
 private:
+  std::vector<Eigen::Vector3d> _points_3d;
   // descriptors are number_points*32 8UC1 mat, each row is a descriptor
   // in the case of ORB, the descriptor is binary, meaning, 32*8 = 256bit
   // hamming distance needs to be used to compare descriptors

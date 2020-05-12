@@ -5,6 +5,7 @@
 #include "slam_core.h"
 #include "cv_algorithms.h"
 #include "cv_utils.h"
+#include <boost/range/algorithm.hpp>
 #include <iterator>
 #include <opencv2/core/core.hpp>
 #include <opencv2/features2d/features2d.hpp>
@@ -75,6 +76,13 @@ void SlamCore::TrackByMotionModel(const cv::Mat &image, double timestamp) {
    */
 }
 
-const CameraTrajectory &SlamCore::GetTrajectory() const { return _trajectory; }
+CameraTrajectory SlamCore::GetTrajectory() const {
+  CameraTrajectory trajectory;
+  boost::range::transform(
+      _frames, std::back_inserter(trajectory), [](const auto &frame) {
+        return StampedTransformation{frame.GetTcw(), frame.GetTimestamp()};
+      });
+  return trajectory;
+}
 
 } // namespace clean_slam

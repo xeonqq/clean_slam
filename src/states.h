@@ -8,6 +8,7 @@
 #include <boost/msm/front/states.hpp>
 #include <third_party/spdlog/spdlog.h>
 
+#include "cv_algorithms.h"
 #include "map_initializer.h"
 
 namespace clean_slam {
@@ -44,15 +45,14 @@ struct MapInitialization : public state {
 
   template <class Event, class Fsm>
   void InitializeCameraPose(const Event &event, Fsm &fsm) {
-    const auto frame =
+    auto optional_frame =
         _map_initializer->InitializeCameraPose(event.image, event.timestamp);
-    if (frame) {
-      fsm._frames.push_back(frame.value());
-      fsm._velocity = _map_initializer->GetVelocity();
-      const auto &stamped_transformations =
-          _map_initializer->GetStampedTransformations();
-      fsm._trajectory.push_back(stamped_transformations[0]);
-      fsm._trajectory.push_back(stamped_transformations[1]);
+    if (optional_frame) {
+      auto &frames = optional_frame.value();
+      fsm._velocity =
+          clean_slam::GetVelocity(frames.second.GetTcw(), g2o::SE3Quat{});
+      fsm._frames.push_back(std::move(frames.first));
+      fsm._frames.push_back(std::move(frames.second));
       fsm.process_event(Initialized{});
     }
   }

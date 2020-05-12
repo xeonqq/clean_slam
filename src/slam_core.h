@@ -36,7 +36,7 @@ public:
            const OctaveScales &octave_scale);
   void ProcessFirstImage(const cv::Mat &image, double timestamp);
   void TrackByMotionModel(const cv::Mat &image, double timestamp);
-  const CameraTrajectory &GetTrajectory() const;
+  CameraTrajectory GetTrajectory() const;
 
   struct ProcessFirstImageAction {
     template <class EVT, class FSM, class SourceState, class TargetState>
@@ -85,7 +85,6 @@ private:
 
   Map _map;
 
-  CameraTrajectory _trajectory;
   g2o::SE3Quat _velocity;
 
   std::vector<KeyFrame> _key_frames;

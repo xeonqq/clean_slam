@@ -13,16 +13,23 @@ class Frame {
 public:
   Frame() = default;
   Frame(std::vector<size_t> &&map_point_indexes, const Map *map,
-        const g2o::SE3Quat &Tcw)
-      : _map_point_indexes(std::move(map_point_indexes)), _map{map}, _Tcw{Tcw} {
-  }
+        const g2o::SE3Quat &Tcw, double timestamp)
+      : _map_point_indexes(std::move(map_point_indexes)), _map{map}, _Tcw{Tcw},
+        _timestamp{timestamp} {}
+
+  Frame(std::vector<size_t> &map_point_indexes, const Map *map,
+        const g2o::SE3Quat &Tcw, double timestamp)
+      : _map_point_indexes(map_point_indexes), _map{map}, _Tcw{Tcw},
+        _timestamp{timestamp} {}
 
   const g2o::SE3Quat &GetTcw() const { return _Tcw; }
+  double GetTimestamp() const { return _timestamp; }
 
 private:
   std::vector<size_t> _map_point_indexes;
   const Map *_map;
   g2o::SE3Quat _Tcw;
+  double _timestamp;
 };
 } // namespace clean_slam
 

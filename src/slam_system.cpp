@@ -9,7 +9,7 @@
 
 namespace clean_slam {
 
-const CameraTrajectory &SlamSystem::GetCamTrajectory() const {
+CameraTrajectory SlamSystem::GetCamTrajectory() const {
   return _core->GetTrajectory();
 }
 

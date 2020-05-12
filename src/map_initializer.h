@@ -15,6 +15,7 @@
 #include "stamped_transformation.h"
 #include "viewer.h"
 #include <boost/optional.hpp>
+#include <tuple>
 
 namespace clean_slam {
 
@@ -25,14 +26,8 @@ public:
                  const OctaveScales &octave_scales, Viewer *viewer);
 
   void ProcessFirstImage(const cv::Mat &image, double timestamp);
-  boost::optional<Frame> InitializeCameraPose(const cv::Mat &image,
-                                              double timestamp);
-
-  const g2o::SE3Quat &GetVelocity() const;
-  const KeyFrame &GetKeyFrame() const;
-  const Frame &GetFrame() const;
-  KeyFrame GetKeyFrameOwnership();
-  const std::array<StampedTransformation, 2> &GetStampedTransformations() const;
+  boost::optional<std::pair<Frame, Frame>>
+  InitializeCameraPose(const cv::Mat &image, double timestamp);
 
 private:
   OrbExtractor *_orb_extractor;
@@ -44,10 +39,7 @@ private:
   OrbFeatureMatcher _orb_feature_matcher;
   OrbFeatures _previous_orb_features;
   double _previous_timestamp;
-  g2o::SE3Quat _velocity;
-  KeyFrame _key_frame;
   Frame _frame;
-  std::array<StampedTransformation, 2> _stamped_transformations;
 };
 } // namespace clean_slam
 #endif // CLEAN_SLAM_SRC_MAP_INITIALIZER_H_

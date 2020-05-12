@@ -26,13 +26,12 @@ void MapInitializer::ProcessFirstImage(const cv::Mat &image, double timestamp) {
   _viewer->OnNotify(image, _previous_orb_features);
 }
 
-boost::optional<Frame>
+boost::optional<std::pair<Frame, Frame>>
 MapInitializer::InitializeCameraPose(const cv::Mat &image, double timestamp) {
-  boost::optional<Frame> frame;
+  boost::optional<std::pair<Frame, Frame>> frame;
   auto current_orb_features =
       _orb_extractor->DetectAndUndistortKeyPoints(image);
   std::vector<Eigen::Vector3d> good_triangulated_points;
-  bool initialized = false;
   const std::vector<cv::DMatch> good_matches =
       _orb_feature_matcher.Match(current_orb_features, _previous_orb_features);
   const PointsPair matched_points_pair_undistorted =
@@ -47,7 +46,6 @@ MapInitializer::InitializeCameraPose(const cv::Mat &image, double timestamp) {
       points_previous_frame, points_current_frame);
   if (plausible_transformation.IsGood()) {
     spdlog::info("Initialized");
-    initialized = true;
     auto key_points_pairs =
         OrbFeatureMatcher::GetMatchedKeyPointsPairUndistorted(
             current_orb_features, _previous_orb_features, good_matches);
@@ -79,14 +77,11 @@ MapInitializer::InitializeCameraPose(const cv::Mat &image, double timestamp) {
                     std::move(optimized_result.optimized_points),
                     good_descriptors_current_frame, key_points_pairs.second,
                     _octave_scales);
-    frame = Frame{std::move(map_point_indexes), _map,
-                  optimized_result.optimized_Tcw};
-    _velocity =
-        clean_slam::GetVelocity(optimized_result.optimized_Tcw, g2o::SE3Quat{});
-    _stamped_transformations[0] =
-        StampedTransformation(g2o::SE3Quat{}, _previous_timestamp);
-    _stamped_transformations[1] =
-        StampedTransformation(optimized_result.optimized_Tcw, timestamp);
+
+    frame = std::make_pair(
+        Frame{map_point_indexes, _map, g2o::SE3Quat(), _previous_timestamp},
+        Frame{std::move(map_point_indexes), _map,
+              optimized_result.optimized_Tcw, timestamp});
 
     _viewer->OnNotify({g2o::SE3Quat(), {}});
     _viewer->OnNotify({optimized_result.optimized_Tcw, _map->GetPoints3D()});
@@ -97,17 +92,5 @@ MapInitializer::InitializeCameraPose(const cv::Mat &image, double timestamp) {
 
   return frame;
 }
-
-const g2o::SE3Quat &MapInitializer::GetVelocity() const { return _velocity; }
-const KeyFrame &MapInitializer::GetKeyFrame() const { return _key_frame; }
-KeyFrame MapInitializer::GetKeyFrameOwnership() {
-  return std::move(_key_frame);
-}
-
-const std::array<StampedTransformation, 2> &
-MapInitializer::GetStampedTransformations() const {
-  return _stamped_transformations;
-}
-const Frame &MapInitializer::GetFrame() const { return _frame; }
 
 } // namespace clean_slam
