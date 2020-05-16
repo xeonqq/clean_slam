@@ -37,6 +37,7 @@ public:
                                   std::vector<Eigen::Vector3d> &points_3d,
                                   const OctaveScales &octave_scales);
   const std::vector<Eigen::Vector3d> &GetPoints3D() const;
+  const cv::Mat &GetDescriptors() const;
 
 private:
   std::vector<Eigen::Vector3d> _points_3d;

@@ -20,4 +20,23 @@ TEST(Points3DView, WhenIterate_ThenRetievePointsAccordingToProvidedIndexes) {
   EXPECT_EQ(points.size(), 3);
 }
 
+TEST(DescriptorsView,
+     WhenIterate_ThenRetieveDescriptorsAccordingToProvidedIndexes) {
+
+  cv::Mat descriptor = cv::Mat(2, 2, CV_8UC1);
+  descriptor.at<uint8_t>(0, 0) = 28;
+  descriptor.at<uint8_t>(0, 1) = 18;
+  descriptor.at<uint8_t>(1, 0) = 27;
+  descriptor.at<uint8_t>(1, 1) = 19;
+
+  std::vector<std::size_t> indexes = {1};
+  DescriptorsView view{descriptor, indexes};
+  std::for_each(view.begin(), view.end(), [](const auto &descriptor) {
+    EXPECT_EQ(descriptor.val[0], 27);
+    EXPECT_EQ(descriptor.val[1], 19);
+  });
+  EXPECT_EQ(view[0].val[0], 27);
+  EXPECT_EQ(view[0].val[1], 19);
+  EXPECT_EQ(view.size(), 2);
+}
 } // namespace clean_slam

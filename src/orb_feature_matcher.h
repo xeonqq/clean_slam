@@ -4,8 +4,7 @@
 
 #ifndef CLEAN_SLAM_SRC_SLAM_CORE_CPP_ORBFEATUREMATCHER_H_
 #define CLEAN_SLAM_SRC_SLAM_CORE_CPP_ORBFEATUREMATCHER_H_
-
-#include "frame.h"
+#include "orb_extractor.h"
 
 namespace clean_slam {
 using KeyPointsPair =

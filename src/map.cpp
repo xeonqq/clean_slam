@@ -52,5 +52,6 @@ std::vector<Bound> Map::Calculate3DPointsDistanceBounds(
 const std::vector<Eigen::Vector3d> &Map::GetPoints3D() const {
   return _points_3d;
 }
+const cv::Mat &Map::GetDescriptors() const { return _descriptors; }
 
 } // namespace clean_slam

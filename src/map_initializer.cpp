@@ -75,13 +75,14 @@ MapInitializer::InitializeCameraPose(const cv::Mat &image, double timestamp) {
 
     _map->Construct(optimized_result.optimized_Tcw,
                     std::move(optimized_result.optimized_points),
-                    good_descriptors_current_frame, key_points_pairs.second,
+                    good_descriptors_current_frame, good_key_points_pair.second,
                     _octave_scales);
 
-    frame = std::make_pair(
-        Frame{map_point_indexes, _map, g2o::SE3Quat(), _previous_timestamp},
-        Frame{std::move(map_point_indexes), _map,
-              optimized_result.optimized_Tcw, timestamp});
+    frame = std::make_pair(Frame{good_key_points_pair.first, map_point_indexes,
+                                 _map, g2o::SE3Quat(), _previous_timestamp},
+                           Frame{std::move(good_key_points_pair.second),
+                                 std::move(map_point_indexes), _map,
+                                 optimized_result.optimized_Tcw, timestamp});
 
     _viewer->OnNotify({g2o::SE3Quat(), {}});
     _viewer->OnNotify({optimized_result.optimized_Tcw, _map->GetPoints3D()});
