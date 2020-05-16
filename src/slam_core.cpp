@@ -32,11 +32,15 @@ void SlamCore::ProcessFirstImage(const cv::Mat &image, double timestamp) {
 void SlamCore::TrackByMotionModel(const cv::Mat &image, double timestamp) {
   const auto orb_features = _orb_extractor->DetectAndUndistortKeyPoints(image);
   // const velocity model
-  const auto prev_frame = _frames.back();
-  const auto points_3d = prev_frame.GetPoints3DView();
+  const auto &prev_frame = _frames.back();
+  const auto &prev_prev_frame = _frames[_frames.size() - 2];
   const auto &prev_Tcw = prev_frame.GetTcw();
-  const auto Tcw = _velocity * prev_Tcw;
+  g2o::SE3Quat velocity =
+      clean_slam::GetVelocity(prev_Tcw, prev_prev_frame.GetTcw());
+  const auto points_3d = prev_frame.GetPoints3DView();
+  const auto Tcw = velocity * prev_Tcw;
   const auto camera_pose_in_world = Tcw.inverse();
+
   // todo: project 3d points (along with its feature descriptor) to current
   std::vector<Eigen::Vector2d> points_reprojected;
   points_reprojected.resize(points_3d.size());

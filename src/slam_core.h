@@ -85,8 +85,6 @@ private:
 
   Map _map;
 
-  g2o::SE3Quat _velocity;
-
   std::vector<KeyFrame> _key_frames;
   std::vector<Frame> _frames;
   const KeyFrame *_reference_key_frame;

@@ -49,8 +49,6 @@ struct MapInitialization : public state {
         _map_initializer->InitializeCameraPose(event.image, event.timestamp);
     if (optional_frame) {
       auto &frames = optional_frame.value();
-      fsm._velocity =
-          clean_slam::GetVelocity(frames.second.GetTcw(), g2o::SE3Quat{});
       fsm._frames.push_back(std::move(frames.first));
       fsm._frames.push_back(std::move(frames.second));
       fsm.process_event(Initialized{});
