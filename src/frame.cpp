@@ -11,6 +11,10 @@ Points3DView Frame::GetPoints3DView() const {
 DescriptorsView Frame::GetDescriptorsView() const {
   return DescriptorsView(_map->GetDescriptors(), _map_point_indexes);
 }
+
+const std::vector<cv::KeyPoint> &Frame::GetKeyPoints() const {
+  return _key_points;
+}
 // cv::Mat Frame::GetDescriptersView() const {
 //  return View<cv::Mat>
 //

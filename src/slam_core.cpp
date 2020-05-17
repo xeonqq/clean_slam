@@ -51,29 +51,36 @@ void SlamCore::TrackByMotionModel(const cv::Mat &image, double timestamp) {
   const auto &x_bounds = _undistorted_image_boundary.GetXBounds();
   const auto &y_bounds = _undistorted_image_boundary.GetYBounds();
 
-  //  const auto &distance_bounds = _reference_key_frame->GetDistanceBounds();
+  boost::range::transform(
+      points_reprojected, mask.begin(),
+      [&x_bounds, &y_bounds](const auto &point_reprojected) {
+        return IsPointWithInBounds(point_reprojected, x_bounds, y_bounds);
+      });
 
-  for (size_t i = 0; i < points_reprojected.size(); ++i) {
-    const auto &point = points_reprojected[i];
+  SearchByProjection(orb_features, points_reprojected,
+                     prev_frame.GetDescriptorsView(), mask, 10);
+  /*
+    for (size_t i = 0; i < points_reprojected.size(); ++i) {
+      const auto &point = points_reprojected[i];
 
-    //  1. check points in undistorted range
-    if (!IsPointWithInBounds(point, x_bounds, y_bounds))
-      continue;
+      //  1. check points in undistorted range
+      if (!IsPointWithInBounds(point, x_bounds, y_bounds))
+        continue;
 
-    //  2. check new depth of points (wrt to new camera pose) is within
-    //  scale pyramid range
-    const auto depth =
-        (points_3d[i] - camera_pose_in_world.translation()).norm();
-//    if (!distance_bounds[i].IsWithIn(depth))
-//      continue;
-//
-//    int predicted_octave_level =
-//        _octave_scales.MapDistanceToOctaveLevel(depth, distance_bounds[i]);
+      //  2. check new depth of points (wrt to new camera pose) is within
+      //  scale pyramid range
+          const auto depth =
+              (points_3d[i] - camera_pose_in_world.translation()).norm();
+          if (!distance_bounds[i].IsWithIn(depth))
+            continue;
 
-    mask[i] = true;
-  }
-  //  SearchByProjection(current_frame.GetKeyPoints(), points_reprojected,
-  //                     _reference_key_frame->GetDescriptors(), mask);
+          int predicted_octave_level =
+              _octave_scales.MapDistanceToOctaveLevel(depth,
+              distance_bounds[i]);
+
+      mask[i] = true;
+    }
+    */
 
   if (_viewer) {
     _viewer->OnNotify(Content{Tcw, {}});
@@ -89,5 +96,4 @@ CameraTrajectory SlamCore::GetTrajectory() const {
       });
   return trajectory;
 }
-
 } // namespace clean_slam

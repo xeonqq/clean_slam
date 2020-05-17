@@ -23,9 +23,9 @@ public:
   using iterator = Iterator<ElemContainer, T>;
   using const_iterator = Iterator<ElemContainer, T>;
 
-  ElementsView(const ElemContainer &points_3d,
+  ElementsView(const ElemContainer &elements,
                const std::vector<size_t> &indexes)
-      : _elements(points_3d), _indexes(indexes) {}
+      : _elements(elements), _indexes(indexes) {}
 
   iterator begin() const { return iterator{_elements, _indexes, 0}; }
 
@@ -34,6 +34,8 @@ public:
   }
 
   const T &operator[](size_t pos) const { return _elements[_indexes[pos]]; };
+
+  size_t MapIndex(size_t pos) const { return _indexes[pos]; };
 
   size_t size() const { return _indexes.size(); }
 };

@@ -5,6 +5,7 @@
 #ifndef CLEAN_SLAM_SRC_CV_ALGORITHMS_H_
 #define CLEAN_SLAM_SRC_CV_ALGORITHMS_H_
 
+#include "frame.h"
 #include <Eigen/Dense>
 #include <boost/range/algorithm.hpp>
 #include <opencv2/core/mat.hpp>
@@ -41,5 +42,10 @@ void ReprojectPoints3d(const SinglePassRange1 &points_3d, OutputIterator out,
 std::vector<int> GetPointsInArea(const Eigen::Vector2d &center, float radius,
                                  const std::vector<cv::KeyPoint> &key_points);
 
+std::vector<std::pair<size_t, size_t>>
+SearchByProjection(const OrbFeatures &features,
+                   const std::vector<Eigen::Vector2d> &projected_map_points,
+                   const DescriptorsView &map_points_descriptors,
+                   const std::vector<bool> &mask, int search_radius);
 } // namespace clean_slam
 #endif // CLEAN_SLAM_SRC_CV_ALGORITHMS_H_
