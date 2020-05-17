@@ -23,11 +23,7 @@ TEST(Points3DView, WhenIterate_ThenRetievePointsAccordingToProvidedIndexes) {
 TEST(DescriptorsView,
      WhenIterate_ThenRetieveDescriptorsAccordingToProvidedIndexes) {
 
-  cv::Mat descriptor = cv::Mat(2, 2, CV_8UC1);
-  descriptor.at<uint8_t>(0, 0) = 28;
-  descriptor.at<uint8_t>(0, 1) = 18;
-  descriptor.at<uint8_t>(1, 0) = 27;
-  descriptor.at<uint8_t>(1, 1) = 19;
+  cv::Mat descriptor = (cv::Mat_<uint8_t>(2, 2) << 28, 18, 27, 19);
 
   std::vector<std::size_t> indexes = {1};
   DescriptorsView view{descriptor, indexes};
