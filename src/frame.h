@@ -13,6 +13,7 @@ namespace clean_slam {
 
 using Points3DView = ElementsView<std::vector<Eigen::Vector3d>>;
 using DescriptorsView = ElementsView<cv::Mat, cv::Matx<uint8_t, 1, 32>>;
+using OctavesView = ElementsView<std::vector<int>>;
 class Frame {
 public:
   Frame() = default;
@@ -40,6 +41,8 @@ public:
   const std::vector<cv::KeyPoint> &GetKeyPoints() const;
   Points3DView GetPoints3DView() const;
   DescriptorsView GetDescriptorsView() const;
+  OctavesView GetOctavesView() const;
+  cv::Mat GetDescriptors() const;
 
 private:
   std::vector<cv::KeyPoint> _key_points;

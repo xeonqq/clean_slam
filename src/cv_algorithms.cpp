@@ -2,6 +2,8 @@
 // Created by root on 4/18/20.
 //
 #include "cv_algorithms.h"
+#include <iostream>
+#include <opencv2/features2d.hpp>
 
 namespace clean_slam {
 
@@ -20,10 +22,12 @@ ReprojectPoints3d(const std::vector<Eigen::Vector3d> &points_3d,
                     camera_intrinsic);
   return points_reprojected;
 }
+
 std::vector<std::pair<size_t, size_t>>
 SearchByProjection(const OrbFeatures &features,
                    const std::vector<Eigen::Vector2d> &projected_map_points,
-                   const DescriptorsView &map_points_descriptors,
+                   const OctavesView &map_points_octaves,
+                   const cv::Mat &map_points_descriptors,
                    const std::vector<bool> &mask, int search_radius) {
   /*
    * We have orb features (key points + feature descriptors) from current frame
@@ -38,20 +42,44 @@ SearchByProjection(const OrbFeatures &features,
    * Once we have the matched map points indexes for the newly observed points,
    * we can perform again a bundle adjustment.
    * */
+  auto matcher =
+      cv::FlannBasedMatcher(cv::makePtr<cv::flann::LshIndexParams>(12, 20, 2));
+  std::vector<std::vector<cv::DMatch>> matches_for_map_points;
+  const auto &current_descriptors = features.GetDescriptors();
+  matcher.knnMatch(map_points_descriptors, current_descriptors,
+                   matches_for_map_points,
+                   std::min(current_descriptors.rows, 5));
+
+  const auto &current_key_points = features.GetUndistortedKeyPoints();
+
   std::vector<std::pair<size_t, size_t>> matched_pairs;
-  for (size_t i = 0; i < projected_map_points.size(); ++i) {
-    const auto &current_key_points = features.GetUndistortedKeyPoints();
-    const auto &current_points_descriptors = features.GetDescriptors();
-    for (size_t j = 0; j < current_key_points.size(); ++j) {
-      projected_map_points[i];
-      map_points_descriptors[i];
-      bool matched = false;
-      if (matched) {
-        matched_pairs.push_back({i, j});
+  matched_pairs.reserve(map_points_octaves.size());
+  const int descriptor_distance_threshold = 10;
+
+  for (const std::vector<cv::DMatch> &matches_per_map_point :
+       matches_for_map_points) {
+    for (const cv::DMatch &m : matches_per_map_point) {
+      const auto &projected_map_point = projected_map_points[m.queryIdx];
+      const auto &current_key_point = current_key_points[m.trainIdx];
+
+      // find the first one which satisfies the condition, then stop
+      if (current_key_point.octave == map_points_octaves[m.queryIdx] &&
+          KeyPointWithinRadius(current_key_point, projected_map_point,
+                               search_radius) &&
+          m.distance <= descriptor_distance_threshold) {
+        matched_pairs.emplace_back(map_points_octaves.MapIndex(m.queryIdx),
+                                   m.trainIdx);
+        break;
       }
     }
   }
   return matched_pairs;
 }
 
+bool KeyPointWithinRadius(const cv::KeyPoint &key_point,
+                          const Eigen::Vector2d &point, float radius) {
+  const auto distance_sqr = std::pow((point.x() - key_point.pt.x), 2) +
+                            std::pow((point.y() - key_point.pt.y), 2);
+  return distance_sqr <= std::pow(radius, 2);
+}
 } // namespace clean_slam

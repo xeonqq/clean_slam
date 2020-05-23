@@ -5,6 +5,7 @@
 #include "slam_core.h"
 #include "cv_algorithms.h"
 #include "cv_utils.h"
+#include <boost/foreach.hpp>
 #include <boost/range/algorithm.hpp>
 #include <iterator>
 #include <opencv2/core/core.hpp>
@@ -56,9 +57,9 @@ void SlamCore::TrackByMotionModel(const cv::Mat &image, double timestamp) {
       [&x_bounds, &y_bounds](const auto &point_reprojected) {
         return IsPointWithInBounds(point_reprojected, x_bounds, y_bounds);
       });
-
   SearchByProjection(orb_features, points_reprojected,
-                     prev_frame.GetDescriptorsView(), mask, 10);
+                     prev_frame.GetOctavesView(), prev_frame.GetDescriptors(),
+                     mask, 10);
   /*
     for (size_t i = 0; i < points_reprojected.size(); ++i) {
       const auto &point = points_reprojected[i];

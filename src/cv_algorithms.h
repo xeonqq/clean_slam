@@ -45,7 +45,11 @@ std::vector<int> GetPointsInArea(const Eigen::Vector2d &center, float radius,
 std::vector<std::pair<size_t, size_t>>
 SearchByProjection(const OrbFeatures &features,
                    const std::vector<Eigen::Vector2d> &projected_map_points,
-                   const DescriptorsView &map_points_descriptors,
+                   const OctavesView &map_points_octaves,
+                   const cv::Mat &map_points_descriptors,
                    const std::vector<bool> &mask, int search_radius);
+
+bool KeyPointWithinRadius(const cv::KeyPoint &key_point,
+                          const Eigen::Vector2d &point, float radius);
 } // namespace clean_slam
 #endif // CLEAN_SLAM_SRC_CV_ALGORITHMS_H_

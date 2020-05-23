@@ -38,6 +38,7 @@ public:
                                   const OctaveScales &octave_scales);
   const std::vector<Eigen::Vector3d> &GetPoints3D() const;
   const cv::Mat &GetDescriptors() const;
+  const std::vector<int> &GetOctaves() const;
 
 private:
   std::vector<Eigen::Vector3d> _points_3d;
@@ -46,6 +47,7 @@ private:
   // hamming distance needs to be used to compare descriptors
   cv::Mat _descriptors;
   std::vector<Bound> _distance_bounds;
+  std::vector<int> _octaves;
 };
 } // namespace clean_slam
 #endif // CLEAN_SLAM_SRC_MAP_H_

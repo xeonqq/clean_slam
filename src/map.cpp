@@ -3,6 +3,7 @@
 //
 
 #include "map.h"
+#include <boost/range/algorithm/transform.hpp>
 
 namespace clean_slam {
 
@@ -30,6 +31,10 @@ void Map::Construct(const g2o::SE3Quat &Tcw,
   _points_3d = std::move(points_3d);
   _descriptors = descriptors;
   _distance_bounds = std::move(distance_bounds);
+  _octaves.reserve(_octaves.size() + key_points.size());
+  boost::range::transform(
+      key_points, std::back_inserter(_octaves),
+      [](const auto &key_point) { return key_point.octave; });
 }
 
 std::vector<Bound> Map::Calculate3DPointsDistanceBounds(
@@ -53,5 +58,6 @@ const std::vector<Eigen::Vector3d> &Map::GetPoints3D() const {
   return _points_3d;
 }
 const cv::Mat &Map::GetDescriptors() const { return _descriptors; }
+const std::vector<int> &Map::GetOctaves() const { return _octaves; }
 
 } // namespace clean_slam
