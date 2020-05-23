@@ -47,16 +47,15 @@ void SlamCore::TrackByMotionModel(const cv::Mat &image, double timestamp) {
   points_reprojected.resize(points_3d.size());
   clean_slam::ReprojectPoints3d(points_3d, std::begin(points_reprojected), Tcw,
                                 _camera_intrinsic);
-  std::vector<bool> mask(points_reprojected.size(), false);
+  cv::Mat mask = cv::Mat(points_reprojected.size(), 1, CV_8U);
 
   const auto &x_bounds = _undistorted_image_boundary.GetXBounds();
   const auto &y_bounds = _undistorted_image_boundary.GetYBounds();
 
-  boost::range::transform(
-      points_reprojected, mask.begin(),
-      [&x_bounds, &y_bounds](const auto &point_reprojected) {
-        return IsPointWithInBounds(point_reprojected, x_bounds, y_bounds);
-      });
+  for (size_t i = 0; i < points_reprojected.size(); ++i) {
+    mask.at<uint8_t>(i) =
+        IsPointWithInBounds(points_reprojected[i], x_bounds, y_bounds);
+  }
   SearchByProjection(orb_features, points_reprojected,
                      prev_frame.GetOctavesView(), prev_frame.GetDescriptors(),
                      mask, 10);

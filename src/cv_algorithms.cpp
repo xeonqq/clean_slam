@@ -2,6 +2,7 @@
 // Created by root on 4/18/20.
 //
 #include "cv_algorithms.h"
+#include <boost/range/adaptor/indexed.hpp>
 #include <iostream>
 #include <opencv2/features2d.hpp>
 
@@ -27,8 +28,8 @@ std::vector<std::pair<size_t, size_t>>
 SearchByProjection(const OrbFeatures &features,
                    const std::vector<Eigen::Vector2d> &projected_map_points,
                    const OctavesView &map_points_octaves,
-                   const cv::Mat &map_points_descriptors,
-                   const std::vector<bool> &mask, int search_radius) {
+                   const cv::Mat &map_points_descriptors, const cv::Mat &mask,
+                   int search_radius) {
   /*
    * We have orb features (key points + feature descriptors) from current frame
    * and 3d map points observed from the last frame projected onto the current
@@ -46,6 +47,8 @@ SearchByProjection(const OrbFeatures &features,
       cv::FlannBasedMatcher(cv::makePtr<cv::flann::LshIndexParams>(12, 20, 2));
   std::vector<std::vector<cv::DMatch>> matches_for_map_points;
   const auto &current_descriptors = features.GetDescriptors();
+
+  // for flann matcher mask is not supported
   matcher.knnMatch(map_points_descriptors, current_descriptors,
                    matches_for_map_points,
                    std::min(current_descriptors.rows, 5));
@@ -56,9 +59,13 @@ SearchByProjection(const OrbFeatures &features,
   matched_pairs.reserve(map_points_octaves.size());
   const int descriptor_distance_threshold = 10;
 
-  for (const std::vector<cv::DMatch> &matches_per_map_point :
-       matches_for_map_points) {
-    for (const cv::DMatch &m : matches_per_map_point) {
+  for (const auto &matches_per_map_point :
+       matches_for_map_points | boost::adaptors::indexed()) {
+
+    if (!mask.at<uint8_t>(matches_per_map_point.index()))
+      continue;
+
+    for (const cv::DMatch &m : matches_per_map_point.value()) {
       const auto &projected_map_point = projected_map_points[m.queryIdx];
       const auto &current_key_point = current_key_points[m.trainIdx];
 
