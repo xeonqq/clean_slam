@@ -2,6 +2,7 @@
 // Created by root on 5/12/20.
 //
 #include "frame.h"
+#include <boost/range/algorithm/transform.hpp>
 namespace clean_slam {
 
 Points3DView Frame::GetPoints3DView() const {
@@ -27,6 +28,14 @@ cv::Mat Frame::GetDescriptors() const {
     descriptors.at<DescriptorT>(i) = view[i];
   }
   return descriptors;
+}
+std::vector<uint8_t> Frame::GetOctaves() const {
+  std::vector<uint8_t> octaves;
+  octaves.reserve(_key_points.size());
+  boost::range::transform(
+      _key_points, std::back_inserter(octaves),
+      [](const cv::KeyPoint &key_point) { return key_point.octave; });
+  return octaves;
 }
 // cv::Mat Frame::GetDescriptersView() const {
 //  return View<cv::Mat>

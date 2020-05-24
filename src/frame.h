@@ -42,6 +42,7 @@ public:
   Points3DView GetPoints3DView() const;
   DescriptorsView GetDescriptorsView() const;
   OctavesView GetOctavesView() const;
+  std::vector<uint8_t> GetOctaves() const;
   cv::Mat GetDescriptors() const;
 
 private:

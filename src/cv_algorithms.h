@@ -45,7 +45,7 @@ std::vector<int> GetPointsInArea(const Eigen::Vector2d &center, float radius,
 std::vector<cv::DMatch>
 SearchByProjection(const OrbFeatures &features,
                    const std::vector<Eigen::Vector2d> &projected_map_points,
-                   const OctavesView &map_points_octaves,
+                   const std::vector<uint8_t> &map_points_octaves,
                    const cv::Mat &map_points_descriptors, const cv::Mat &mask,
                    int search_radius);
 

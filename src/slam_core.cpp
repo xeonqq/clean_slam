@@ -41,7 +41,7 @@ void SlamCore::TrackByMotionModel(const cv::Mat &image, double timestamp) {
       clean_slam::GetVelocity(prev_Tcw, prev_prev_frame.GetTcw());
   const auto points_3d = prev_frame.GetPoints3DView();
   const auto Tcw = velocity * prev_Tcw;
-  const auto camera_pose_in_world = Tcw.inverse();
+  //  const auto camera_pose_in_world = Tcw.inverse();
 
   // todo: project 3d points (along with its feature descriptor) to current
   std::vector<Eigen::Vector2d> points_reprojected;
@@ -58,7 +58,7 @@ void SlamCore::TrackByMotionModel(const cv::Mat &image, double timestamp) {
         IsPointWithInBounds(points_reprojected[i], x_bounds, y_bounds);
   }
   const auto matches = SearchByProjection(
-      orb_features, points_reprojected, prev_frame.GetOctavesView(),
+      orb_features, points_reprojected, prev_frame.GetOctaves(),
       prev_frame.GetDescriptors(), mask, 10);
 
   auto matched_key_points_current_frame = FilterByIndex(

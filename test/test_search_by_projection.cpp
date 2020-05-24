@@ -51,23 +51,18 @@ public:
     _map_points_descriptors.at<uint8_t>(0, 0) = 27; //  00011011
     _map_points_descriptors.at<uint8_t>(1, 0) = 1;  //  00000001
     _map_points_descriptors.at<uint8_t>(2, 0) = 19; // 00010011
-    _indexes = {0, 1, 2};
     _octaves = {0, 1, 0};
 
     _mask = cv::Mat(_projected_map_points.size(), 1, CV_8U, true);
   }
 
 protected:
-  OctavesView GetOctavesView() { return OctavesView{_octaves, _indexes}; }
 
   OrbFeatures _current_features;
   std::vector<Eigen::Vector2d> _projected_map_points;
   cv::Mat _map_points_descriptors;
   cv::Mat _mask;
-
-private:
-  std::vector<size_t> _indexes;
-  std::vector<int> _octaves;
+  std::vector<uint8_t> _octaves;
 };
 
 TEST_F(
@@ -77,7 +72,7 @@ TEST_F(
   // When
   int search_radius = 10;
   const auto matches = clean_slam::SearchByProjection(
-      _current_features, _projected_map_points, GetOctavesView(),
+      _current_features, _projected_map_points, _octaves,
       _map_points_descriptors, _mask, search_radius);
 
   // Then
@@ -97,7 +92,7 @@ TEST_F(
   // When
   int search_radius = 10;
   const auto matches = clean_slam::SearchByProjection(
-      _current_features, _projected_map_points, GetOctavesView(),
+      _current_features, _projected_map_points, _octaves,
       _map_points_descriptors, _mask, search_radius);
 
   // Then

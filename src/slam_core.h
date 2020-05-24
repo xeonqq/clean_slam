@@ -85,10 +85,7 @@ private:
 
   Map _map;
 
-  std::vector<KeyFrame> _key_frames;
   std::vector<Frame> _frames;
-  const KeyFrame *_reference_key_frame;
-  const KeyFrame *_previous_frame;
 };
 } // namespace clean_slam
 #endif // CLEAN_SLAM_SRC_SLAM_CORE_H_
