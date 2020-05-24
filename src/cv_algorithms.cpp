@@ -13,28 +13,7 @@ g2o::SE3Quat GetVelocity(const g2o::SE3Quat &Tcw_current,
   return Tcw_current * Tcw_prev.inverse();
 }
 
-std::vector<Eigen::Vector2d>
-ReprojectPoints3d(const std::vector<Eigen::Vector3d> &points_3d,
-                  const g2o::SE3Quat &current_pose,
-                  const cv::Mat &camera_intrinsic) {
-  std::vector<Eigen::Vector2d> points_reprojected;
-  points_reprojected.resize(points_3d.size());
-  ReprojectPoints3d(points_3d, points_reprojected.begin(), current_pose,
-                    camera_intrinsic);
-  return points_reprojected;
-}
-std::vector<cv::DMatch>
-SearchByProjection(const OrbFeatureMatcher &matcher,
-                   const OrbFeatures &features,
-                   const std::vector<Eigen::Vector2d> &projected_map_points,
-                   const std::vector<uint8_t> &map_points_octaves,
-                   const cv::Mat &map_points_descriptors, const cv::Mat &mask,
-                   int search_radius) {
-  const auto &current_descriptors = features.GetDescriptors();
 
-  std::vector<std::vector<cv::DMatch>> matches_for_map_points =
-      matcher.KnnMatch(map_points_descriptors, current_descriptors, 5);
-}
 std::vector<cv::DMatch>
 SearchByProjection(const OrbFeatures &features,
                    const std::vector<Eigen::Vector2d> &projected_map_points,

@@ -4,8 +4,10 @@
 
 #ifndef CLEAN_SLAM_SRC_FRAME_H_
 #define CLEAN_SLAM_SRC_FRAME_H_
+#include "cv_algorithms.h"
 #include "map.h"
 #include "orb_extractor.h"
+#include "orb_feature_matcher.h"
 #include "views/elements_view.h"
 #include <opencv2/core/core.hpp>
 
@@ -35,13 +37,25 @@ public:
     assert(_key_points.size() == _map_point_indexes.size());
   }
 
+  std::vector<Eigen::Vector2d>
+  ReprojectPoints3d(const g2o::SE3Quat &current_pose,
+                    const cv::Mat &camera_intrinsic) const;
+
+  std::vector<cv::DMatch>
+  SearchByProjection(const OrbFeatureMatcher &matcher,
+                     const OrbFeatures &features,
+                     const std::vector<Eigen::Vector2d> &projected_map_points,
+                     const cv::Mat &mask, int search_radius) const;
+
+  std::pair<std::vector<cv::KeyPoint>, std::vector<Eigen::Vector3d>>
+  GetMatchedKeyPointsAndMapPoints(const std::vector<cv::DMatch> &matches) const;
+
   const g2o::SE3Quat &GetTcw() const { return _Tcw; }
   double GetTimestamp() const { return _timestamp; }
 
   const std::vector<cv::KeyPoint> &GetKeyPoints() const;
   Points3DView GetPoints3DView() const;
   DescriptorsView GetDescriptorsView() const;
-  OctavesView GetOctavesView() const;
   std::vector<uint8_t> GetOctaves() const;
   cv::Mat GetDescriptors() const;
 

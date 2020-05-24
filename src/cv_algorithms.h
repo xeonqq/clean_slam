@@ -6,6 +6,7 @@
 #define CLEAN_SLAM_SRC_CV_ALGORITHMS_H_
 
 #include "frame.h"
+#include "orb_extractor.h"
 #include <Eigen/Dense>
 #include <boost/range/algorithm.hpp>
 #include <opencv2/core/mat.hpp>
@@ -17,10 +18,6 @@ namespace clean_slam {
 g2o::SE3Quat GetVelocity(const g2o::SE3Quat &Tcw_current,
                          const g2o::SE3Quat &Tcw_prev);
 
-std::vector<Eigen::Vector2d>
-ReprojectPoints3d(const std::vector<Eigen::Vector3d> &points_3d,
-                  const g2o::SE3Quat &current_pose,
-                  const cv::Mat &camera_intrinsic);
 
 template <class SinglePassRange1, class OutputIterator>
 void ReprojectPoints3d(const SinglePassRange1 &points_3d, OutputIterator out,
@@ -38,9 +35,6 @@ void ReprojectPoints3d(const SinglePassRange1 &points_3d, OutputIterator out,
     return point_image;
   });
 }
-
-std::vector<int> GetPointsInArea(const Eigen::Vector2d &center, float radius,
-                                 const std::vector<cv::KeyPoint> &key_points);
 
 std::vector<cv::DMatch>
 SearchByProjection(const OrbFeatures &features,

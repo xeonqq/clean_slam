@@ -32,12 +32,12 @@ public:
 
 private:
   OrbExtractor *_orb_extractor;
+  const OrbFeatureMatcher *_orb_feature_matcher;
   Optimizer *_optimizer;
   CameraMotionEstimator _camera_motion_estimator;
   Map *_map;
   const OctaveScales &_octave_scales;
   Viewer *_viewer;
-  const OrbFeatureMatcher *_orb_feature_matcher;
   OrbFeatures _previous_orb_features;
   double _previous_timestamp;
   Frame _frame;

@@ -39,15 +39,12 @@ void SlamCore::TrackByMotionModel(const cv::Mat &image, double timestamp) {
   const auto &prev_Tcw = prev_frame.GetTcw();
   g2o::SE3Quat velocity =
       clean_slam::GetVelocity(prev_Tcw, prev_prev_frame.GetTcw());
-  const auto points_3d = prev_frame.GetPoints3DView();
   const auto Tcw = velocity * prev_Tcw;
   //  const auto camera_pose_in_world = Tcw.inverse();
 
   // todo: project 3d points (along with its feature descriptor) to current
-  std::vector<Eigen::Vector2d> points_reprojected;
-  points_reprojected.resize(points_3d.size());
-  clean_slam::ReprojectPoints3d(points_3d, std::begin(points_reprojected), Tcw,
-                                _camera_intrinsic);
+  std::vector<Eigen::Vector2d> points_reprojected =
+      prev_frame.ReprojectPoints3d(Tcw, _camera_intrinsic);
   cv::Mat mask = cv::Mat(points_reprojected.size(), 1, CV_8U);
 
   const auto &x_bounds = _undistorted_image_boundary.GetXBounds();
@@ -57,25 +54,20 @@ void SlamCore::TrackByMotionModel(const cv::Mat &image, double timestamp) {
     mask.at<uint8_t>(i) =
         IsPointWithInBounds(points_reprojected[i], x_bounds, y_bounds);
   }
-  const auto matches = SearchByProjection(
-      orb_features, points_reprojected, prev_frame.GetOctaves(),
-      prev_frame.GetDescriptors(), mask, 10);
+  const auto matches = prev_frame.SearchByProjection(
+      _orb_feature_matcher, orb_features, points_reprojected, mask, 10);
 
   auto matched_key_points_current_frame = FilterByIndex(
       orb_features.GetUndistortedKeyPoints(),
       matches | boost::adaptors::transformed(
                     [](const auto &match) { return match.trainIdx; }));
 
-  const auto matched_key_points_prev_frame_indexes = boost::adaptors::transform(
-      matches, [](const auto &match) { return match.queryIdx; });
-
-  auto matched_key_points_previous_frame = FilterByIndex(
-      prev_frame.GetKeyPoints(), matched_key_points_prev_frame_indexes);
+  auto matched_key_points_and_map_points =
+      prev_frame.GetMatchedKeyPointsAndMapPoints(matches);
   const KeyPointsPair key_points_pair{
-      std::move(matched_key_points_previous_frame),
+      std::move(matched_key_points_and_map_points.first),
       std::move(matched_key_points_current_frame)};
-  const auto matched_map_points = FilterByIndex(
-      prev_frame.GetPoints3DView(), matched_key_points_prev_frame_indexes);
+  const auto &matched_map_points = matched_key_points_and_map_points.second;
 #ifdef DEBUG
   cv::Mat out;
   cv::drawMatches(_viewer->GetImage(), prev_frame.GetKeyPoints(), image,
