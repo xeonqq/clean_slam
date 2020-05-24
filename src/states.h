@@ -33,8 +33,8 @@ struct MapInitialization : public state {
   void on_entry(Event const &event, Fsm &fsm) {
     spdlog::info("Entering: Initialization..");
     _map_initializer = std::make_unique<MapInitializer>(
-        fsm._orb_extractor, fsm._optimizer, fsm._camera_intrinsic, &fsm._map,
-        fsm._octave_scales, fsm._viewer);
+        fsm._orb_extractor, &fsm._orb_feature_matcher, fsm._optimizer,
+        fsm._camera_intrinsic, &fsm._map, fsm._octave_scales, fsm._viewer);
     _map_initializer->ProcessFirstImage(event.image, event.timestamp);
   }
 

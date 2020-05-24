@@ -21,9 +21,10 @@ namespace clean_slam {
 
 class MapInitializer {
 public:
-  MapInitializer(OrbExtractor *orb_extractor, Optimizer *optimizer,
-                 const cv::Mat &camera_intrinsic, Map *map,
-                 const OctaveScales &octave_scales, Viewer *viewer);
+  MapInitializer(OrbExtractor *orb_extractor,
+                 const OrbFeatureMatcher *orb_feature_matcher,
+                 Optimizer *optimizer, const cv::Mat &camera_intrinsic,
+                 Map *map, const OctaveScales &octave_scales, Viewer *viewer);
 
   void ProcessFirstImage(const cv::Mat &image, double timestamp);
   boost::optional<std::pair<Frame, Frame>>
@@ -36,7 +37,7 @@ private:
   Map *_map;
   const OctaveScales &_octave_scales;
   Viewer *_viewer;
-  OrbFeatureMatcher _orb_feature_matcher;
+  const OrbFeatureMatcher *_orb_feature_matcher;
   OrbFeatures _previous_orb_features;
   double _previous_timestamp;
   Frame _frame;

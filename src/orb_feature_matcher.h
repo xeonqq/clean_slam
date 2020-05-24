@@ -37,7 +37,11 @@ class OrbFeatureMatcher {
 public:
   OrbFeatureMatcher();
   std::vector<cv::DMatch> Match(const OrbFeatures &curr_frame,
-                                const OrbFeatures &prev_frame);
+                                const OrbFeatures &prev_frame) const;
+
+  std::vector<std::vector<cv::DMatch>>
+  KnnMatch(const cv::Mat &query_descriptors, const cv::Mat &train_descriptors,
+           int knn) const;
   static PointsPair
   GetMatchedPointsPair(const OrbFeatures &curr_frame,
                        const OrbFeatures &prev_frame,
@@ -60,10 +64,11 @@ public:
 private:
   std::vector<cv::DMatch>
   ComputeGoodMatches(const std::vector<cv::DMatch> &matches,
-                     float descriptor_distance_threshold);
+                     float descriptor_distance_threshold) const;
 
 private:
   cv::FlannBasedMatcher _matcher;
+  float _descriptor_distance_threshold{20};
 };
 
 } // namespace clean_slam

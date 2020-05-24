@@ -79,6 +79,7 @@ private:
   Optimizer *_optimizer;
   Viewer *_viewer;
 
+  OrbFeatureMatcher _orb_feature_matcher;
   UndistortedImageBoundary _undistorted_image_boundary;
 
   const OctaveScales &_octave_scales;

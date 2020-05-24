@@ -11,7 +11,7 @@ OrbFeatureMatcher::OrbFeatureMatcher()
 
 std::vector<cv::DMatch>
 OrbFeatureMatcher::Match(const OrbFeatures &curr_frame,
-                         const OrbFeatures &prev_frame) {
+                         const OrbFeatures &prev_frame) const {
   std::vector<cv::DMatch> matches;
   _matcher.match(curr_frame.GetDescriptors(), prev_frame.GetDescriptors(),
                  matches);
@@ -30,12 +30,22 @@ OrbFeatureMatcher::Match(const OrbFeatures &curr_frame,
   //  printf("-- Max dist : %f \n", max_dist);
   //  printf("-- Min dist : %f \n", min_dist);
 
-  return ComputeGoodMatches(matches, 20);
+  return ComputeGoodMatches(matches, _descriptor_distance_threshold);
 }
 
-std::vector<cv::DMatch>
-OrbFeatureMatcher::ComputeGoodMatches(const std::vector<cv::DMatch> &matches,
-                                      float descriptor_distance_threshold) {
+std::vector<std::vector<cv::DMatch>>
+OrbFeatureMatcher::KnnMatch(const cv::Mat &query_descriptors,
+                            const cv::Mat &train_descriptors, int knn) const {
+  std::vector<std::vector<cv::DMatch>> matches_for_queries;
+  // for flann matcher mask is not supported
+  _matcher.knnMatch(query_descriptors, train_descriptors, matches_for_queries,
+                    std::min(train_descriptors.rows, knn));
+  return matches_for_queries;
+}
+
+std::vector<cv::DMatch> OrbFeatureMatcher::ComputeGoodMatches(
+    const std::vector<cv::DMatch> &matches,
+    float descriptor_distance_threshold) const {
   // Retrieve matches have distance lower than descriptor distance threshold
   std::vector<cv::DMatch> good_matches;
   std::copy_if(matches.begin(), matches.end(), std::back_inserter(good_matches),

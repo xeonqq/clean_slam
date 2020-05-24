@@ -12,11 +12,12 @@
 namespace clean_slam {
 
 MapInitializer::MapInitializer(OrbExtractor *orb_extractor,
+                               const OrbFeatureMatcher *orb_feature_matcher,
                                Optimizer *optimizer,
                                const cv::Mat &camera_intrinsic, Map *map,
                                const OctaveScales &octave_scales,
                                Viewer *viewer)
-    : _orb_extractor(orb_extractor),
+    : _orb_extractor(orb_extractor), _orb_feature_matcher{orb_feature_matcher},
       _optimizer(optimizer), _camera_motion_estimator{camera_intrinsic},
       _map{map}, _octave_scales{octave_scales}, _viewer{viewer} {}
 
@@ -33,7 +34,7 @@ MapInitializer::InitializeCameraPose(const cv::Mat &image, double timestamp) {
       _orb_extractor->DetectAndUndistortKeyPoints(image);
   std::vector<Eigen::Vector3d> good_triangulated_points;
   const std::vector<cv::DMatch> good_matches =
-      _orb_feature_matcher.Match(current_orb_features, _previous_orb_features);
+      _orb_feature_matcher->Match(current_orb_features, _previous_orb_features);
   const PointsPair matched_points_pair_undistorted =
       OrbFeatureMatcher::GetMatchedPointsPairUndistorted(
           current_orb_features, _previous_orb_features, good_matches);

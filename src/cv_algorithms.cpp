@@ -2,6 +2,7 @@
 // Created by root on 4/18/20.
 //
 #include "cv_algorithms.h"
+#include "orb_feature_matcher.h"
 #include <boost/range/adaptor/indexed.hpp>
 #include <iostream>
 #include <opencv2/features2d.hpp>
@@ -22,7 +23,18 @@ ReprojectPoints3d(const std::vector<Eigen::Vector3d> &points_3d,
                     camera_intrinsic);
   return points_reprojected;
 }
+std::vector<cv::DMatch>
+SearchByProjection(const OrbFeatureMatcher &matcher,
+                   const OrbFeatures &features,
+                   const std::vector<Eigen::Vector2d> &projected_map_points,
+                   const std::vector<uint8_t> &map_points_octaves,
+                   const cv::Mat &map_points_descriptors, const cv::Mat &mask,
+                   int search_radius) {
+  const auto &current_descriptors = features.GetDescriptors();
 
+  std::vector<std::vector<cv::DMatch>> matches_for_map_points =
+      matcher.KnnMatch(map_points_descriptors, current_descriptors, 5);
+}
 std::vector<cv::DMatch>
 SearchByProjection(const OrbFeatures &features,
                    const std::vector<Eigen::Vector2d> &projected_map_points,
