@@ -6,6 +6,7 @@
 #include "cv_algorithms.h"
 #include "cv_utils.h"
 #include <boost/foreach.hpp>
+#include <boost/range/adaptor/transformed.hpp>
 #include <boost/range/algorithm.hpp>
 #include <iterator>
 #include <opencv2/core/core.hpp>
@@ -56,9 +57,32 @@ void SlamCore::TrackByMotionModel(const cv::Mat &image, double timestamp) {
     mask.at<uint8_t>(i) =
         IsPointWithInBounds(points_reprojected[i], x_bounds, y_bounds);
   }
-  SearchByProjection(orb_features, points_reprojected,
-                     prev_frame.GetOctavesView(), prev_frame.GetDescriptors(),
-                     mask, 10);
+  const auto matches = SearchByProjection(
+      orb_features, points_reprojected, prev_frame.GetOctavesView(),
+      prev_frame.GetDescriptors(), mask, 10);
+
+  auto matched_key_points_current_frame = FilterByIndex(
+      orb_features.GetUndistortedKeyPoints(),
+      matches | boost::adaptors::transformed(
+                    [](const auto &match) { return match.trainIdx; }));
+
+  const auto matched_key_points_prev_frame_indexes = boost::adaptors::transform(
+      matches, [](const auto &match) { return match.queryIdx; });
+
+  auto matched_key_points_previous_frame = FilterByIndex(
+      prev_frame.GetKeyPoints(), matched_key_points_prev_frame_indexes);
+  const KeyPointsPair key_points_pair{
+      std::move(matched_key_points_previous_frame),
+      std::move(matched_key_points_current_frame)};
+  const auto matched_map_points = FilterByIndex(
+      prev_frame.GetPoints3DView(), matched_key_points_prev_frame_indexes);
+#ifdef DEBUG
+  cv::Mat out;
+  cv::drawMatches(_viewer->GetImage(), prev_frame.GetKeyPoints(), image,
+                  orb_features.GetUndistortedKeyPoints(), matches, out);
+  cv::imwrite("matches_by_motion_track_knn.png", out);
+#endif
+
   /*
     for (size_t i = 0; i < points_reprojected.size(); ++i) {
       const auto &point = points_reprojected[i];

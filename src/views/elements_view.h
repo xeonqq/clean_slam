@@ -22,6 +22,7 @@ class ElementsView {
 public:
   using iterator = Iterator<ElemContainer, T>;
   using const_iterator = Iterator<ElemContainer, T>;
+  using value_type = T;
 
   ElementsView(const ElemContainer &elements,
                const std::vector<size_t> &indexes)

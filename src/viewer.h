@@ -35,6 +35,8 @@ public:
     _features = orb_features;
   }
 
+  const cv::Mat &GetImage() const;
+
 private:
   std::mutex _mutex;
 

@@ -6,6 +6,13 @@
 #include "gtest/gtest.h"
 #include <gmock/gmock-matchers.h>
 
+namespace cv {
+bool operator==(const ::cv::DMatch &lhs, const ::cv::DMatch &rhs) {
+  return lhs.distance == rhs.distance && lhs.queryIdx == rhs.queryIdx &&
+         lhs.trainIdx == rhs.trainIdx;
+}
+} // namespace cv
+
 namespace clean_slam {
 class SearchByProjectionFixture : public testing::Test {
 
@@ -74,8 +81,9 @@ TEST_F(
       _map_points_descriptors, _mask, search_radius);
 
   // Then
-  const std::vector<std::pair<size_t, size_t>> expected_matches = {
-      {0, 2}, {1, 0}, {2, 4}};
+
+  const std::vector<::cv::DMatch> expected_matches = {
+      {0, 2, 0}, {1, 0, 2}, {2, 4, 0}};
   EXPECT_THAT(matches, ::testing::UnorderedElementsAreArray(expected_matches));
 }
 
@@ -93,8 +101,7 @@ TEST_F(
       _map_points_descriptors, _mask, search_radius);
 
   // Then
-  const std::vector<std::pair<size_t, size_t>> expected_matches = {{0, 2},
-                                                                   {1, 0}};
+  const std::vector<::cv::DMatch> expected_matches = {{0, 2, 0}, {1, 0, 2}};
   EXPECT_THAT(matches, ::testing::UnorderedElementsAreArray(expected_matches));
 }
 

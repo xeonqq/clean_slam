@@ -2,17 +2,17 @@
 // Created by root on 3/27/20.
 //
 
-#ifndef CLEAN_SLAM_SRC_BUNDLE_ADJUSTMENT_H_
-#define CLEAN_SLAM_SRC_BUNDLE_ADJUSTMENT_H_
+#ifndef CLEAN_SLAM_SRC_FULL_BUNDLE_ADJUSTMENT_H_
+#define CLEAN_SLAM_SRC_FULL_BUNDLE_ADJUSTMENT_H_
 #include <opencv2/core/mat.hpp>
 #include <third_party/g2o/g2o/core/sparse_optimizer.h>
 #include <third_party/g2o/g2o/types/se3quat.h>
 
 namespace clean_slam {
 
-class BundleAdjustment {
+class FullBundleAdjustment {
 public:
-  BundleAdjustment(const cv::Mat &camera_intrinsics);
+  FullBundleAdjustment(const cv::Mat &camera_intrinsics);
   void AddPose(int id, const g2o::SE3Quat &pose, bool fixed = false);
 
   void AddPoint3D(int id, const Eigen::Vector3d &point_3d, bool fixed = false,
@@ -33,4 +33,4 @@ private:
 };
 
 } // namespace clean_slam
-#endif // CLEAN_SLAM_SRC_BUNDLE_ADJUSTMENT_H_
+#endif // CLEAN_SLAM_SRC_FULL_BUNDLE_ADJUSTMENT_H_

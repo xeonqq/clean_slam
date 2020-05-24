@@ -5,7 +5,6 @@
 #include <boost/range/adaptor/indexed.hpp>
 #include <iostream>
 #include <opencv2/features2d.hpp>
-
 namespace clean_slam {
 
 g2o::SE3Quat GetVelocity(const g2o::SE3Quat &Tcw_current,
@@ -24,7 +23,7 @@ ReprojectPoints3d(const std::vector<Eigen::Vector3d> &points_3d,
   return points_reprojected;
 }
 
-std::vector<std::pair<size_t, size_t>>
+std::vector<cv::DMatch>
 SearchByProjection(const OrbFeatures &features,
                    const std::vector<Eigen::Vector2d> &projected_map_points,
                    const OctavesView &map_points_octaves,
@@ -55,7 +54,7 @@ SearchByProjection(const OrbFeatures &features,
 
   const auto &current_key_points = features.GetUndistortedKeyPoints();
 
-  std::vector<std::pair<size_t, size_t>> matched_pairs;
+  std::vector<cv::DMatch> matched_pairs;
   matched_pairs.reserve(map_points_octaves.size());
   const int descriptor_distance_threshold = 10;
 
@@ -74,8 +73,7 @@ SearchByProjection(const OrbFeatures &features,
           KeyPointWithinRadius(current_key_point, projected_map_point,
                                search_radius) &&
           m.distance <= descriptor_distance_threshold) {
-        matched_pairs.emplace_back(map_points_octaves.MapIndex(m.queryIdx),
-                                   m.trainIdx);
+        matched_pairs.push_back(m);
         break;
       }
     }

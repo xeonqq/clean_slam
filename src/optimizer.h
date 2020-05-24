@@ -4,7 +4,7 @@
 
 #ifndef CLEAN_SLAM_SRC_OPTIMIZER_H_
 #define CLEAN_SLAM_SRC_OPTIMIZER_H_
-#include "bundle_adjustment.h"
+#include "full_bundle_adjustment.h"
 #include "octave_scales.h"
 #include "orb_feature_matcher.h"
 
@@ -50,7 +50,7 @@ public:
            const std::vector<Eigen::Vector3d> &points_3d_in_world);
 
 private:
-  BundleAdjustment _bundle_adjustment;
+  FullBundleAdjustment _bundle_adjustment;
   const OctaveScales &_octave_scales;
 };
 } // namespace clean_slam

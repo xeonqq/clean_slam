@@ -58,10 +58,10 @@ std::vector<Eigen::Vector3d> ToStdVectorByMask(const cv::Mat &mat,
 
 cv::Mat FilterByMask(const cv::Mat &mat, const cv::Mat &mask);
 
-template <typename T>
-std::vector<T> FilterByIndex(const std::vector<T> &vec,
-                             const std::vector<int> &indexes) {
-  std::vector<T> result;
+template <typename Vec, typename Rng>
+std::vector<typename Vec::value_type> FilterByIndex(const Vec &vec,
+                                                    const Rng &indexes) {
+  std::vector<typename Vec::value_type> result;
   for (auto index : indexes) {
     result.push_back(vec[index]);
   }

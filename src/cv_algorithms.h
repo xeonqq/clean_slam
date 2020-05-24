@@ -42,7 +42,7 @@ void ReprojectPoints3d(const SinglePassRange1 &points_3d, OutputIterator out,
 std::vector<int> GetPointsInArea(const Eigen::Vector2d &center, float radius,
                                  const std::vector<cv::KeyPoint> &key_points);
 
-std::vector<std::pair<size_t, size_t>>
+std::vector<cv::DMatch>
 SearchByProjection(const OrbFeatures &features,
                    const std::vector<Eigen::Vector2d> &projected_map_points,
                    const OctavesView &map_points_octaves,
