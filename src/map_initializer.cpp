@@ -78,9 +78,19 @@ MapInitializer::InitializeCameraPose(const cv::Mat &image, double timestamp) {
                     std::move(optimized_result.optimized_points),
                     good_descriptors_current_frame, good_key_points_pair.second,
                     _octave_scales);
-
-    frame = std::make_pair(Frame{good_key_points_pair.first, map_point_indexes,
-                                 _map, g2o::SE3Quat(), _previous_timestamp},
+#ifdef DEBUG
+    cv::Mat out;
+    std::vector<cv::DMatch> debug_good_matches;
+    for (size_t i{0}; i < good_key_points_pair.first.size(); ++i) {
+      debug_good_matches.emplace_back(i, i, 0);
+    }
+    cv::drawMatches(image, good_key_points_pair.first, _viewer->GetImage(),
+                    good_key_points_pair.second, debug_good_matches, out);
+    cv::imwrite("good_matches_after_finding_plausible_transform.png", out);
+#endif
+    frame = std::make_pair(Frame{std::move(good_key_points_pair.first),
+                                 map_point_indexes, _map, g2o::SE3Quat(),
+                                 _previous_timestamp},
                            Frame{std::move(good_key_points_pair.second),
                                  std::move(map_point_indexes), _map,
                                  optimized_result.optimized_Tcw, timestamp});
@@ -88,10 +98,20 @@ MapInitializer::InitializeCameraPose(const cv::Mat &image, double timestamp) {
     _viewer->OnNotify({g2o::SE3Quat(), {}});
     _viewer->OnNotify({optimized_result.optimized_Tcw, _map->GetPoints3D()});
   }
+
+#ifdef DEBUG
+  if (frame) {
+    cv::Mat out;
+    cv::drawMatches(image, current_orb_features.GetUndistortedKeyPoints(),
+                    _viewer->GetImage(),
+                    _previous_orb_features.GetUndistortedKeyPoints(),
+                    good_matches, out);
+    cv::imwrite("good_matches_in_map_intialization.png", out);
+  }
+#endif
   _viewer->OnNotify(image, current_orb_features);
   _previous_orb_features = std::move(current_orb_features);
   _previous_timestamp = timestamp;
-
   return frame;
 }
 
