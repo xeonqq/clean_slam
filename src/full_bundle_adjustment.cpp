@@ -5,27 +5,16 @@
 #include "full_bundle_adjustment.h"
 #include "homogeneous_matrix.h"
 #include <opencv2/core/mat.hpp>
-#include <third_party/g2o/g2o/core/block_solver.h>
-#include <third_party/g2o/g2o/core/optimization_algorithm_levenberg.h>
 #include <third_party/g2o/g2o/core/robust_kernel_impl.h>
 #include <third_party/g2o/g2o/solvers/linear_solver_dense.h>
-#include <third_party/g2o/g2o/solvers/linear_solver_eigen.h>
-#include <third_party/g2o/g2o/types/types_seven_dof_expmap.h>
 #include <third_party/g2o/g2o/types/types_six_dof_expmap.h>
 
 namespace clean_slam {
 
-FullBundleAdjustment::FullBundleAdjustment(const cv::Mat &camera_intrinsics)
+FullBundleAdjustment::FullBundleAdjustment(
+    const cv::Mat &camera_intrinsics,
+    g2o::OptimizationAlgorithmLevenberg *solver)
     : _camera_intrinsics(camera_intrinsics) {
-  g2o::BlockSolver_6_3::LinearSolverType *linearSolver;
-
-  linearSolver =
-      new g2o::LinearSolverEigen<g2o::BlockSolver_6_3::PoseMatrixType>();
-
-  g2o::BlockSolver_6_3 *solver_ptr = new g2o::BlockSolver_6_3(linearSolver);
-
-  g2o::OptimizationAlgorithmLevenberg *solver =
-      new g2o::OptimizationAlgorithmLevenberg(solver_ptr);
   _optimizer.setAlgorithm(solver);
 }
 

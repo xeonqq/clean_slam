@@ -5,6 +5,8 @@
 #ifndef CLEAN_SLAM_SRC_FULL_BUNDLE_ADJUSTMENT_H_
 #define CLEAN_SLAM_SRC_FULL_BUNDLE_ADJUSTMENT_H_
 #include <opencv2/core/mat.hpp>
+#include <third_party/g2o/g2o/core/block_solver.h>
+#include <third_party/g2o/g2o/core/optimization_algorithm_levenberg.h>
 #include <third_party/g2o/g2o/core/sparse_optimizer.h>
 #include <third_party/g2o/g2o/types/se3quat.h>
 
@@ -12,7 +14,23 @@ namespace clean_slam {
 
 class FullBundleAdjustment {
 public:
-  FullBundleAdjustment(const cv::Mat &camera_intrinsics);
+  template <template <typename> class LinearSolver>
+  static FullBundleAdjustment
+  CreateFullBundleAdjustment(const cv::Mat &camera_intrinsics) {
+    g2o::BlockSolver_6_3::LinearSolverType *linearSolver;
+
+    linearSolver = new LinearSolver<g2o::BlockSolver_6_3::PoseMatrixType>();
+
+    g2o::BlockSolver_6_3 *solver_ptr = new g2o::BlockSolver_6_3(linearSolver);
+
+    g2o::OptimizationAlgorithmLevenberg *solver =
+        new g2o::OptimizationAlgorithmLevenberg(solver_ptr);
+    return FullBundleAdjustment{camera_intrinsics, solver};
+  }
+
+  FullBundleAdjustment(const cv::Mat &camera_intrinsics,
+                       g2o::OptimizationAlgorithmLevenberg *solver);
+
   void AddPose(int id, const g2o::SE3Quat &pose, bool fixed = false);
 
   void AddPoint3D(int id, const Eigen::Vector3d &point_3d, bool fixed = false,

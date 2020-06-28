@@ -7,6 +7,7 @@
 #include "full_bundle_adjustment.h"
 #include "octave_scales.h"
 #include "orb_feature_matcher.h"
+#include <third_party/g2o/g2o/solvers/linear_solver_eigen.h>
 
 namespace clean_slam {
 
@@ -42,8 +43,12 @@ private:
 
 class Optimizer {
 public:
+  using LinearSolver =
+      g2o::LinearSolverEigen<g2o::BlockSolver_6_3::PoseMatrixType>;
   Optimizer(const cv::Mat &camera_intrinsics, const OctaveScales &octave_scales)
-      : _bundle_adjustment{camera_intrinsics}, _octave_scales{octave_scales} {}
+      : _bundle_adjustment{FullBundleAdjustment::CreateFullBundleAdjustment<
+            g2o::LinearSolverEigen>(camera_intrinsics)},
+        _octave_scales{octave_scales} {}
   OptimizedResult
   Optimize(const g2o::SE3Quat &Tcw,
            const KeyPointsPair &key_points_observations,
