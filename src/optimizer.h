@@ -43,8 +43,6 @@ private:
 
 class Optimizer {
 public:
-  using LinearSolver =
-      g2o::LinearSolverEigen<g2o::BlockSolver_6_3::PoseMatrixType>;
   Optimizer(const cv::Mat &camera_intrinsics, const OctaveScales &octave_scales)
       : _bundle_adjustment{FullBundleAdjustment::CreateFullBundleAdjustment<
             g2o::LinearSolverEigen>(camera_intrinsics)},

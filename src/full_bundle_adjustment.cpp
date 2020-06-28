@@ -37,6 +37,7 @@ void FullBundleAdjustment::AddPoint3D(int id, const Eigen::Vector3d &point_3d,
   _optimizer.addVertex(point_xyz);
 }
 
+// should be used with LinearSolverEigen
 void FullBundleAdjustment::AddEdge(int point_3d_id, int pose_id,
                                    const Eigen::Vector2d &measurement,
                                    const Eigen::Matrix2d &information,
@@ -57,6 +58,29 @@ void FullBundleAdjustment::AddEdge(int point_3d_id, int pose_id,
   _optimizer.addEdge(edge);
 }
 
+// should be used with LinearSolverDense
+void FullBundleAdjustment::AddEdgeOnlyPose(const Eigen::Vector3d &point_3d,
+                                           const Eigen::Vector2d &measurement,
+                                           const Eigen::Matrix2d &information,
+                                           double robust_kernel_delta) {
+  g2o::EdgeSE3ProjectXYZOnlyPose *e = new g2o::EdgeSE3ProjectXYZOnlyPose();
+  e->setVertex(
+      0, dynamic_cast<g2o::OptimizableGraph::Vertex *>(_optimizer.vertex(0)));
+  e->setMeasurement(measurement);
+  e->setInformation(information);
+
+  auto kernel = new g2o::RobustKernelHuber;
+  kernel->setDelta(robust_kernel_delta);
+  e->setRobustKernel(kernel);
+
+  e->fx = _camera_intrinsics.at<double>(0, 0);
+  e->fy = _camera_intrinsics.at<double>(1, 1);
+  e->cx = _camera_intrinsics.at<double>(0, 2);
+  e->cy = _camera_intrinsics.at<double>(1, 2);
+  e->Xw = point_3d;
+  _optimizer.addEdge(e);
+}
+
 void FullBundleAdjustment::Optimize(int iterations, bool verbose) {
   _optimizer.setVerbose(verbose);
   _optimizer.initializeOptimization();
@@ -74,6 +98,8 @@ const Eigen::Vector3d &FullBundleAdjustment::GetOptimizedPoint(int id) const {
       static_cast<const g2o::VertexSBAPointXYZ *>(_optimizer.vertex(id));
   return point->estimate();
 }
+
+void FullBundleAdjustment::Clear() { _optimizer.clear(); }
 //    def vertex_estimate(self, vertex_id):
 //        vertex = self._optimizer.vertex(vertex_id)
 //        return vertex.estimate()

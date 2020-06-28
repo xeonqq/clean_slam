@@ -40,6 +40,12 @@ public:
                const Eigen::Matrix2d &information = Eigen::Matrix2d::Identity(),
                double delta = sqrt(5.991));
 
+  void AddEdgeOnlyPose(
+      const Eigen::Vector3d &point_3d, const Eigen::Vector2d &measurement,
+      const Eigen::Matrix2d &information = Eigen::Matrix2d::Identity(),
+      double robust_kernel_delta = sqrt(5.991));
+
+  void Clear();
   void Optimize(int iterations = 20, bool verbose = false);
 
   const g2o::SE3Quat &GetOptimizedPose(int id) const;
