@@ -2,7 +2,7 @@
 // Created by root on 3/27/20.
 //
 
-#include "full_bundle_adjustment.h"
+#include "bundle_adjustment.h"
 #include "homogeneous_matrix.h"
 #include <opencv2/core/mat.hpp>
 #include <third_party/g2o/g2o/core/robust_kernel_impl.h>
@@ -11,15 +11,13 @@
 
 namespace clean_slam {
 
-FullBundleAdjustment::FullBundleAdjustment(
-    const cv::Mat &camera_intrinsics,
-    g2o::OptimizationAlgorithmLevenberg *solver)
+BundleAdjustment::BundleAdjustment(const cv::Mat &camera_intrinsics,
+                                   g2o::OptimizationAlgorithmLevenberg *solver)
     : _camera_intrinsics(camera_intrinsics) {
   _optimizer.setAlgorithm(solver);
 }
 
-void FullBundleAdjustment::AddPose(int id, const g2o::SE3Quat &pose,
-                                   bool fixed) {
+void BundleAdjustment::AddPose(int id, const g2o::SE3Quat &pose, bool fixed) {
   g2o::VertexSE3Expmap *se3quat = new g2o::VertexSE3Expmap();
   se3quat->setId(id);
   se3quat->setEstimate(pose);
@@ -27,8 +25,8 @@ void FullBundleAdjustment::AddPose(int id, const g2o::SE3Quat &pose,
   _optimizer.addVertex(se3quat);
 }
 
-void FullBundleAdjustment::AddPoint3D(int id, const Eigen::Vector3d &point_3d,
-                                      bool fixed, bool marginalized) {
+void BundleAdjustment::AddPoint3D(int id, const Eigen::Vector3d &point_3d,
+                                  bool fixed, bool marginalized) {
   g2o::VertexSBAPointXYZ *point_xyz = new g2o::VertexSBAPointXYZ();
   point_xyz->setId(id);
   point_xyz->setEstimate(point_3d);
@@ -38,10 +36,10 @@ void FullBundleAdjustment::AddPoint3D(int id, const Eigen::Vector3d &point_3d,
 }
 
 // should be used with LinearSolverEigen
-void FullBundleAdjustment::AddEdge(int point_3d_id, int pose_id,
-                                   const Eigen::Vector2d &measurement,
-                                   const Eigen::Matrix2d &information,
-                                   double robust_kernel_delta) {
+void BundleAdjustment::AddEdge(int point_3d_id, int pose_id,
+                               const Eigen::Vector2d &measurement,
+                               const Eigen::Matrix2d &information,
+                               double robust_kernel_delta) {
   g2o::EdgeSE3ProjectXYZ *edge = new g2o::EdgeSE3ProjectXYZ();
   edge->setVertex(0, _optimizer.vertex(point_3d_id));
   edge->setVertex(1, _optimizer.vertex(pose_id));
@@ -59,10 +57,10 @@ void FullBundleAdjustment::AddEdge(int point_3d_id, int pose_id,
 }
 
 // should be used with LinearSolverDense
-void FullBundleAdjustment::AddEdgeOnlyPose(const Eigen::Vector3d &point_3d,
-                                           const Eigen::Vector2d &measurement,
-                                           const Eigen::Matrix2d &information,
-                                           double robust_kernel_delta) {
+void BundleAdjustment::AddEdgeOnlyPose(const Eigen::Vector3d &point_3d,
+                                       const Eigen::Vector2d &measurement,
+                                       const Eigen::Matrix2d &information,
+                                       double robust_kernel_delta) {
   g2o::EdgeSE3ProjectXYZOnlyPose *e = new g2o::EdgeSE3ProjectXYZOnlyPose();
   e->setVertex(
       0, dynamic_cast<g2o::OptimizableGraph::Vertex *>(_optimizer.vertex(0)));
@@ -81,25 +79,25 @@ void FullBundleAdjustment::AddEdgeOnlyPose(const Eigen::Vector3d &point_3d,
   _optimizer.addEdge(e);
 }
 
-void FullBundleAdjustment::Optimize(int iterations, bool verbose) {
+void BundleAdjustment::Optimize(int iterations, bool verbose) {
   _optimizer.setVerbose(verbose);
   _optimizer.initializeOptimization();
   _optimizer.optimize(iterations);
 }
 
-const g2o::SE3Quat &FullBundleAdjustment::GetOptimizedPose(int id) const {
+const g2o::SE3Quat &BundleAdjustment::GetOptimizedPose(int id) const {
   const g2o::VertexSE3Expmap *vertex_SE3 =
       static_cast<const g2o::VertexSE3Expmap *>(_optimizer.vertex(id));
   return vertex_SE3->estimate();
 }
 
-const Eigen::Vector3d &FullBundleAdjustment::GetOptimizedPoint(int id) const {
+const Eigen::Vector3d &BundleAdjustment::GetOptimizedPoint(int id) const {
   const g2o::VertexSBAPointXYZ *point =
       static_cast<const g2o::VertexSBAPointXYZ *>(_optimizer.vertex(id));
   return point->estimate();
 }
 
-void FullBundleAdjustment::Clear() { _optimizer.clear(); }
+void BundleAdjustment::Clear() { _optimizer.clear(); }
 //    def vertex_estimate(self, vertex_id):
 //        vertex = self._optimizer.vertex(vertex_id)
 //        return vertex.estimate()

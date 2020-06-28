@@ -2,8 +2,8 @@
 // Created by root on 3/27/20.
 //
 
-#ifndef CLEAN_SLAM_SRC_FULL_BUNDLE_ADJUSTMENT_H_
-#define CLEAN_SLAM_SRC_FULL_BUNDLE_ADJUSTMENT_H_
+#ifndef CLEAN_SLAM_SRC_BUNDLE_ADJUSTMENT_H_
+#define CLEAN_SLAM_SRC_BUNDLE_ADJUSTMENT_H_
 #include <opencv2/core/mat.hpp>
 #include <third_party/g2o/g2o/core/block_solver.h>
 #include <third_party/g2o/g2o/core/optimization_algorithm_levenberg.h>
@@ -12,10 +12,10 @@
 
 namespace clean_slam {
 
-class FullBundleAdjustment {
+class BundleAdjustment {
 public:
   template <template <typename> class LinearSolver>
-  static FullBundleAdjustment
+  static BundleAdjustment
   CreateFullBundleAdjustment(const cv::Mat &camera_intrinsics) {
     g2o::BlockSolver_6_3::LinearSolverType *linearSolver;
 
@@ -25,11 +25,11 @@ public:
 
     g2o::OptimizationAlgorithmLevenberg *solver =
         new g2o::OptimizationAlgorithmLevenberg(solver_ptr);
-    return FullBundleAdjustment{camera_intrinsics, solver};
+    return BundleAdjustment{camera_intrinsics, solver};
   }
 
-  FullBundleAdjustment(const cv::Mat &camera_intrinsics,
-                       g2o::OptimizationAlgorithmLevenberg *solver);
+  BundleAdjustment(const cv::Mat &camera_intrinsics,
+                   g2o::OptimizationAlgorithmLevenberg *solver);
 
   void AddPose(int id, const g2o::SE3Quat &pose, bool fixed = false);
 
@@ -57,4 +57,4 @@ private:
 };
 
 } // namespace clean_slam
-#endif // CLEAN_SLAM_SRC_FULL_BUNDLE_ADJUSTMENT_H_
+#endif // CLEAN_SLAM_SRC_BUNDLE_ADJUSTMENT_H_

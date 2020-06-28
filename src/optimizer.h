@@ -4,7 +4,7 @@
 
 #ifndef CLEAN_SLAM_SRC_OPTIMIZER_H_
 #define CLEAN_SLAM_SRC_OPTIMIZER_H_
-#include "full_bundle_adjustment.h"
+#include "bundle_adjustment.h"
 #include "octave_scales.h"
 #include "orb_feature_matcher.h"
 #include <third_party/g2o/g2o/solvers/linear_solver_eigen.h>
@@ -44,7 +44,7 @@ private:
 class Optimizer {
 public:
   Optimizer(const cv::Mat &camera_intrinsics, const OctaveScales &octave_scales)
-      : _bundle_adjustment{FullBundleAdjustment::CreateFullBundleAdjustment<
+      : _bundle_adjustment{BundleAdjustment::CreateFullBundleAdjustment<
             g2o::LinearSolverEigen>(camera_intrinsics)},
         _octave_scales{octave_scales} {}
   OptimizedResult
@@ -53,7 +53,7 @@ public:
            const std::vector<Eigen::Vector3d> &points_3d_in_world);
 
 private:
-  FullBundleAdjustment _bundle_adjustment;
+  BundleAdjustment _bundle_adjustment;
   const OctaveScales &_octave_scales;
 };
 } // namespace clean_slam
