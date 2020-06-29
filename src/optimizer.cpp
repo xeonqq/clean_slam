@@ -44,4 +44,27 @@ Optimizer::Optimize(const g2o::SE3Quat &Tcw,
   }
   return OptimizedResult{optimized_pose, std::move(optimized_points)};
 }
+
+g2o::SE3Quat OptimizerOnlyPose::Optimize(
+    const g2o::SE3Quat &Tcw,
+    const std::vector<cv::KeyPoint> &key_point_observations,
+    const std::vector<Eigen::Vector3d> &points_3d_in_world) {
+
+  _bundle_adjustment.AddPose(0, Tcw, false);
+
+  for (std::size_t i{0}; i < points_3d_in_world.size(); ++i) {
+    const auto &key_point = key_point_observations[i];
+    _bundle_adjustment.AddEdgeOnlyPose(
+        points_3d_in_world[i], Point2fToVector2d(key_point.pt),
+        Eigen::Matrix2d::Identity() *
+            _octave_scales.GetOctaveInvSigma2Scales()[key_point.octave]);
+  }
+
+  _bundle_adjustment.Optimize(20, true);
+  //  spdlog::info("pose after bundle adjustment: {}", );
+  const auto optimized_pose = _bundle_adjustment.GetOptimizedPose(0);
+  std::cerr << "pose after bundle adjustment: " << optimized_pose << std::endl;
+  return optimized_pose;
+}
+
 } // namespace clean_slam
