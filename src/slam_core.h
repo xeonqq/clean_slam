@@ -7,7 +7,6 @@
 
 #include "camera_motion_estimator.h"
 #include "frame.h"
-#include "key_frame.h"
 #include "map.h"
 #include "optimizer.h"
 #include "orb_extractor.h"
@@ -72,6 +71,9 @@ public:
                                    boost::msm::front::none,
                                    TrackByMotionModelAction>> {};
   using initial_state = Init;
+
+private:
+  const Frame &GetPrevKeyFrame() const;
 
 private:
   cv::Mat _camera_intrinsic;

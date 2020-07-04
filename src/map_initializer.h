@@ -8,7 +8,6 @@
 #include <opencv2/core/mat.hpp>
 
 #include "camera_motion_estimator.h"
-#include "key_frame.h"
 #include "map.h"
 #include "optimizer.h"
 #include "orb_extractor.h"
