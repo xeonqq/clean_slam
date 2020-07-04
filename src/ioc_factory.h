@@ -23,6 +23,7 @@ private:
   Viewer _viewer;
   OctaveScales _octave_scales;
   Optimizer _optimizer;
+  OptimizerOnlyPose _optimizer_only_pose;
 };
 } // namespace clean_slam
 #endif // CLEAN_SLAM_SRC_IOC_FACTORY_H_

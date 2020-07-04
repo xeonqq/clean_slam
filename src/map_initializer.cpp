@@ -58,6 +58,7 @@ MapInitializer::InitializeCameraPose(const cv::Mat &image, double timestamp) {
         std::move(good_key_points_prev_frame),
         std::move(good_key_points_curr_frame)};
 
+    _optimizer->Clear();
     OptimizedResult optimized_result = _optimizer->Optimize(
         plausible_transformation.GetHomogeneousMatrix(), good_key_points_pair,
         plausible_transformation.GetGoodTriangulatedPoints());

@@ -24,7 +24,7 @@ void SlamSystem::Run() {
     for (const auto &image_file : _dataset_loader->GetImageFiles()) {
 
       using namespace std::chrono;
-      if (i >= 22 && i <= 24) {
+      if (i >= 20 && i <= 28) {
 
         auto start = high_resolution_clock::now();
         auto im = cv::imread(_dataset_loader->GetDatasetFolder() + '/' +
@@ -37,7 +37,7 @@ void SlamSystem::Run() {
                          1000.f);
       }
       ++i;
-      if (i > 24)
+      if (i > 32)
         break;
     }
     viewer_thread.join();

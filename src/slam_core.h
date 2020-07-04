@@ -32,8 +32,8 @@ public:
   friend MotionTrack;
   SlamCore(const cv::Mat &camera_intrinsics,
            const cv::Mat &camera_distortion_coeffs, OrbExtractor *orb_extractor,
-           Optimizer *optimizer, Viewer *viewer,
-           const OctaveScales &octave_scale);
+           Optimizer *optimizer, OptimizerOnlyPose *optimizer_only_pose,
+           Viewer *viewer, const OctaveScales &octave_scale);
   void ProcessFirstImage(const cv::Mat &image, double timestamp);
   void TrackByMotionModel(const cv::Mat &image, double timestamp);
   CameraTrajectory GetTrajectory() const;
@@ -77,6 +77,7 @@ private:
   cv::Mat _camera_intrinsic;
   OrbExtractor *_orb_extractor;
   Optimizer *_optimizer;
+  OptimizerOnlyPose *_optimizer_only_pose;
   Viewer *_viewer;
 
   OrbFeatureMatcher _orb_feature_matcher;
@@ -87,6 +88,7 @@ private:
   Map _map;
 
   std::vector<Frame> _frames;
+  std::vector<std::pair<size_t, cv::Mat>> _key_frame_indexes;
 };
 } // namespace clean_slam
 #endif // CLEAN_SLAM_SRC_SLAM_CORE_H_

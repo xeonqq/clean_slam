@@ -63,7 +63,7 @@ std::vector<cv::DMatch> Frame::SearchByProjection(
   std::vector<cv::DMatch> matched_pairs;
   const auto map_points_octaves = GetOctaves();
   matched_pairs.reserve(map_points_octaves.size());
-  const int descriptor_distance_threshold = 10;
+  const int descriptor_distance_threshold = 15;
 
   for (const auto &matches_per_map_point :
        matches_for_map_points | boost::adaptors::indexed()) {
@@ -96,5 +96,23 @@ Frame::GetMatchedKeyPointsAndMapPoints(
 
   return {FilterByIndex(GetKeyPoints(), matched_key_points_indexes),
           FilterByIndex(GetPoints3DView(), matched_key_points_indexes)};
+}
+
+std::vector<Eigen::Vector3d>
+Frame::GetMatchedMapPoints(const std::vector<cv::DMatch> &matches) const {
+  const auto matched_indexes = boost::adaptors::transform(
+      matches, [](const auto &match) { return match.queryIdx; });
+
+  return FilterByIndex(GetPoints3DView(), matched_indexes);
+}
+
+std::vector<size_t>
+Frame::GetMatchedMapPointsIds(const std::vector<cv::DMatch> &matches) const {
+  const auto points_3d_view = GetPoints3DView();
+  std::vector<size_t> matched_map_ids;
+  matched_map_ids.reserve(matches.size());
+  boost::range::transform(
+      matches, std::back_inserter(matched_map_ids), [&points_3d_view](const auto &match) { return points_3d_view.MapIndex(match.queryIdx); });
+  return matched_map_ids;
 }
 } // namespace clean_slam

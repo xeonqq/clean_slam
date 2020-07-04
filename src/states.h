@@ -51,6 +51,7 @@ struct MapInitialization : public state {
       auto &frames = optional_frame.value();
       fsm._frames.push_back(std::move(frames.first));
       fsm._frames.push_back(std::move(frames.second));
+      fsm._key_frame_indexes.push_back({fsm._frames.size()-1, event.image});
       fsm.process_event(Initialized{});
     }
   }

@@ -15,14 +15,16 @@
 #include <opencv2/opencv.hpp>
 #include <third_party/spdlog/spdlog.h>
 
+#define DEBUG
 namespace clean_slam {
 
 SlamCore::SlamCore(const cv::Mat &camera_intrinsics,
                    const cv::Mat &camera_distortion_coeffs,
                    OrbExtractor *orb_extractor, Optimizer *optimizer,
-                   Viewer *viewer, const OctaveScales &octave_scale)
-    : _camera_intrinsic(camera_intrinsics),
-      _orb_extractor(orb_extractor), _optimizer{optimizer},
+                   OptimizerOnlyPose *optimizer_only_pose, Viewer *viewer,
+                   const OctaveScales &octave_scale)
+    : _camera_intrinsic(camera_intrinsics), _orb_extractor(orb_extractor),
+      _optimizer{optimizer}, _optimizer_only_pose{optimizer_only_pose},
       _viewer(viewer), _undistorted_image_boundary{camera_intrinsics,
                                                    camera_distortion_coeffs},
       _octave_scales{octave_scale} {}
@@ -39,12 +41,13 @@ void SlamCore::TrackByMotionModel(const cv::Mat &image, double timestamp) {
   const auto &prev_Tcw = prev_frame.GetTcw();
   g2o::SE3Quat velocity =
       clean_slam::GetVelocity(prev_Tcw, prev_prev_frame.GetTcw());
-  const auto Tcw = velocity * prev_Tcw;
+  auto Tcw = velocity * prev_Tcw;
   //  const auto camera_pose_in_world = Tcw.inverse();
 
   // todo: project 3d points (along with its feature descriptor) to current
+  auto& prev_key_frame = _frames[_key_frame_indexes.back().first];
   std::vector<Eigen::Vector2d> points_reprojected =
-      prev_frame.ReprojectPoints3d(Tcw, _camera_intrinsic);
+      prev_key_frame.ReprojectPoints3d(Tcw, _camera_intrinsic);
   cv::Mat mask = cv::Mat(points_reprojected.size(), 1, CV_8U);
 
   const auto &x_bounds = _undistorted_image_boundary.GetXBounds();
@@ -54,62 +57,72 @@ void SlamCore::TrackByMotionModel(const cv::Mat &image, double timestamp) {
     mask.at<uint8_t>(i) =
         IsPointWithInBounds(points_reprojected[i], x_bounds, y_bounds);
   }
-  const auto matches = prev_frame.SearchByProjection(
-      _orb_feature_matcher, orb_features, points_reprojected, mask, 10);
+  const auto matches = prev_key_frame.SearchByProjection(
+      _orb_feature_matcher, orb_features, points_reprojected, mask, 14);
 
   auto matched_key_points_current_frame = FilterByIndex(
       orb_features.GetUndistortedKeyPoints(),
       matches | boost::adaptors::transformed(
                     [](const auto &match) { return match.trainIdx; }));
 
-  auto matched_key_points_and_map_points =
-      prev_frame.GetMatchedKeyPointsAndMapPoints(matches);
-  const KeyPointsPair key_points_pair{
-      std::move(matched_key_points_and_map_points.first),
-      std::move(matched_key_points_current_frame)};
-  const auto &matched_map_points = matched_key_points_and_map_points.second;
+  auto matched_map_points = prev_key_frame.GetMatchedMapPoints(matches);
+  std::cout << "num matched key points: "
+            << matched_key_points_current_frame.size() << std::endl;
+  _optimizer_only_pose->Clear();
+  Tcw = _optimizer_only_pose->Optimize(Tcw, matched_key_points_current_frame,
+                                       matched_map_points);
+  _frames.push_back(
+      Frame{std::move(matched_key_points_current_frame),
+           prev_key_frame.GetMatchedMapPointsIds(matches), &_map, Tcw,
+           timestamp}
+      );
 #ifdef DEBUG
-  cv::Mat out;
-  cv::drawMatches(_viewer->GetImage(), prev_frame.GetKeyPoints(), image,
-                  orb_features.GetUndistortedKeyPoints(), matches, out);
-  cv::imwrite("matches_by_motion_track_knn.png", out);
+    static int i = 0;
+    ++i;
+    cv::Mat out;
+    cv::drawMatches(_key_frame_indexes.back().second, prev_key_frame.GetKeyPoints(),
+                    image, orb_features.GetUndistortedKeyPoints(), matches,
+                    out);
+    std::string png_name = std::string("matches_by_motion_track_knn") +
+                           std::to_string(i) + std::string(".png");
+    cv::imwrite(png_name, out);
 #endif
 
-  /*
-    for (size_t i = 0; i < points_reprojected.size(); ++i) {
-      const auto &point = points_reprojected[i];
+    /*
+      for (size_t i = 0; i < points_reprojected.size(); ++i) {
+        const auto &point = points_reprojected[i];
 
-      //  1. check points in undistorted range
-      if (!IsPointWithInBounds(point, x_bounds, y_bounds))
-        continue;
+        //  1. check points in undistorted range
+        if (!IsPointWithInBounds(point, x_bounds, y_bounds))
+          continue;
 
-      //  2. check new depth of points (wrt to new camera pose) is within
-      //  scale pyramid range
-          const auto depth =
-              (points_3d[i] - camera_pose_in_world.translation()).norm();
-          if (!distance_bounds[i].IsWithIn(depth))
-            continue;
+        //  2. check new depth of points (wrt to new camera pose) is within
+        //  scale pyramid range
+            const auto depth =
+                (points_3d[i] - camera_pose_in_world.translation()).norm();
+            if (!distance_bounds[i].IsWithIn(depth))
+              continue;
 
-          int predicted_octave_level =
-              _octave_scales.MapDistanceToOctaveLevel(depth,
-              distance_bounds[i]);
+            int predicted_octave_level =
+                _octave_scales.MapDistanceToOctaveLevel(depth,
+                distance_bounds[i]);
 
-      mask[i] = true;
+        mask[i] = true;
+      }
+      */
+
+    if (_viewer) {
+      _viewer->OnNotify(Content{Tcw, {}});
+      _viewer->OnNotify(image, orb_features);
     }
-    */
-
-  if (_viewer) {
-    _viewer->OnNotify(Content{Tcw, {}});
-    _viewer->OnNotify(image, orb_features);
-  }
 }
 
 CameraTrajectory SlamCore::GetTrajectory() const {
-  CameraTrajectory trajectory;
-  boost::range::transform(
-      _frames, std::back_inserter(trajectory), [](const auto &frame) {
-        return StampedTransformation{frame.GetTcw(), frame.GetTimestamp()};
-      });
-  return trajectory;
+    CameraTrajectory trajectory;
+    boost::range::transform(
+        _frames, std::back_inserter(trajectory), [](const auto &frame) {
+          return StampedTransformation{frame.GetTcw(), frame.GetTimestamp()};
+        });
+    return trajectory;
 }
 } // namespace clean_slam

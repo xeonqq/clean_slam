@@ -10,7 +10,7 @@ IocFactory::IocFactory(const DatasetLoader *dataset_loader)
     : dataset_loader(dataset_loader),
       _viewer{dataset_loader->GetViewerSettings()},
       _octave_scales{dataset_loader->GetOrbExtractorSettings().scale_factor},
-      _optimizer{dataset_loader->GetCameraIntrinsics(), _octave_scales} {
+      _optimizer{dataset_loader->GetCameraIntrinsics(), _octave_scales}, _optimizer_only_pose{dataset_loader->GetCameraIntrinsics(), _octave_scales}  {
 
   const auto &orb_extractor_settings =
       dataset_loader->GetOrbExtractorSettings();
@@ -27,7 +27,7 @@ std::unique_ptr<boost::msm::back::state_machine<SlamCore>>
 IocFactory::CreateSlamCore() {
   return std::make_unique<boost::msm::back::state_machine<SlamCore>>(
       dataset_loader->GetCameraIntrinsics(),
-      dataset_loader->GetDistortionCoeffs(), &_orb_extractor, &_optimizer,
+      dataset_loader->GetDistortionCoeffs(), &_orb_extractor, &_optimizer, &_optimizer_only_pose,
       &_viewer, _octave_scales);
 }
 

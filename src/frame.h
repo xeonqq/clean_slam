@@ -50,6 +50,12 @@ public:
   std::pair<std::vector<cv::KeyPoint>, std::vector<Eigen::Vector3d>>
   GetMatchedKeyPointsAndMapPoints(const std::vector<cv::DMatch> &matches) const;
 
+  std::vector<Eigen::Vector3d>
+  GetMatchedMapPoints(const std::vector<cv::DMatch> &matches) const;
+
+  std::vector<size_t>
+  GetMatchedMapPointsIds(const std::vector<cv::DMatch> &matches) const;
+
   const g2o::SE3Quat &GetTcw() const { return _Tcw; }
   double GetTimestamp() const { return _timestamp; }
 
