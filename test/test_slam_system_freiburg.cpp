@@ -17,6 +17,22 @@ bool operator==(const g2o::SE3Quat &lhs, const g2o::SE3Quat &rhs) {
   return result;
 }
 
+float ComputeTransformationError(const g2o::SE3Quat &ground_truth,
+                                 const StampedTransformation &calculated) {
+  const auto calculated_rotation =
+      calculated.GetTransformation().to_homogeneous_matrix().block<3, 3>(0, 0);
+  const auto calculated_euler_angle = calculated_rotation.eulerAngles(0, 1, 2);
+  const auto calculated_translation =
+      calculated.GetTransformation().to_homogeneous_matrix().block<3, 1>(0, 3);
+
+  const auto gt_rotation =
+      ground_truth.to_homogeneous_matrix().block<3, 3>(0, 0);
+  const auto gt_euler_angle = gt_rotation.eulerAngles(0, 1, 2);
+  const auto gt_translation =
+      ground_truth.to_homogeneous_matrix().block<3, 1>(0, 3);
+  return (gt_translation - calculated_translation).norm();
+}
+
 TEST(SlamSystemFreiburgTest, Run) {
   // arrange
   DatasetLoader dataset_loader;
@@ -30,6 +46,7 @@ TEST(SlamSystemFreiburgTest, Run) {
 
   // assert
   const auto &trajectory = system.GetCamTrajectory();
+  std::cout << "trajectory size: " << trajectory.size() << std::endl;
   //  EXPECT_EQ(trajectory.size(), 2);
 
   const auto initial_gt_transformation =
@@ -55,6 +72,10 @@ TEST(SlamSystemFreiburgTest, Run) {
 
     std::cout << "ground truth: \n"
               << gt_initial_pose_wrt_current_pose << std::endl;
+    std::cout << "translation error: \n"
+              << ComputeTransformationError(gt_initial_pose_wrt_current_pose,
+                                            stamped_transformation)
+              << std::endl;
     std::cout << "euler angle calculated: \n";
     std::cout << euler_angles << std::endl;
 
@@ -67,10 +88,10 @@ TEST(SlamSystemFreiburgTest, Run) {
     const auto euler_angles_gt = rotation_gt.eulerAngles(0, 1, 2);
 
     //    float scale = 5.524032482088845;
-    for (size_t i = 0; i < 3; ++i) {
-      //      EXPECT_NAER(euler_angles_gt[i], euler_angles[i], );
-      //      EXPECT_NEAR(translation_gt[i], translation[i], 1e-5);
-    }
+    //    for (size_t i = 0; i < 3; ++i) {
+    //      EXPECT_NAER(euler_angles_gt[i], euler_angles[i], );
+    //      EXPECT_NEAR(translation_gt[i], translation[i], 1e-5);
+    //    }
     std::cout << "euler angle gt: \n";
     std::cout << euler_angles_gt << std::endl;
     std::cout << std::endl;

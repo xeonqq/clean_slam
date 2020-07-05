@@ -8,7 +8,7 @@
 namespace clean_slam {
 
 Map::Map(std::vector<Eigen::Vector3d> &&points_3d, const cv::Mat &descriptors,
-         std::vector<Bound> &&distance_bounds)
+         std::vector<BoundF> &&distance_bounds)
     : _points_3d(std::move(points_3d)),
       _descriptors(descriptors), _distance_bounds{std::move(distance_bounds)} {}
 
@@ -37,11 +37,11 @@ void Map::Construct(const g2o::SE3Quat &Tcw,
       [](const auto &key_point) { return key_point.octave; });
 }
 
-std::vector<Bound> Map::Calculate3DPointsDistanceBounds(
+std::vector<BoundF> Map::Calculate3DPointsDistanceBounds(
     const g2o::SE3Quat &Tcw, const std::vector<cv::KeyPoint> &key_points,
     std::vector<Eigen::Vector3d> &points_3d,
     const OctaveScales &octave_scales) {
-  std::vector<Bound> distance_bounds;
+  std::vector<BoundF> distance_bounds;
   distance_bounds.reserve(points_3d.size());
   const auto pose_in_world = Tcw.inverse();
   for (size_t i = 0; i < points_3d.size(); ++i) {

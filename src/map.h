@@ -17,7 +17,7 @@ class Map {
 public:
   Map() = default;
   Map(std::vector<Eigen::Vector3d> &&points_3d, const cv::Mat &descriptors,
-      std::vector<Bound> &&distance_bounds);
+      std::vector<BoundF> &&distance_bounds);
 
   static Map Create(const g2o::SE3Quat &Tcw,
                     std::vector<Eigen::Vector3d> &&points_3d,
@@ -31,7 +31,7 @@ public:
                  const std::vector<cv::KeyPoint> &key_points,
                  const OctaveScales &octave_scales);
 
-  static std::vector<Bound>
+  static std::vector<BoundF>
   Calculate3DPointsDistanceBounds(const g2o::SE3Quat &Tcw,
                                   const std::vector<cv::KeyPoint> &key_points,
                                   std::vector<Eigen::Vector3d> &points_3d,
@@ -46,7 +46,7 @@ private:
   // in the case of ORB, the descriptor is binary, meaning, 32*8 = 256bit
   // hamming distance needs to be used to compare descriptors
   cv::Mat _descriptors;
-  std::vector<Bound> _distance_bounds;
+  std::vector<BoundF> _distance_bounds;
   std::vector<int> _octaves;
 };
 } // namespace clean_slam

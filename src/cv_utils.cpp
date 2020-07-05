@@ -145,8 +145,8 @@ cv::Mat FilterByIndex(const cv::Mat &mat, const std::vector<int> &indexes) {
   return result;
 }
 
-bool IsPointWithInBounds(const Eigen::Vector2d &point, const Bound &x_bounds,
-                         const Bound &y_bounds) {
+bool IsPointWithInBounds(const Eigen::Vector2d &point, const BoundF &x_bounds,
+                         const BoundF &y_bounds) {
   return x_bounds.IsWithIn(point[0]) && y_bounds.IsWithIn(point[1]);
 }
 } // namespace clean_slam

@@ -29,7 +29,7 @@ public:
   float operator[](size_t i) const;
   const std::array<float, 8> &GetOctaveInvSigma2Scales() const;
   constexpr size_t size() const { return _octave_scales.size(); }
-  int MapDistanceToOctaveLevel(float distance, const Bound &bound) const;
+  int MapDistanceToOctaveLevel(float distance, const BoundF &bound) const;
 
 private:
   const float kOctaveBasicScale;

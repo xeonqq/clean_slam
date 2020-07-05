@@ -56,8 +56,20 @@ void SlamCore::TrackByMotionModel(const cv::Mat &image, double timestamp) {
     mask.at<uint8_t>(i) =
         IsPointWithInBounds(points_reprojected[i], x_bounds, y_bounds);
   }
-  const auto matches = prev_key_frame.SearchByProjection(
-      _orb_feature_matcher, orb_features, points_reprojected, mask, 14);
+  const int search_radius = 7;
+  auto matches = prev_key_frame.SearchByProjection(
+      _orb_feature_matcher, orb_features, points_reprojected, mask,
+      search_radius);
+  if (matches.size() < 20) {
+    spdlog::info(
+        "Search again with larger radius, num matched map points < 20: {}",
+        matches.size());
+    matches = prev_key_frame.SearchByProjection(
+        _orb_feature_matcher, orb_features, points_reprojected, mask,
+        search_radius * 2);
+    spdlog::info("After search again , num matched map points: {}",
+                 matches.size());
+  }
 
   auto matched_key_points_current_frame = FilterByIndex(
       orb_features.GetUndistortedKeyPoints(),
@@ -67,7 +79,7 @@ void SlamCore::TrackByMotionModel(const cv::Mat &image, double timestamp) {
   const auto matched_map_points = prev_key_frame.GetMatchedMapPoints(matches);
   const int kNumMatchedMapPointsForBA = 20;
   if (matched_map_points.size() > kNumMatchedMapPointsForBA) {
-    spdlog::info("Num matched key points: {}",
+    spdlog::info("Num matched map points: {}",
                  matched_key_points_current_frame.size());
     _optimizer_only_pose->Clear();
     Tcw = _optimizer_only_pose->Optimize(Tcw, matched_key_points_current_frame,
@@ -75,6 +87,7 @@ void SlamCore::TrackByMotionModel(const cv::Mat &image, double timestamp) {
   } else {
     spdlog::warn("Num matched map points < {}, only: {}",
                  kNumMatchedMapPointsForBA, matched_map_points.size());
+    return;
   }
 
   _frames.push_back(Frame{std::move(matched_key_points_current_frame),

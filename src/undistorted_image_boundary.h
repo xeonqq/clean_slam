@@ -26,8 +26,8 @@ public:
 
   const ImageCorners &ComputeUndistortedCorners(const cv::Mat &image);
   const ImageCorners &GetUndistortedCorners() const;
-  const Bound &GetXBounds() const;
-  const Bound &GetYBounds() const;
+  const BoundF &GetXBounds() const;
+  const BoundF &GetYBounds() const;
 
 private:
   void ComputeBounds();
@@ -36,8 +36,8 @@ private:
   cv::Mat _camera_distortion_coeffs;
   cv::Mat _camera_intrinsics;
   ImageCorners _undistorted_corners;
-  Bound _x_bounds;
-  Bound _y_bounds;
+  BoundF _x_bounds;
+  BoundF _y_bounds;
 };
 
 } // namespace clean_slam

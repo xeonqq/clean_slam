@@ -6,17 +6,20 @@
 #define CLEAN_SLAM_SRC_BOUND_H_
 
 namespace clean_slam {
-class Bound {
+template <typename T> class Bound {
 public:
   Bound() = default;
-  Bound(float low, float high);
-  bool IsWithIn(float value) const;
-  float GetLow() const;
-  float GetHigh() const;
+  Bound(T low, T high) : _low(low), _high(high) {}
+
+  bool IsWithIn(T value) const { return value >= _low && value <= _high; }
+  T GetLow() const { return _low; }
+  T GetHigh() const { return _high; }
 
 private:
-  float _low;
-  float _high;
+  T _low;
+  T _high;
 };
+using BoundF = Bound<float>;
+using BoundI = Bound<int>;
 } // namespace clean_slam
 #endif // CLEAN_SLAM_SRC_BOUND_H_

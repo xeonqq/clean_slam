@@ -63,7 +63,6 @@ std::vector<cv::DMatch> Frame::SearchByProjection(
   std::vector<cv::DMatch> matched_pairs;
   const auto map_points_octaves = GetOctaves();
   matched_pairs.reserve(map_points_octaves.size());
-  const int descriptor_distance_threshold = 15;
 
   for (const auto &matches_per_map_point :
        matches_for_map_points | boost::adaptors::indexed()) {
@@ -76,10 +75,12 @@ std::vector<cv::DMatch> Frame::SearchByProjection(
       const auto &current_key_point = current_key_points[m.trainIdx];
 
       // find the first one which satisfies the condition, then stop
-      if (current_key_point.octave == map_points_octaves[m.queryIdx] &&
+      BoundI octave_bound{map_points_octaves[m.queryIdx] - 1,
+                          map_points_octaves[m.queryIdx] + 1};
+      if (octave_bound.IsWithIn(current_key_point.octave) &&
           KeyPointWithinRadius(current_key_point, projected_map_point,
                                search_radius) &&
-          m.distance <= descriptor_distance_threshold) {
+          m.distance <= kDescriptorDistanceThreshold) {
         matched_pairs.push_back(m);
         break;
       }

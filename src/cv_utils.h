@@ -83,10 +83,8 @@ cv::Mat NormPoints(const cv::Mat &m);
 cv::Mat SumChannels(const cv::Mat &m);
 cv::Mat SumColumns(const cv::Mat &m);
 
-
-
-bool IsPointWithInBounds(const Eigen::Vector2d &point, const Bound &x_bounds,
-                         const Bound &y_bounds);
+bool IsPointWithInBounds(const Eigen::Vector2d &point, const BoundF &x_bounds,
+                         const BoundF &y_bounds);
 
 template <template <typename, typename> class Container, typename Value,
           typename Allocator = std::allocator<Value>>

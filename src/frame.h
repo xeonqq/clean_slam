@@ -18,6 +18,7 @@ using DescriptorsView = ElementsView<cv::Mat, cv::Matx<uint8_t, 1, 32>>;
 using OctavesView = ElementsView<std::vector<int>>;
 class Frame {
 public:
+  static constexpr int kDescriptorDistanceThreshold = 50;
   Frame() = default;
   Frame(std::vector<cv::KeyPoint> &&key_points,
         std::vector<size_t> &&map_point_indexes, const Map *map,

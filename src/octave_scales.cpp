@@ -14,7 +14,7 @@ const std::array<float, 8> &OctaveScales::GetOctaveInvSigma2Scales() const {
 }
 
 int OctaveScales::MapDistanceToOctaveLevel(float distance,
-                                           const Bound &bound) const {
+                                           const BoundF &bound) const {
   // max_distance / 1.2^level > distance > max_distance / 1.2^(level+1)
   int level =
       std::ceil(std::log(bound.GetHigh() / distance) / kLogOctaveBasicScale);
