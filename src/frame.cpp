@@ -52,11 +52,13 @@ Frame::ReprojectPoints3d(const g2o::SE3Quat &current_pose,
 std::vector<cv::DMatch> Frame::SearchByProjection(
     const OrbFeatureMatcher &matcher, const OrbFeatures &features,
     const std::vector<Eigen::Vector2d> &projected_map_points,
-    const cv::Mat &mask, int search_radius) const {
+    const cv::Mat &mask, int search_radius,
+    const OctaveScales &octave_scales) const {
 
   const auto &current_descriptors = features.GetDescriptors();
   std::vector<std::vector<cv::DMatch>> matches_for_map_points =
-      matcher.KnnMatch(GetDescriptors(), current_descriptors, 5);
+      matcher.KnnMatch(GetDescriptors(), current_descriptors,
+                       kNumNearestNeighbor);
 
   const auto &current_key_points = features.GetUndistortedKeyPoints();
 
@@ -79,7 +81,8 @@ std::vector<cv::DMatch> Frame::SearchByProjection(
                           map_points_octaves[m.queryIdx] + 1};
       if (octave_bound.IsWithIn(current_key_point.octave) &&
           KeyPointWithinRadius(current_key_point, projected_map_point,
-                               search_radius) &&
+                               search_radius *
+                                   octave_scales[current_key_point.octave]) &&
           m.distance <= kDescriptorDistanceThreshold) {
         matched_pairs.push_back(m);
         break;

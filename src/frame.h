@@ -19,6 +19,7 @@ using OctavesView = ElementsView<std::vector<int>>;
 class Frame {
 public:
   static constexpr int kDescriptorDistanceThreshold = 50;
+  static constexpr int kNumNearestNeighbor = 5;
   Frame() = default;
   Frame(std::vector<cv::KeyPoint> &&key_points,
         std::vector<size_t> &&map_point_indexes, const Map *map,
@@ -46,7 +47,8 @@ public:
   SearchByProjection(const OrbFeatureMatcher &matcher,
                      const OrbFeatures &features,
                      const std::vector<Eigen::Vector2d> &projected_map_points,
-                     const cv::Mat &mask, int search_radius) const;
+                     const cv::Mat &mask, int search_radius,
+                     const OctaveScales &octave_scales) const;
 
   std::pair<std::vector<cv::KeyPoint>, std::vector<Eigen::Vector3d>>
   GetMatchedKeyPointsAndMapPoints(const std::vector<cv::DMatch> &matches) const;

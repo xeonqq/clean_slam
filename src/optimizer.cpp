@@ -32,7 +32,7 @@ Optimizer::Optimize(const g2o::SE3Quat &Tcw,
               _octave_scales.GetOctaveInvSigma2Scales()[key_point.octave]);
     }
   }
-  _bundle_adjustment.Optimize(20, true);
+  _bundle_adjustment.Optimize(20, false);
   //  spdlog::info("pose after bundle adjustment: {}", );
   const auto optimized_pose = _bundle_adjustment.GetOptimizedPose(1);
   std::cerr << optimized_pose << std::endl;
@@ -60,7 +60,7 @@ g2o::SE3Quat OptimizerOnlyPose::Optimize(
             _octave_scales.GetOctaveInvSigma2Scales()[key_point.octave]);
   }
 
-  _bundle_adjustment.Optimize(20, true);
+  _bundle_adjustment.Optimize(20, false);
   //  spdlog::info("pose after bundle adjustment: {}", );
   const auto optimized_pose = _bundle_adjustment.GetOptimizedPose(0);
   std::cerr << "pose after bundle adjustment: " << optimized_pose << std::endl;

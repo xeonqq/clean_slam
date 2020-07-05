@@ -59,14 +59,14 @@ void SlamCore::TrackByMotionModel(const cv::Mat &image, double timestamp) {
   const int search_radius = 7;
   auto matches = prev_key_frame.SearchByProjection(
       _orb_feature_matcher, orb_features, points_reprojected, mask,
-      search_radius);
+      search_radius, _octave_scales);
   if (matches.size() < 20) {
     spdlog::info(
         "Search again with larger radius, num matched map points < 20: {}",
         matches.size());
     matches = prev_key_frame.SearchByProjection(
         _orb_feature_matcher, orb_features, points_reprojected, mask,
-        search_radius * 2);
+        search_radius * 2, _octave_scales);
     spdlog::info("After search again , num matched map points: {}",
                  matches.size());
   }
