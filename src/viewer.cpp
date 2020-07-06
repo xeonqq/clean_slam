@@ -108,21 +108,28 @@ void Viewer::Run() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
     d_cam.Activate(s_cam);
-    for (const auto &content : _contents) {
+    {
+      std::lock_guard<std::mutex> lock(_mutex);
+      for (const auto &content : _contents) {
 
-      const auto camera_pose =
-          content.homogeneous_matrix.to_homogeneous_matrix();
-      glPushMatrix();
-      glMultMatrixd((double *)camera_pose.data());
-      DrawCameraWithCoordinate();
-      glPopMatrix();
+        const auto camera_pose =
+            content.homogeneous_matrix.to_homogeneous_matrix();
+        glPushMatrix();
+        glMultMatrixd((double *)camera_pose.data());
+        DrawCameraWithCoordinate();
+        glPopMatrix();
 
-      DrawMapPoints(content.triangulated_points);
+        DrawMapPoints(content.triangulated_points);
+      }
     }
     pangolin::FinishFrame();
     if (!_image.empty()) {
       cv::Mat img_with_key_points;
-      cv::drawKeypoints(_image, _features.GetKeyPoints(), img_with_key_points);
+      {
+        std::lock_guard<std::mutex> lock(_mutex);
+        cv::drawKeypoints(_image, _features.GetKeyPoints(),
+                          img_with_key_points);
+      }
       cv::imshow("Clean-SLAM: Current Frame", img_with_key_points);
       cv::waitKey(_viewer_settings_.display_interval_ms);
     }

@@ -72,6 +72,13 @@ public:
                                    TrackByMotionModelAction>> {};
   using initial_state = Init;
 
+  template <class FSM, class Event>
+  void exception_caught(Event const &event, FSM &, std::exception &e) {
+    std::cout << e.what() << std::endl;
+    std::cout << typeid(Event).name() << std::endl;
+    BOOST_ASSERT(false);
+  }
+
 private:
   const Frame &GetPrevKeyFrame() const;
 

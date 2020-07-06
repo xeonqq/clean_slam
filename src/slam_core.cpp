@@ -97,9 +97,13 @@ void SlamCore::TrackByMotionModel(const cv::Mat &image, double timestamp) {
   static int i = 0;
   ++i;
   cv::Mat out;
-  cv::drawMatches(_key_frame_indexes.back().second,
-                  prev_key_frame.GetKeyPoints(), image,
-                  orb_features.GetUndistortedKeyPoints(), matches, out);
+  try {
+    cv::drawMatches(_key_frame_indexes.back().second,
+                    prev_key_frame.GetKeyPoints(), image,
+                    orb_features.GetUndistortedKeyPoints(), matches, out);
+  } catch (std::exception &e) {
+    std::cerr << "TrackException: " << e.what() << std::endl;
+  }
   std::string png_name = std::string("matches_by_motion_track_knn") +
                          std::to_string(i) + std::string(".png");
   cv::imwrite(png_name, out);
