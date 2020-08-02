@@ -7,6 +7,7 @@
 
 #include "camera_motion_estimator.h"
 #include "frame.h"
+#include "key_frame_graph.h"
 #include "map.h"
 #include "optimizer.h"
 #include "orb_extractor.h"
@@ -17,12 +18,14 @@
 #include "viewer.h"
 
 #include <Eigen/Core>
+#include <boost/graph/adjacency_list.hpp>
 #include <boost/msm/front/functor_row.hpp>
 #include <boost/msm/front/state_machine_def.hpp>
 #include <opencv2/core/core.hpp>
 
 namespace clean_slam {
 
+using namespace boost;
 using CameraTrajectory = std::vector<StampedTransformation>;
 
 class SlamCore : public boost::msm ::front::state_machine_def<SlamCore> {
@@ -80,9 +83,6 @@ public:
   }
 
 private:
-  const Frame &GetPrevKeyFrame() const;
-
-private:
   cv::Mat _camera_intrinsic;
   OrbExtractor *_orb_extractor;
   Optimizer *_optimizer;
@@ -97,7 +97,11 @@ private:
   Map _map;
 
   std::vector<Frame> _frames;
-  std::vector<std::pair<size_t, cv::Mat>> _key_frame_indexes;
+
+  typedef property<edge_weight_t, int> EdgeProperty;
+  typedef adjacency_list<vecS, vecS, undirectedS, no_property, EdgeProperty>
+      Graph;
+  KeyFrameGraph _key_frame_graph{&_frames};
 };
 } // namespace clean_slam
 #endif // CLEAN_SLAM_SRC_SLAM_CORE_H_

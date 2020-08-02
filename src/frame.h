@@ -67,6 +67,7 @@ public:
   DescriptorsView GetDescriptorsView() const;
   std::vector<uint8_t> GetOctaves() const;
   cv::Mat GetDescriptors() const;
+  size_t GetNumberOfMapPoints() const { return _map_point_indexes.size(); }
 
 private:
   std::vector<cv::KeyPoint> _key_points;

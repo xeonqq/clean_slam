@@ -5,6 +5,14 @@
 #include "slam_system.h"
 #include "gtest/gtest.h"
 
+#include <boost/config.hpp>
+#include <boost/graph/adjacency_list.hpp>
+#include <boost/graph/kruskal_min_spanning_tree.hpp>
+#include <boost/tuple/tuple.hpp>
+#include <iostream>
+#include <set>
+#include <string>
+#include <vector>
 namespace clean_slam {
 
 bool operator==(const g2o::SE3Quat &lhs, const g2o::SE3Quat &rhs) {

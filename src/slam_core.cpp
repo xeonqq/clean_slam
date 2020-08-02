@@ -44,7 +44,7 @@ void SlamCore::TrackByMotionModel(const cv::Mat &image, double timestamp) {
   auto Tcw = velocity * prev_Tcw;
   //  const auto camera_pose_in_world = Tcw.inverse();
 
-  const auto &prev_key_frame = GetPrevKeyFrame();
+  const auto &prev_key_frame = _key_frame_graph.GetReferenceKeyFrame();
   std::vector<Eigen::Vector2d> points_reprojected =
       prev_key_frame.ReprojectPoints3d(Tcw, _camera_intrinsic);
   cv::Mat mask = cv::Mat(points_reprojected.size(), 1, CV_8U);
@@ -98,7 +98,7 @@ void SlamCore::TrackByMotionModel(const cv::Mat &image, double timestamp) {
   ++i;
   cv::Mat out;
   try {
-    cv::drawMatches(_key_frame_indexes.back().second,
+    cv::drawMatches(_key_frame_graph.GetReferenceKeyFrameImage(),
                     prev_key_frame.GetKeyPoints(), image,
                     orb_features.GetUndistortedKeyPoints(), matches, out);
   } catch (std::exception &e) {
@@ -136,6 +136,10 @@ void SlamCore::TrackByMotionModel(const cv::Mat &image, double timestamp) {
     _viewer->OnNotify(Content{Tcw, {}});
     _viewer->OnNotify(image, orb_features);
   }
+
+  if ((matches.size() < prev_key_frame.GetKeyPoints().size() * 0.9) &&
+      orb_features.GetKeyPoints().size() > 50) {
+  }
 }
 
 CameraTrajectory SlamCore::GetTrajectory() const {
@@ -147,7 +151,4 @@ CameraTrajectory SlamCore::GetTrajectory() const {
   return trajectory;
 }
 
-const Frame &SlamCore::GetPrevKeyFrame() const {
-  return _frames[_key_frame_indexes.back().first];
-}
 } // namespace clean_slam

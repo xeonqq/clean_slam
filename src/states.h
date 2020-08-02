@@ -5,6 +5,7 @@
 #ifndef CLEAN_SLAM_SRC_STATES_H_
 #define CLEAN_SLAM_SRC_STATES_H_
 
+#include <boost/graph/adjacency_list.hpp>
 #include <boost/msm/front/states.hpp>
 #include <third_party/spdlog/spdlog.h>
 
@@ -51,7 +52,12 @@ struct MapInitialization : public state {
       auto &frames = optional_frame.value();
       fsm._frames.push_back(std::move(frames.first));
       fsm._frames.push_back(std::move(frames.second));
-      fsm._key_frame_indexes.push_back({fsm._frames.size()-1, event.image});
+      const auto key_frame_edge_weight =
+          fsm._frames.back().GetNumberOfMapPoints();
+      fsm._key_frame_graph.AddEdge(
+          KeyFrameGraph::Node{fsm._frames.size() - 2, cv::Mat()},
+          KeyFrameGraph::Node{fsm._frames.size() - 1, event.image},
+          key_frame_edge_weight);
       fsm.process_event(Initialized{});
     }
   }
@@ -67,6 +73,16 @@ struct MotionTrack : public state {
   }
   template <class Event, class Fsm> void on_exit(Event const &event, Fsm &fsm) {
     spdlog::info("exit: TrackByMotion");
+  }
+};
+
+struct KeyFrameInsertion : public state {
+  template <class Event, class Fsm>
+  void on_entry(Event const &event, Fsm &fsm) {
+    spdlog::info("enter: KeyFrameInsertion");
+  }
+  template <class Event, class Fsm> void on_exit(Event const &event, Fsm &fsm) {
+    spdlog::info("exit: KeyFrameInsertion");
   }
 };
 } // namespace clean_slam
