@@ -6,8 +6,8 @@
 #define CLEAN_SLAM_SRC_SLAM_CORE_H_
 
 #include "camera_motion_estimator.h"
+#include "covisibility_graph.h"
 #include "frame.h"
-#include "key_frame_graph.h"
 #include "map.h"
 #include "optimizer.h"
 #include "orb_extractor.h"
@@ -101,7 +101,7 @@ private:
   typedef property<edge_weight_t, int> EdgeProperty;
   typedef adjacency_list<vecS, vecS, undirectedS, no_property, EdgeProperty>
       Graph;
-  KeyFrameGraph _key_frame_graph{&_frames};
+  CovisibilityGraph _key_frame_graph;
 };
 } // namespace clean_slam
 #endif // CLEAN_SLAM_SRC_SLAM_CORE_H_

@@ -13,7 +13,7 @@ g2o::SE3Quat GetVelocity(const g2o::SE3Quat &Tcw_current,
   return Tcw_current * Tcw_prev.inverse();
 }
 
-
+// function is used only in test
 std::vector<cv::DMatch>
 SearchByProjection(const OrbFeatures &features,
                    const std::vector<Eigen::Vector2d> &projected_map_points,

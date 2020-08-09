@@ -55,8 +55,8 @@ struct MapInitialization : public state {
       const auto key_frame_edge_weight =
           fsm._frames.back().GetNumberOfMapPoints();
       fsm._key_frame_graph.AddEdge(
-          KeyFrameGraph::Node{fsm._frames.size() - 2, cv::Mat()},
-          KeyFrameGraph::Node{fsm._frames.size() - 1, event.image},
+          CovisibilityGraph::Node{fsm._frames.size() - 2, cv::Mat()},
+          CovisibilityGraph::Node{fsm._frames.size() - 1, event.image},
           key_frame_edge_weight);
       fsm.process_event(Initialized{});
     }

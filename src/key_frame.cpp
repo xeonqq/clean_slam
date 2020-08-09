@@ -1,0 +1,1 @@
+namespace clean_slam {}

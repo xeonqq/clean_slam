@@ -6,10 +6,12 @@
 #define CLEAN_SLAM_SRC_MAP_H_
 
 #include <opencv2/core/mat.hpp>
+#include <set>
 #include <third_party/g2o/g2o/types/se3quat.h>
 #include <vector>
 
 #include "bound.h"
+#include "map_point.h"
 #include "octave_scales.h"
 
 namespace clean_slam {
@@ -48,6 +50,7 @@ private:
   cv::Mat _descriptors;
   std::vector<BoundF> _distance_bounds;
   std::vector<int> _octaves;
+  std::set<MapPoint> _map_points;
 };
 } // namespace clean_slam
 #endif // CLEAN_SLAM_SRC_MAP_H_
