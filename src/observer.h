@@ -16,6 +16,8 @@ public:
   }
   size_t NumOfObservers() const { return _observers.size(); }
 
+  ~Observable() { OnDelete(); }
+
 private:
   std::vector<Observer<T> *> _observers;
 };

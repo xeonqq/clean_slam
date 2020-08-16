@@ -9,10 +9,9 @@
 #include "observer.h"
 
 namespace clean_slam {
-class MapPoint : public Observable<KeyFrame> {
 
-public:
-  ~MapPoint() { OnDelete(); }
+template <typename ObserverT>
+class MapPointImpl : public Observable<ObserverT> {
 
 private:
   Eigen::Vector3d _point_3d;
@@ -25,5 +24,7 @@ private:
 
   BoundF _distance_bound;
 };
+
+using MapPoint = MapPointImpl<KeyFrame>;
 } // namespace clean_slam
 #endif /* MAP_POINT_H */
