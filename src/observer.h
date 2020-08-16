@@ -8,7 +8,7 @@ template <typename T> class Observer;
 
 template <typename T> class Observable {
 public:
-  void AddObserver(Observer<T> *observer);
+  void AddObserver(Observer<T> *observer) { _observers.push_back(observer); }
   void OnDelete() {
     for (auto &observer : _observers) {
       observer->OnDelete(this);

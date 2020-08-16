@@ -16,6 +16,13 @@ public:
     _matched_map_points.erase(map_point);
   }
 
+  void AddMatchedMapPoint(MapPointBase *map_point_base) {
+    map_point_base->AddObserver(this);
+    _matched_map_points.insert(map_point_base);
+  }
+
+  size_t NumberOfMatchedMapPoints() const { return _matched_map_points.size(); }
+
 private:
   cv::Mat _descriptors;
   std::vector<cv::KeyPoint> _keypoints;

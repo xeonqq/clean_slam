@@ -1,6 +1,7 @@
 #ifndef CLEAN_SLAM_SRC_MAP_POINT_H
 #define CLEAN_SLAM_SRC_MAP_POINT_H
 
+#include <Eigen/Dense>
 #include <opencv2/core/mat.hpp>
 #include <vector>
 
@@ -10,21 +11,24 @@
 
 namespace clean_slam {
 
-template <typename ObserverT>
-class MapPointImpl : public Observable<ObserverT> {
+using ObservableMapPoint = Observable<KeyFrame>;
+
+class MapPoint : public ObservableMapPoint {
 
 private:
   Eigen::Vector3d _point_3d;
   Eigen::Vector3d _view_direction; // optical center to point 3d
 
-  // descriptors are number_points*32 8UC1 mat, each row is a descriptor
+  // descriptor is 1 * 32 8UC1 mat, each row is a descriptor
   // in the case of ORB, the descriptor is binary, meaning, 32*8 = 256bit
   // hamming distance needs to be used to compare descriptors
-  cv::Mat _descriptors;
+
+  // representative descriptor has the smallest hamming distance ampng all KF
+  // where this MapPoint is observed
+  cv::Mat _representative_descriptor;
 
   BoundF _distance_bound;
 };
 
-using MapPoint = MapPointImpl<KeyFrame>;
 } // namespace clean_slam
 #endif /* MAP_POINT_H */
