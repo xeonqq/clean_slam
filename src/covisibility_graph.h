@@ -5,6 +5,7 @@
 #ifndef CLEAN_SLAM_SRC_COVISIBILITY_GRAPH_H_
 #define CLEAN_SLAM_SRC_COVISIBILITY_GRAPH_H_
 #include "frame.h"
+#include "key_frame.h"
 #include <boost/config.hpp>
 #include <boost/graph/adjacency_list.hpp>
 namespace clean_slam {

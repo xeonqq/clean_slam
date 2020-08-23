@@ -50,9 +50,6 @@ public:
                      const cv::Mat &mask, int search_radius,
                      const OctaveScales &octave_scales) const;
 
-  std::pair<std::vector<cv::KeyPoint>, std::vector<Eigen::Vector3d>>
-  GetMatchedKeyPointsAndMapPoints(const std::vector<cv::DMatch> &matches) const;
-
   std::vector<Eigen::Vector3d>
   GetMatchedMapPoints(const std::vector<cv::DMatch> &matches) const;
 

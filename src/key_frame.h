@@ -1,32 +1,27 @@
 #ifndef CLEAN_SLAM_SRC_KEY_FRAME_H
 #define CLEAN_SLAM_SRC_KEY_FRAME_H
-#include "observer.h"
+#include "map_point.h"
+#include <boost/signals2.hpp>
 #include <opencv2/core/mat.hpp>
 #include <set>
 #include <vector>
 
 namespace clean_slam {
 
-class KeyFrame : public Observer<KeyFrame> {
-
-  using MapPointBase = Observable<KeyFrame>;
+class KeyFrame {
 
 public:
-  void OnDelete(MapPointBase *map_point) {
-    _matched_map_points.erase(map_point);
-  }
+  void AddMatchedMapPoint(MapPoint *map_point);
 
-  void AddMatchedMapPoint(MapPointBase *map_point_base) {
-    map_point_base->AddObserver(this);
-    _matched_map_points.insert(map_point_base);
-  }
+  size_t NumberOfMatchedMapPoints() const;
 
-  size_t NumberOfMatchedMapPoints() const { return _matched_map_points.size(); }
+  ~KeyFrame();
 
 private:
   cv::Mat _descriptors;
   std::vector<cv::KeyPoint> _keypoints;
-  std::set<MapPointBase *> _matched_map_points;
+  std::set<MapPoint *> _matched_map_points;
+  std::vector<boost::signals2::connection> _connections;
 };
 } // namespace clean_slam
 #endif /* KEY_FRAME_H */

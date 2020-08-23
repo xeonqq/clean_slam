@@ -92,16 +92,6 @@ std::vector<cv::DMatch> Frame::SearchByProjection(
   return matched_pairs;
 }
 
-std::pair<std::vector<cv::KeyPoint>, std::vector<Eigen::Vector3d>>
-Frame::GetMatchedKeyPointsAndMapPoints(
-    const std::vector<cv::DMatch> &matches) const {
-  const auto matched_key_points_indexes = boost::adaptors::transform(
-      matches, [](const auto &match) { return match.queryIdx; });
-
-  return {FilterByIndex(GetKeyPoints(), matched_key_points_indexes),
-          FilterByIndex(GetPoints3DView(), matched_key_points_indexes)};
-}
-
 std::vector<Eigen::Vector3d>
 Frame::GetMatchedMapPoints(const std::vector<cv::DMatch> &matches) const {
   const auto matched_indexes = boost::adaptors::transform(

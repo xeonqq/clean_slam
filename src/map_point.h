@@ -2,18 +2,25 @@
 #define CLEAN_SLAM_SRC_MAP_POINT_H
 
 #include <Eigen/Dense>
+#include <boost/signals2.hpp>
 #include <opencv2/core/mat.hpp>
 #include <vector>
 
 #include "bound.h"
-#include "key_frame.h"
-#include "observer.h"
-
 namespace clean_slam {
 
-using ObservableMapPoint = Observable<KeyFrame>;
+class Map;
 
-class MapPoint : public ObservableMapPoint {
+class MapPoint {
+public:
+  template <typename Func> boost::signals2::connection AddObserver(Func func) {
+    return _events.connect(func);
+  }
+
+  size_t NumOfObservers() const;
+  ;
+
+  ~MapPoint();
 
 private:
   Eigen::Vector3d _point_3d;
@@ -28,6 +35,8 @@ private:
   cv::Mat _representative_descriptor;
 
   BoundF _distance_bound;
+
+  boost::signals2::signal<void(MapPoint *)> _events; // observer
 };
 
 } // namespace clean_slam
