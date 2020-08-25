@@ -5,7 +5,9 @@
 #ifndef CLEAN_SLAM_SRC_CV_ALGORITHMS_H_
 #define CLEAN_SLAM_SRC_CV_ALGORITHMS_H_
 
+#include "bound.h"
 #include "frame.h"
+#include "octave_scales.h"
 #include "orb_extractor.h"
 #include <Eigen/Dense>
 #include <boost/range/algorithm.hpp>
@@ -17,7 +19,6 @@ namespace clean_slam {
 
 g2o::SE3Quat GetVelocity(const g2o::SE3Quat &Tcw_current,
                          const g2o::SE3Quat &Tcw_prev);
-
 
 template <class SinglePassRange1, class OutputIterator>
 void ReprojectPoints3d(const SinglePassRange1 &points_3d, OutputIterator out,
@@ -45,5 +46,14 @@ SearchByProjection(const OrbFeatures &features,
 
 bool KeyPointWithinRadius(const cv::KeyPoint &key_point,
                           const Eigen::Vector2d &point, float radius);
+
+BoundF Calculate3DPointDistanceBound(const g2o::SE3Quat &Tcw,
+                                     const cv::KeyPoint &key_point,
+                                     const Eigen::Vector3d &point_3d,
+                                     const OctaveScales &octave_scales);
+
+Eigen::Vector3d ViewingDirection(const g2o::SE3Quat &Tcw,
+                                 const Eigen::Vector3d &point_3d);
+
 } // namespace clean_slam
 #endif // CLEAN_SLAM_SRC_CV_ALGORITHMS_H_

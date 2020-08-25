@@ -27,6 +27,12 @@ public:
                     const std::vector<cv::KeyPoint> &key_points,
                     const OctaveScales &octave_scales);
 
+  void AddMapPoints(const g2o::SE3Quat &Tcw,
+                    const std::vector<Eigen::Vector3d> &points_3d,
+                    const cv::Mat &descriptors,
+                    const std::vector<cv::KeyPoint> &key_points,
+                    const OctaveScales &octave_scales);
+
   void Construct(const g2o::SE3Quat &Tcw,
                  std::vector<Eigen::Vector3d> &&points_3d,
                  const cv::Mat &descriptors,
@@ -36,11 +42,10 @@ public:
   static std::vector<BoundF>
   Calculate3DPointsDistanceBounds(const g2o::SE3Quat &Tcw,
                                   const std::vector<cv::KeyPoint> &key_points,
-                                  std::vector<Eigen::Vector3d> &points_3d,
+                                  const std::vector<Eigen::Vector3d> &points_3d,
                                   const OctaveScales &octave_scales);
   const std::vector<Eigen::Vector3d> &GetPoints3D() const;
   const cv::Mat &GetDescriptors() const;
-  const std::vector<int> &GetOctaves() const;
 
 private:
   std::vector<Eigen::Vector3d> _points_3d;

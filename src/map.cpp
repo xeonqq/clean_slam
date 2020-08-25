@@ -3,6 +3,7 @@
 //
 
 #include "map.h"
+#include "cv_algorithms.h"
 #include <boost/range/algorithm/transform.hpp>
 
 namespace clean_slam {
@@ -37,9 +38,22 @@ void Map::Construct(const g2o::SE3Quat &Tcw,
       [](const auto &key_point) { return key_point.octave; });
 }
 
+void Map::AddMapPoints(const g2o::SE3Quat &Tcw,
+                       const std::vector<Eigen::Vector3d> &points_3d,
+                       const cv::Mat &descriptors,
+                       const std::vector<cv::KeyPoint> &key_points,
+                       const OctaveScales &octave_scales) {
+  for (size_t i{0}; i < points_3d.size(); ++i) {
+    const auto bound = Calculate3DPointDistanceBound(
+        Tcw, key_points[i], points_3d[i], octave_scales);
+    _map_points.emplace(points_3d[i], ViewingDirection(Tcw, points_3d[i]),
+                        descriptors.row(i), bound);
+  }
+}
+
 std::vector<BoundF> Map::Calculate3DPointsDistanceBounds(
     const g2o::SE3Quat &Tcw, const std::vector<cv::KeyPoint> &key_points,
-    std::vector<Eigen::Vector3d> &points_3d,
+    const std::vector<Eigen::Vector3d> &points_3d,
     const OctaveScales &octave_scales) {
   std::vector<BoundF> distance_bounds;
   distance_bounds.reserve(points_3d.size());
@@ -58,6 +72,5 @@ const std::vector<Eigen::Vector3d> &Map::GetPoints3D() const {
   return _points_3d;
 }
 const cv::Mat &Map::GetDescriptors() const { return _descriptors; }
-const std::vector<int> &Map::GetOctaves() const { return _octaves; }
 
 } // namespace clean_slam

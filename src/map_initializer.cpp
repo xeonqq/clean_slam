@@ -5,7 +5,9 @@
 #include "map_initializer.h"
 #include "cv_algorithms.h"
 #include "cv_utils.h"
+#include "key_frame.h"
 #include "viewer.h"
+
 #include <boost/range/algorithm_ext/iota.hpp>
 #include <third_party/spdlog/spdlog.h>
 
@@ -79,6 +81,10 @@ MapInitializer::InitializeCameraPose(const cv::Mat &image, double timestamp) {
                     std::move(optimized_result.optimized_points),
                     good_descriptors_current_frame, good_key_points_pair.second,
                     _octave_scales);
+    _map->AddMapPoints(optimized_result.optimized_Tcw,
+                       optimized_result.optimized_points,
+                       good_descriptors_current_frame,
+                       good_key_points_pair.second, _octave_scales);
 #ifdef DEBUG
     cv::Mat out;
     std::vector<cv::DMatch> debug_good_matches;
@@ -95,6 +101,11 @@ MapInitializer::InitializeCameraPose(const cv::Mat &image, double timestamp) {
                            Frame{std::move(good_key_points_pair.second),
                                  std::move(map_point_indexes), _map,
                                  optimized_result.optimized_Tcw, timestamp});
+
+    auto first_key_frame = KeyFrame::Create(
+        g2o::SE3Quat(), _previous_orb_features.GetUndistortedKeyPoints(),
+        _previous_orb_features.GetDescriptors(),
+        optimized_result.optimized_points);
 
     _viewer->OnNotify({g2o::SE3Quat(), {}});
     _viewer->OnNotify({optimized_result.optimized_Tcw, _map->GetPoints3D()});
