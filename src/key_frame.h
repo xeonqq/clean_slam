@@ -18,7 +18,7 @@ public:
          const std::vector<Eigen::Vector3d> &matched_map_points);
 
   KeyFrame() = default;
-  KeyFrame(const std::vector<cv::KeyPoint> &keypoints,
+  KeyFrame(const g2o::SE3Quat &Tcw, const std::vector<cv::KeyPoint> &keypoints,
            const cv::Mat &descriptors,
            const std::set<MapPoint *> &matched_map_points);
   void AddMatchedMapPoint(MapPoint *map_point);

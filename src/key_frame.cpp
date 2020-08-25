@@ -1,10 +1,13 @@
 #include "key_frame.h"
+#include "cv_algorithms.h"
+
 namespace clean_slam {
 
-KeyFrame::KeyFrame(const std::vector<cv::KeyPoint> &keypoints,
+KeyFrame::KeyFrame(const g2o::SE3Quat &Tcw,
+                   const std::vector<cv::KeyPoint> &keypoints,
                    const cv::Mat &descriptors,
                    const std::set<MapPoint *> &matched_map_points)
-    : _descriptors(descriptors), _keypoints(keypoints),
+    : _Tcw{Tcw}, _descriptors(descriptors), _keypoints(keypoints),
       _matched_map_points(matched_map_points) {}
 
 void KeyFrame::AddMatchedMapPoint(MapPoint *map_point) {
@@ -12,7 +15,10 @@ void KeyFrame::AddMatchedMapPoint(MapPoint *map_point) {
       [&](MapPoint *map_point) { _matched_map_points.erase(map_point); },
       MapPoint::OnDeleteEvent{}));
   _connections.push_back(map_point->AddObserver(
-      [&](MapPoint *map_point) { return _Tcw; }, MapPoint::OnUpdateEvent{}));
+      [&](MapPoint *map_point) {
+        return ViewingDirection(_Tcw, map_point->GetPoint3D());
+      },
+      MapPoint::OnUpdateEvent{}));
 
   _matched_map_points.insert(map_point);
 }

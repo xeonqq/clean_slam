@@ -22,16 +22,14 @@ MapPoint::MapPoint() : _id{GenerateMapPointId()} {}
 
 size_t MapPoint::GetId() const { return _id; }
 
+const Eigen::Vector3d &MapPoint::GetPoint3D() const { return _point_3d; }
+
+const Eigen::Vector3d &MapPoint::GetViewDirection() const {
+  return _view_direction;
+}
 bool MapPoint::operator<(const MapPoint &rhs) const { return _id < rhs._id; }
 
-void MapPoint::Update(const cv::Mat &descriptor,
-                      const Eigen::Vector3d &view_direction) {
-  //  const auto proj = view_direction.dot(_view_direction) ;
-  //  if (proj > 0)
-  //  {
-  //    _view_direction *
-  //  }
-}
+void MapPoint::Update() { _view_direction = Signal<OnUpdateEvent>(this); }
 
 MapPoint::~MapPoint() { Signal<OnDeleteEvent>(this); }
 } // namespace clean_slam

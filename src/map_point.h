@@ -3,6 +3,7 @@
 
 #include <Eigen/Dense>
 #include <boost/signals2.hpp>
+#include <iostream>
 #include <opencv2/core/mat.hpp>
 #include <third_party/g2o/g2o/types/se3quat.h>
 #include <vector>
@@ -12,12 +13,17 @@ namespace clean_slam {
 
 using namespace boost::signals2;
 
-template <typename T> struct Average {
-  typedef T result_type;
+struct ViewDirectionAverageCombinator {
+  typedef Eigen::Vector3d result_type;
 
   template <typename InputIterator>
-  T operator()(InputIterator first, InputIterator last) const {
-    ;
+  result_type operator()(InputIterator first, InputIterator last) const {
+    result_type result;
+    for (; first != last; ++first) {
+      result += *first;
+    }
+    result.normalize();
+    return result;
   }
 };
 
@@ -25,9 +31,12 @@ class MapPoint {
 public:
   struct OnDeleteEvent {
     using type = void(MapPoint *);
+    using combiner_type =
+        boost::signals2::signal<OnDeleteEvent::type>::combiner_type;
   };
   struct OnUpdateEvent {
-    using type = g2o::SE3Quat(MapPoint *);
+    using type = Eigen::Vector3d(MapPoint *);
+    using combiner_type = ViewDirectionAverageCombinator;
   };
 
   MapPoint(const Eigen::Vector3d &point_3_d,
@@ -46,24 +55,32 @@ public:
   }
 
   bool operator<(const MapPoint &rhs) const;
-  void Update(const cv::Mat &descriptor, const Eigen::Vector3d &view_direction);
+
+  void Update();
 
   size_t GetId() const;
+
+  const Eigen::Vector3d &GetPoint3D() const;
+
+  const Eigen::Vector3d &GetViewDirection() const;
 
   ~MapPoint();
 
 private:
   template <typename Event>
-  const boost::signals2::signal<typename Event::type> &GetSignal() const {
-    return std::get<boost::signals2::signal<typename Event::type>>(_events);
+  using signal_type = boost::signals2::signal<typename Event::type,
+                                              typename Event::combiner_type>;
+
+  template <typename Event> const signal_type<Event> &GetSignal() const {
+    return std::get<signal_type<Event>>(_events);
   }
-  template <typename Event>
-  boost::signals2::signal<typename Event::type> &GetSignal() {
-    return std::get<boost::signals2::signal<typename Event::type>>(_events);
+  template <typename Event> signal_type<Event> &GetSignal() {
+    return std::get<signal_type<Event>>(_events);
   }
 
-  template <typename Event, typename... Args> void Signal(Args &&... args) {
-    GetSignal<Event>()(std::forward<Args>(args)...);
+  template <typename Event, typename... Args>
+  typename signal_type<Event>::result_type Signal(Args &&... args) {
+    return GetSignal<Event>()(std::forward<Args>(args)...);
   }
 
 private:
@@ -85,7 +102,8 @@ private:
 
   // observer
   std::tuple<boost::signals2::signal<OnDeleteEvent::type>,
-             boost::signals2::signal<OnUpdateEvent::type>>
+             boost::signals2::signal<OnUpdateEvent::type,
+                                     OnUpdateEvent::combiner_type>>
       _events;
 };
 
