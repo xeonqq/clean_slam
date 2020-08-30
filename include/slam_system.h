@@ -8,6 +8,7 @@
 #include "dataset_loader.h"
 #include "ioc_factory.h"
 #include "slam_core.h"
+#include "stamped_transformation.h"
 #include "viewer.h"
 
 #include <boost/msm/back/state_machine.hpp>
@@ -18,9 +19,8 @@ class SlamSystem {
 public:
   SlamSystem() = default;
   SlamSystem(const DatasetLoader *dataset_loader)
-      : _dataset_loader{dataset_loader}, _ioc_factory{dataset_loader} {
-    _core = _ioc_factory.CreateSlamCore();
-  }
+      : _dataset_loader{dataset_loader},
+        _ioc_factory{dataset_loader}, _core{_ioc_factory.CreateSlamCore()} {}
   void Run();
   CameraTrajectory GetCamTrajectory() const;
 

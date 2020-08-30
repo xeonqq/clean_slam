@@ -4,6 +4,7 @@
 #include <chrono>
 #include <iostream>
 
+#include "slam_core.h"
 #include "slam_system.h"
 #include "spdlog/spdlog.h"
 

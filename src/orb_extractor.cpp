@@ -1,5 +1,6 @@
 #include "orb_extractor.h"
 #include "cv_utils.h"
+#include <boost/range/algorithm.hpp>
 #include <iostream>
 #include <opencv2/core/core.hpp>
 #include <opencv2/features2d/features2d.hpp>
@@ -47,8 +48,8 @@ OrbFeatures::OrbFeatures(std::vector<cv::KeyPoint> &&key_points,
                       camera_intrinsics);
 
   _undistorted_key_points.reserve(_key_points.size());
-  std::transform(
-      _key_points.begin(), _key_points.end(), undistorted_points.begin(),
+  boost::range::transform(
+      _key_points, undistorted_points,
       std::back_inserter(_undistorted_key_points),
       [](const auto &key_point, const auto &undistorted_point) {
         std::decay_t<decltype(key_point)> undistorted_key_point = key_point;
@@ -66,6 +67,9 @@ const std::vector<cv::KeyPoint> &OrbFeatures::GetUndistortedKeyPoints() const {
 
 const std::vector<cv::KeyPoint> &OrbFeatures::GetKeyPoints() const {
   return _key_points;
+}
+std::size_t OrbFeatures::NumKeyPoints() const {
+  return _undistorted_key_points.size();
 }
 
 const cv::Mat &OrbFeatures::GetDescriptors() const { return _descriptors; }

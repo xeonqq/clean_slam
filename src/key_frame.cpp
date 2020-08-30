@@ -5,14 +5,12 @@ namespace clean_slam {
 
 KeyFrame::KeyFrame(const g2o::SE3Quat &Tcw,
                    const std::vector<cv::KeyPoint> &keypoints,
-                   const cv::Mat &descriptors,
-                   const std::set<MapPoint *> &matched_map_points)
-    : _Tcw{Tcw}, _descriptors(descriptors), _keypoints(keypoints),
-      _matched_map_points(matched_map_points) {}
+                   const cv::Mat &descriptors)
+    : _Tcw{Tcw}, _descriptors(descriptors), _key_points(keypoints) {}
 
-void KeyFrame::AddMatchedMapPoint(MapPoint *map_point) {
+void KeyFrame::AddMatchedMapPoint(MapPoint *map_point, size_t index) {
   _connections.push_back(map_point->AddObserver(
-      [&](MapPoint *map_point) { _matched_map_points.erase(map_point); },
+      [&](MapPoint *map_point) { _matched_map_point_to_idx.erase(map_point); },
       MapPoint::OnDeleteEvent{}));
   _connections.push_back(map_point->AddObserver(
       [&](MapPoint *map_point) {
@@ -20,11 +18,12 @@ void KeyFrame::AddMatchedMapPoint(MapPoint *map_point) {
       },
       MapPoint::OnUpdateEvent{}));
 
-  _matched_map_points.insert(map_point);
+  _matched_map_point_to_idx.emplace(map_point, index);
 }
 
+size_t KeyFrame::NumKeyPoints() const { return _key_points.size(); }
 size_t KeyFrame::NumberOfMatchedMapPoints() const {
-  return _matched_map_points.size();
+  return _matched_map_point_to_idx.size();
 }
 
 KeyFrame::~KeyFrame() {
@@ -35,9 +34,16 @@ KeyFrame
 KeyFrame::Create(const g2o::SE3Quat &Tcw,
                  const std::vector<cv::KeyPoint> &keypoints,
                  const cv::Mat &descriptor,
-                 const std::vector<Eigen::Vector3d> &matched_map_points) {
+                 const std::vector<Eigen::Vector3d> &matched_map_points,
+                 const cv::Mat &matched_key_points_mask) {
 
   return KeyFrame();
+}
+
+const g2o::SE3Quat &KeyFrame::GetTcw() const { return _Tcw; }
+const cv::Mat &KeyFrame::GetDescriptors() const { return _descriptors; }
+const std::vector<cv::KeyPoint> &KeyFrame::GetKeyPoints() const {
+  return _key_points;
 }
 
 } // namespace clean_slam

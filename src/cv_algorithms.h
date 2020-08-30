@@ -6,7 +6,6 @@
 #define CLEAN_SLAM_SRC_CV_ALGORITHMS_H_
 
 #include "bound.h"
-#include "frame.h"
 #include "octave_scales.h"
 #include "orb_extractor.h"
 #include <Eigen/Dense>
@@ -36,13 +35,6 @@ void ReprojectPoints3d(const SinglePassRange1 &points_3d, OutputIterator out,
     return point_image;
   });
 }
-
-std::vector<cv::DMatch>
-SearchByProjection(const OrbFeatures &features,
-                   const std::vector<Eigen::Vector2d> &projected_map_points,
-                   const std::vector<uint8_t> &map_points_octaves,
-                   const cv::Mat &map_points_descriptors, const cv::Mat &mask,
-                   int search_radius);
 
 bool KeyPointWithinRadius(const cv::KeyPoint &key_point,
                           const Eigen::Vector2d &point, float radius);

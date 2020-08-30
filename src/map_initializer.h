@@ -13,8 +13,6 @@
 #include "orb_extractor.h"
 #include "stamped_transformation.h"
 #include "viewer.h"
-#include <boost/optional.hpp>
-#include <tuple>
 
 namespace clean_slam {
 
@@ -23,11 +21,11 @@ public:
   MapInitializer(OrbExtractor *orb_extractor,
                  const OrbFeatureMatcher *orb_feature_matcher,
                  Optimizer *optimizer, const cv::Mat &camera_intrinsic,
-                 Map *map, const OctaveScales &octave_scales, Viewer *viewer);
+                 Map *map, const OctaveScales &octave_scales,
+                 std::vector<Frame> *frames, Viewer *viewer);
 
   void ProcessFirstImage(const cv::Mat &image, double timestamp);
-  boost::optional<std::pair<Frame, Frame>>
-  InitializeCameraPose(const cv::Mat &image, double timestamp);
+  bool InitializeCameraPose(const cv::Mat &image, double timestamp);
 
 private:
   OrbExtractor *_orb_extractor;
@@ -36,10 +34,10 @@ private:
   CameraMotionEstimator _camera_motion_estimator;
   Map *_map;
   const OctaveScales &_octave_scales;
+  std::vector<Frame> *_frames;
   Viewer *_viewer;
   OrbFeatures _previous_orb_features;
   double _previous_timestamp;
-  Frame _frame;
 };
 } // namespace clean_slam
 #endif // CLEAN_SLAM_SRC_MAP_INITIALIZER_H_

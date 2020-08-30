@@ -3,7 +3,6 @@
 //
 
 #include "cv_utils.h"
-#include "cv_algorithms.h"
 #include <opencv2/core/hal/interface.h>
 
 namespace clean_slam {

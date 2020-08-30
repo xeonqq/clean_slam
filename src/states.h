@@ -35,7 +35,8 @@ struct MapInitialization : public state {
     spdlog::info("Entering: Initialization..");
     _map_initializer = std::make_unique<MapInitializer>(
         fsm._orb_extractor, &fsm._orb_feature_matcher, fsm._optimizer,
-        fsm._camera_intrinsic, &fsm._map, fsm._octave_scales, fsm._viewer);
+        fsm._camera_intrinsic, &fsm._map, fsm._octave_scales, &fsm._frames,
+        fsm._viewer);
     _map_initializer->ProcessFirstImage(event.image, event.timestamp);
   }
 
@@ -46,18 +47,9 @@ struct MapInitialization : public state {
 
   template <class Event, class Fsm>
   void InitializeCameraPose(const Event &event, Fsm &fsm) {
-    auto optional_frame =
+    auto initialized =
         _map_initializer->InitializeCameraPose(event.image, event.timestamp);
-    if (optional_frame) {
-      auto &frames = optional_frame.value();
-      fsm._frames.push_back(std::move(frames.first));
-      fsm._frames.push_back(std::move(frames.second));
-      const auto key_frame_edge_weight =
-          fsm._frames.back().GetNumberOfMapPoints();
-      fsm._key_frame_graph.AddEdge(
-          CovisibilityGraph::Node{fsm._frames.size() - 2, cv::Mat()},
-          CovisibilityGraph::Node{fsm._frames.size() - 1, event.image},
-          key_frame_edge_weight);
+    if (initialized) {
       fsm.process_event(Initialized{});
     }
   }

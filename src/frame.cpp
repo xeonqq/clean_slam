@@ -9,31 +9,23 @@
 
 namespace clean_slam {
 
-Points3DView Frame::GetPoints3DView() const {
-  return Points3DView(_map->GetPoints3D(), _map_point_indexes);
-}
-
-DescriptorsView Frame::GetDescriptorsView() const {
-  return DescriptorsView(_map->GetDescriptors(), _map_point_indexes);
-}
-
 const std::vector<cv::KeyPoint> &Frame::GetKeyPoints() const {
-  return _key_points;
+  return _matched_key_points;
 }
 
 cv::Mat Frame::GetDescriptors() const {
-  const auto view = GetDescriptorsView();
-  cv::Mat descriptors = cv::Mat(view.size(), 32, CV_8UC1);
-  for (size_t i = 0; i < view.size(); ++i) {
-    descriptors.at<DescriptorT>(i) = view[i];
+  cv::Mat descriptors = cv::Mat(_matched_map_points.size(), 32, CV_8UC1);
+  for (size_t i = 0; i < _matched_map_points.size(); ++i) {
+    _matched_map_points[i]->GetRepresentativeDescriptor().copyTo(
+        descriptors.row(i));
   }
   return descriptors;
 }
 std::vector<uint8_t> Frame::GetOctaves() const {
   std::vector<uint8_t> octaves;
-  octaves.reserve(_key_points.size());
+  octaves.reserve(_matched_key_points.size());
   boost::range::transform(
-      _key_points, std::back_inserter(octaves),
+      _matched_key_points, std::back_inserter(octaves),
       [](const cv::KeyPoint &key_point) { return key_point.octave; });
   return octaves;
 }
@@ -41,11 +33,11 @@ std::vector<uint8_t> Frame::GetOctaves() const {
 std::vector<Eigen::Vector2d>
 Frame::ReprojectPoints3d(const g2o::SE3Quat &current_pose,
                          const cv::Mat &camera_intrinsic) const {
-  const auto points_3d = GetPoints3DView();
   std::vector<Eigen::Vector2d> points_reprojected;
-  points_reprojected.resize(points_3d.size());
-  clean_slam::ReprojectPoints3d(points_3d, std::begin(points_reprojected),
-                                current_pose, camera_intrinsic);
+  points_reprojected.resize(_matched_map_points.size());
+  clean_slam::ReprojectPoints3d(GetMapPointsPositions(_matched_map_points),
+                                std::begin(points_reprojected), current_pose,
+                                camera_intrinsic);
   return points_reprojected;
 }
 
@@ -55,6 +47,19 @@ std::vector<cv::DMatch> Frame::SearchByProjection(
     const cv::Mat &mask, int search_radius,
     const OctaveScales &octave_scales) const {
 
+  /*
+   * We have orb features (key points + feature descriptors) from current frame
+   * and 3d map points observed from the last frame projected onto the current
+   * frame, (some are not valid, indicated by mask) we also know the descriptors
+   * of each projected points
+   *
+   * Then for each projected map point, we need to find out the same point
+   * observed in current frame, based on descriptor distance. return the matched
+   * map points index and current key point index pairs
+   *
+   * Once we have the matched map points indexes for the newly observed points,
+   * we can perform again a bundle adjustment.
+   * */
   const auto &current_descriptors = features.GetDescriptors();
   std::vector<std::vector<cv::DMatch>> matches_for_map_points =
       matcher.KnnMatch(GetDescriptors(), current_descriptors,
@@ -92,21 +97,20 @@ std::vector<cv::DMatch> Frame::SearchByProjection(
   return matched_pairs;
 }
 
-std::vector<Eigen::Vector3d>
+std::vector<MapPoint *>
 Frame::GetMatchedMapPoints(const std::vector<cv::DMatch> &matches) const {
   const auto matched_indexes = boost::adaptors::transform(
       matches, [](const auto &match) { return match.queryIdx; });
 
-  return FilterByIndex(GetPoints3DView(), matched_indexes);
+  return FilterByIndex(_matched_map_points, matched_indexes);
 }
 
-std::vector<size_t>
-Frame::GetMatchedMapPointsIds(const std::vector<cv::DMatch> &matches) const {
-  const auto points_3d_view = GetPoints3DView();
-  std::vector<size_t> matched_map_ids;
-  matched_map_ids.reserve(matches.size());
-  boost::range::transform(
-      matches, std::back_inserter(matched_map_ids), [&points_3d_view](const auto &match) { return points_3d_view.MapIndex(match.queryIdx); });
-  return matched_map_ids;
+const KeyFrame &Frame::GetRefKeyFrame() const {
+  return _map->GetKeyFrame(_ref_kf);
 }
+
+size_t Frame::GetRefKeyFrameNumKeyPoints() const {
+  return GetRefKeyFrame().NumKeyPoints();
+}
+Map::vertex_t Frame::GetRefKfVertex() const { return _ref_kf; }
 } // namespace clean_slam

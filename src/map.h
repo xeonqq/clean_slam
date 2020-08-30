@@ -5,57 +5,67 @@
 #ifndef CLEAN_SLAM_SRC_MAP_H_
 #define CLEAN_SLAM_SRC_MAP_H_
 
+#include <boost/config.hpp>
+#include <boost/graph/adjacency_list.hpp>
 #include <opencv2/core/mat.hpp>
 #include <set>
 #include <third_party/g2o/g2o/types/se3quat.h>
 #include <vector>
 
 #include "bound.h"
+#include "key_frame.h"
 #include "map_point.h"
 #include "octave_scales.h"
 
 namespace clean_slam {
+using namespace boost;
+
 class Map {
 public:
+  typedef property<edge_weight_t, int> EdgeProperty;
+  typedef KeyFrame VertexProperty;
+  typedef adjacency_list<vecS, vecS, undirectedS, VertexProperty, EdgeProperty>
+      Graph;
+  typedef boost::graph_traits<Graph>::vertex_descriptor vertex_t;
+  typedef boost::graph_traits<Graph>::edge_descriptor edge_t;
+
+public:
   Map() = default;
-  Map(std::vector<Eigen::Vector3d> &&points_3d, const cv::Mat &descriptors,
-      std::vector<BoundF> &&distance_bounds);
+  Map(const OctaveScales &);
 
-  static Map Create(const g2o::SE3Quat &Tcw,
-                    std::vector<Eigen::Vector3d> &&points_3d,
-                    const cv::Mat &descriptors,
-                    const std::vector<cv::KeyPoint> &key_points,
-                    const OctaveScales &octave_scales);
+  void AddMapPoints(const std::vector<Eigen::Vector3d> &points_3d,
+                    const std::vector<int> &matched_key_points_indexes,
+                    const vertex_t &key_frame_vertex);
 
-  void AddMapPoints(const g2o::SE3Quat &Tcw,
-                    const std::vector<Eigen::Vector3d> &points_3d,
-                    const cv::Mat &descriptors,
-                    const std::vector<cv::KeyPoint> &key_points,
-                    const OctaveScales &octave_scales);
+  std::vector<MapPoint *>
+  AddMapPoints(const std::vector<Eigen::Vector3d> &points_3d,
+               const std::vector<int> &matched_key_points_indexes0,
+               const vertex_t &ref_key_frame_vertex0,
+               const std::vector<int> &matched_key_points_indexes1,
+               const vertex_t &key_frame_vertex1);
 
-  void Construct(const g2o::SE3Quat &Tcw,
-                 std::vector<Eigen::Vector3d> &&points_3d,
-                 const cv::Mat &descriptors,
-                 const std::vector<cv::KeyPoint> &key_points,
-                 const OctaveScales &octave_scales);
+  MapPoint &AddMapPoint(const g2o::SE3Quat &Tcw,
+                        const Eigen::Vector3d &point_3d,
+                        const cv::Mat &descriptor,
+                        const cv::KeyPoint &key_point);
 
-  static std::vector<BoundF>
-  Calculate3DPointsDistanceBounds(const g2o::SE3Quat &Tcw,
-                                  const std::vector<cv::KeyPoint> &key_points,
-                                  const std::vector<Eigen::Vector3d> &points_3d,
-                                  const OctaveScales &octave_scales);
-  const std::vector<Eigen::Vector3d> &GetPoints3D() const;
-  const cv::Mat &GetDescriptors() const;
+  vertex_t AddKeyFrame(const g2o::SE3Quat &Tcw,
+                       const std::vector<cv::KeyPoint> &key_points,
+                       const cv::Mat &descriptors);
+
+  void AddKeyFramesWeight(const vertex_t &v0, const vertex_t &v1, int weight);
+  const std::set<MapPoint> &GetMapPoints() const;
+
+  const KeyFrame &GetKeyFrame(const vertex_t &kf_vertex) const;
+  ~Map();
 
 private:
-  std::vector<Eigen::Vector3d> _points_3d;
-  // descriptors are number_points*32 8UC1 mat, each row is a descriptor
-  // in the case of ORB, the descriptor is binary, meaning, 32*8 = 256bit
-  // hamming distance needs to be used to compare descriptors
-  cv::Mat _descriptors;
-  std::vector<BoundF> _distance_bounds;
-  std::vector<int> _octaves;
+  const OctaveScales &_octave_scales;
+
+  // todo: could be replace by a vector, map point id is the same as the index
+  // of the vector
   std::set<MapPoint> _map_points;
-};
+  Graph _covisibility_graph;
+}; // namespace clean_slam
 } // namespace clean_slam
 #endif // CLEAN_SLAM_SRC_MAP_H_

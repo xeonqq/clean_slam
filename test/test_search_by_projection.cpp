@@ -3,8 +3,10 @@
 //
 
 #include "cv_algorithms.h"
+#include "frame.h"
 #include "gtest/gtest.h"
 #include <gmock/gmock-matchers.h>
+#include <memory>
 
 namespace cv {
 bool operator==(const ::cv::DMatch &lhs, const ::cv::DMatch &rhs) {
@@ -51,32 +53,55 @@ public:
     _map_points_descriptors.at<uint8_t>(0, 0) = 27; //  00011011
     _map_points_descriptors.at<uint8_t>(1, 0) = 1;  //  00000001
     _map_points_descriptors.at<uint8_t>(2, 0) = 19; // 00010011
-    _octaves = {0, 1, 0};
 
+    std::vector<MapPoint *> map_points;
+    map_points.push_back(&_map.AddMapPoint(g2o::SE3Quat{}, {},
+                                           _map_points_descriptors.row(0), {}));
+    map_points.push_back(&_map.AddMapPoint(g2o::SE3Quat{}, {},
+                                           _map_points_descriptors.row(1), {}));
+    map_points.push_back(&_map.AddMapPoint(g2o::SE3Quat{}, {},
+                                           _map_points_descriptors.row(2), {}));
+
+    std::vector<uint8_t> map_point_octaves = {0, 1, 0};
+    std::vector<cv::KeyPoint> key_points;
+    key_points.emplace_back(0, 0, 0, 0, 0, map_point_octaves[0]);
+    key_points.emplace_back(0, 0, 0, 0, 0, map_point_octaves[1]);
+    key_points.emplace_back(0, 0, 0, 0, 0, map_point_octaves[2]);
     _mask = cv::Mat(_projected_map_points.size(), 1, CV_8U, true);
+
+    _frame = std::make_unique<Frame>(key_points, map_points, &_map,
+                                     g2o::SE3Quat{}, double{}, Map::vertex_t{});
+  }
+
+  std::vector<cv::DMatch> SearchByProjection(const cv::Mat &mask,
+                                             int search_radius) const {
+    return _frame->SearchByProjection(_matcher, _current_features,
+                                      _projected_map_points, mask,
+                                      search_radius, _octave_scales);
   }
 
 protected:
+  cv::Mat _mask;
 
+private:
   OrbFeatures _current_features;
   std::vector<Eigen::Vector2d> _projected_map_points;
   cv::Mat _map_points_descriptors;
-  cv::Mat _mask;
-  std::vector<uint8_t> _octaves;
+
+  OctaveScales _octave_scales{1.2};
+  Map _map{_octave_scales};
+
+  std::unique_ptr<Frame> _frame;
+  OrbFeatureMatcher _matcher;
 };
 
 TEST_F(
     SearchByProjectionFixture,
-    GivenOrbFeaturesFromCurrentFrameAndMapPoints_ThenFindTheMatchingPairOfMapPointsAndCurrentKeyPoints) {
-
+    GivenOrbFeaturesFromCurrentFrameAndMapPoints_ThenFindTheMatchingPairOfMapPointsAndCurrentKeyPoint) {
   // When
   int search_radius = 10;
-  const auto matches = clean_slam::SearchByProjection(
-      _current_features, _projected_map_points, _octaves,
-      _map_points_descriptors, _mask, search_radius);
-
+  const auto matches = SearchByProjection(_mask, search_radius);
   // Then
-
   const std::vector<::cv::DMatch> expected_matches = {
       {0, 2, 0}, {1, 0, 2}, {2, 4, 0}};
   EXPECT_THAT(matches, ::testing::UnorderedElementsAreArray(expected_matches));
@@ -91,13 +116,10 @@ TEST_F(
 
   // When
   int search_radius = 10;
-  const auto matches = clean_slam::SearchByProjection(
-      _current_features, _projected_map_points, _octaves,
-      _map_points_descriptors, _mask, search_radius);
+  const auto matches = SearchByProjection(_mask, search_radius);
 
   // Then
   const std::vector<::cv::DMatch> expected_matches = {{0, 2, 0}, {1, 0, 2}};
   EXPECT_THAT(matches, ::testing::UnorderedElementsAreArray(expected_matches));
 }
-
 } // namespace clean_slam

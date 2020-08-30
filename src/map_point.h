@@ -13,6 +13,9 @@ namespace clean_slam {
 
 using namespace boost::signals2;
 
+// forward decl
+class KeyFrame;
+
 struct ViewDirectionAverageCombinator {
   typedef Eigen::Vector3d result_type;
 
@@ -96,10 +99,14 @@ private:
   // where this MapPoint is observed
   cv::Mat _representative_descriptor;
 
+public:
+  const cv::Mat &GetRepresentativeDescriptor() const;
+
+private:
+  // distance bound calculated from reference key frame
   BoundF _distance_bound;
 
-  size_t _obs_count;
-
+  const KeyFrame *_reference_kf;
   // observer
   std::tuple<boost::signals2::signal<OnDeleteEvent::type>,
              boost::signals2::signal<OnUpdateEvent::type,
@@ -107,13 +114,16 @@ private:
       _events;
 };
 
-// namespace std
+std::vector<Eigen::Vector3d>
+GetMapPointsPositions(const std::vector<MapPoint *> &map_points);
 } // namespace clean_slam
+
 namespace std {
 template <> struct hash<clean_slam::MapPoint> {
   size_t operator()(const clean_slam::MapPoint &map_point) const {
     return map_point.GetId();
   }
 };
+
 } // namespace std
 #endif /* MAP_POINT_H */

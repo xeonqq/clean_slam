@@ -5,8 +5,10 @@
 #ifndef CLEAN_SLAM_SRC_STAMPED_TRANSFORMATION_H_
 #define CLEAN_SLAM_SRC_STAMPED_TRANSFORMATION_H_
 #include "homogeneous_matrix.h"
+#include <vector>
 
 namespace clean_slam {
+
 class StampedTransformation {
 public:
   StampedTransformation() = default;
@@ -21,5 +23,7 @@ private:
   HomogeneousMatrix _transformation;
   double _timestamp;
 };
+
+using CameraTrajectory = std::vector<StampedTransformation>;
 } // namespace clean_slam
 #endif // CLEAN_SLAM_SRC_STAMPED_TRANSFORMATION_H_

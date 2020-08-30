@@ -21,23 +21,12 @@ public:
   static constexpr int kDescriptorDistanceThreshold = 50;
   static constexpr int kNumNearestNeighbor = 5;
   Frame() = default;
-  Frame(std::vector<cv::KeyPoint> &&key_points,
-        std::vector<size_t> &&map_point_indexes, const Map *map,
-        const g2o::SE3Quat &Tcw, double timestamp)
-      : _key_points{std::move(key_points)},
-        _map_point_indexes(std::move(map_point_indexes)), _map{map}, _Tcw{Tcw},
-        _timestamp{timestamp} {
-    assert(_key_points.size() == _map_point_indexes.size());
-  }
-
-  Frame(const std::vector<cv::KeyPoint> &key_points,
-        const std::vector<size_t> &map_point_indexes, const Map *map,
-        const g2o::SE3Quat &Tcw, double timestamp)
-      : _key_points{key_points},
-        _map_point_indexes(map_point_indexes), _map{map}, _Tcw{Tcw},
-        _timestamp{timestamp} {
-    assert(_key_points.size() == _map_point_indexes.size());
-  }
+  Frame(std::vector<cv::KeyPoint> key_points,
+        std::vector<MapPoint *> map_points, const Map *map,
+        const g2o::SE3Quat &Tcw, double timestamp, Map::vertex_t ref_kf)
+      : _matched_key_points{std::move(key_points)},
+        _matched_map_points{std::move(map_points)}, _map{map}, _Tcw{Tcw},
+        _timestamp{timestamp}, _ref_kf{ref_kf} {}
 
   std::vector<Eigen::Vector2d>
   ReprojectPoints3d(const g2o::SE3Quat &current_pose,
@@ -50,28 +39,26 @@ public:
                      const cv::Mat &mask, int search_radius,
                      const OctaveScales &octave_scales) const;
 
-  std::vector<Eigen::Vector3d>
+  std::vector<MapPoint *>
   GetMatchedMapPoints(const std::vector<cv::DMatch> &matches) const;
-
-  std::vector<size_t>
-  GetMatchedMapPointsIds(const std::vector<cv::DMatch> &matches) const;
 
   const g2o::SE3Quat &GetTcw() const { return _Tcw; }
   double GetTimestamp() const { return _timestamp; }
 
   const std::vector<cv::KeyPoint> &GetKeyPoints() const;
-  Points3DView GetPoints3DView() const;
-  DescriptorsView GetDescriptorsView() const;
   std::vector<uint8_t> GetOctaves() const;
   cv::Mat GetDescriptors() const;
-  size_t GetNumberOfMapPoints() const { return _map_point_indexes.size(); }
+  const KeyFrame &GetRefKeyFrame() const;
+  size_t GetRefKeyFrameNumKeyPoints() const;
+  Map::vertex_t GetRefKfVertex() const;
 
 private:
-  std::vector<cv::KeyPoint> _key_points;
-  std::vector<size_t> _map_point_indexes;
+  const std::vector<cv::KeyPoint> _matched_key_points;
+  const std::vector<MapPoint *> _matched_map_points;
   const Map *_map;
   g2o::SE3Quat _Tcw;
   double _timestamp;
+  Map::vertex_t _ref_kf;
 };
 } // namespace clean_slam
 

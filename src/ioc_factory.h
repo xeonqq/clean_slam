@@ -5,7 +5,11 @@
 #ifndef CLEAN_SLAM_SRC_IOC_FACTORY_H_
 #define CLEAN_SLAM_SRC_IOC_FACTORY_H_
 #include "dataset_loader.h"
+#include "octave_scales.h"
+#include "optimizer.h"
+#include "orb_extractor.h"
 #include "slam_core.h"
+#include "viewer.h"
 
 #include <boost/msm/back/state_machine.hpp>
 #include <thread>

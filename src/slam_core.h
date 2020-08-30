@@ -6,7 +6,6 @@
 #define CLEAN_SLAM_SRC_SLAM_CORE_H_
 
 #include "camera_motion_estimator.h"
-#include "covisibility_graph.h"
 #include "frame.h"
 #include "map.h"
 #include "optimizer.h"
@@ -26,7 +25,6 @@
 namespace clean_slam {
 
 using namespace boost;
-using CameraTrajectory = std::vector<StampedTransformation>;
 
 class SlamCore : public boost::msm ::front::state_machine_def<SlamCore> {
 public:
@@ -97,11 +95,6 @@ private:
   Map _map;
 
   std::vector<Frame> _frames;
-
-  typedef property<edge_weight_t, int> EdgeProperty;
-  typedef adjacency_list<vecS, vecS, undirectedS, no_property, EdgeProperty>
-      Graph;
-  CovisibilityGraph _key_frame_graph;
 };
 } // namespace clean_slam
 #endif // CLEAN_SLAM_SRC_SLAM_CORE_H_

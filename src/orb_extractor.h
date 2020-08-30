@@ -26,6 +26,8 @@ public:
 
   const std::vector<cv::KeyPoint> &GetUndistortedKeyPoints() const;
 
+  std::size_t NumKeyPoints() const;
+
 private:
   std::vector<cv::KeyPoint> _key_points;
   std::vector<cv::KeyPoint> _undistorted_key_points;
