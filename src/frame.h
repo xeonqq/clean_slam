@@ -8,14 +8,10 @@
 #include "map.h"
 #include "orb_extractor.h"
 #include "orb_feature_matcher.h"
-#include "views/elements_view.h"
 #include <opencv2/core/core.hpp>
 
 namespace clean_slam {
 
-using Points3DView = ElementsView<std::vector<Eigen::Vector3d>>;
-using DescriptorsView = ElementsView<cv::Mat, cv::Matx<uint8_t, 1, 32>>;
-using OctavesView = ElementsView<std::vector<int>>;
 class Frame {
 public:
   static constexpr int kDescriptorDistanceThreshold = 50;
