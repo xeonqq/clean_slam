@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "bound.h"
-#include "key_frame.h"
+#include "graph.h"
 #include "map_point.h"
 #include "octave_scales.h"
 

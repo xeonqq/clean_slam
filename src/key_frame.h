@@ -1,6 +1,5 @@
 #ifndef CLEAN_SLAM_SRC_KEY_FRAME_H
 #define CLEAN_SLAM_SRC_KEY_FRAME_H
-#include "graph.h"
 #include "map_point.h"
 #include <boost/signals2.hpp>
 #include <opencv2/core/mat.hpp>
@@ -31,7 +30,6 @@ private:
   std::vector<cv::KeyPoint> _key_points;
   std::map<MapPoint *, size_t> _matched_map_point_to_idx;
   std::vector<boost::signals2::connection> _connections;
-  vertex_t _kf_vertex;
 };
 } // namespace clean_slam
 #endif /* KEY_FRAME_H */
