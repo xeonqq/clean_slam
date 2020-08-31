@@ -16,12 +16,10 @@ MapInitializer::MapInitializer(OrbExtractor *orb_extractor,
                                const OrbFeatureMatcher *orb_feature_matcher,
                                Optimizer *optimizer,
                                const cv::Mat &camera_intrinsic, Map *map,
-                               const OctaveScales &octave_scales,
                                std::vector<Frame> *frames, Viewer *viewer)
     : _orb_extractor(orb_extractor), _orb_feature_matcher{orb_feature_matcher},
       _optimizer(optimizer), _camera_motion_estimator{camera_intrinsic},
-      _map{map}, _octave_scales{octave_scales}, _frames{frames}, _viewer{
-                                                                     viewer} {}
+      _map{map}, _frames{frames}, _viewer{viewer} {}
 
 void MapInitializer::ProcessFirstImage(const cv::Mat &image, double timestamp) {
   _previous_orb_features = _orb_extractor->DetectAndUndistortKeyPoints(image);
