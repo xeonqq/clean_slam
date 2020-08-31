@@ -19,7 +19,7 @@ public:
   Frame() = default;
   Frame(std::vector<cv::KeyPoint> key_points,
         std::vector<MapPoint *> map_points, const Map *map,
-        const g2o::SE3Quat &Tcw, double timestamp, Map::vertex_t ref_kf)
+        const g2o::SE3Quat &Tcw, double timestamp, vertex_t ref_kf)
       : _matched_key_points{std::move(key_points)},
         _matched_map_points{std::move(map_points)}, _map{map}, _Tcw{Tcw},
         _timestamp{timestamp}, _ref_kf{ref_kf} {}
@@ -46,7 +46,7 @@ public:
   cv::Mat GetDescriptors() const;
   const KeyFrame &GetRefKeyFrame() const;
   size_t GetRefKeyFrameNumKeyPoints() const;
-  Map::vertex_t GetRefKfVertex() const;
+  vertex_t GetRefKfVertex() const;
 
 private:
   const std::vector<cv::KeyPoint> _matched_key_points;
@@ -54,7 +54,7 @@ private:
   const Map *_map;
   g2o::SE3Quat _Tcw;
   double _timestamp;
-  Map::vertex_t _ref_kf;
+  vertex_t _ref_kf;
 };
 } // namespace clean_slam
 

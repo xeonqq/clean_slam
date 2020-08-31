@@ -30,15 +30,6 @@ KeyFrame::~KeyFrame() {
   std::for_each(_connections.begin(), _connections.end(),
                 [](auto &c) { c.disconnect(); });
 }
-KeyFrame
-KeyFrame::Create(const g2o::SE3Quat &Tcw,
-                 const std::vector<cv::KeyPoint> &keypoints,
-                 const cv::Mat &descriptor,
-                 const std::vector<Eigen::Vector3d> &matched_map_points,
-                 const cv::Mat &matched_key_points_mask) {
-
-  return KeyFrame();
-}
 
 const g2o::SE3Quat &KeyFrame::GetTcw() const { return _Tcw; }
 const cv::Mat &KeyFrame::GetDescriptors() const { return _descriptors; }

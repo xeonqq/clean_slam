@@ -10,9 +10,9 @@
 namespace clean_slam {
 Map::Map(const OctaveScales &octave_scales) : _octave_scales{octave_scales} {}
 
-Map::vertex_t Map::AddKeyFrame(const g2o::SE3Quat &Tcw,
-                               const std::vector<cv::KeyPoint> &key_points,
-                               const cv::Mat &descriptors) {
+vertex_t Map::AddKeyFrame(const g2o::SE3Quat &Tcw,
+                          const std::vector<cv::KeyPoint> &key_points,
+                          const cv::Mat &descriptors) {
 
   const auto vertex = add_vertex(_covisibility_graph);
   _covisibility_graph[vertex] = KeyFrame{Tcw, key_points, descriptors};

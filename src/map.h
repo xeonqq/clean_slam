@@ -5,8 +5,6 @@
 #ifndef CLEAN_SLAM_SRC_MAP_H_
 #define CLEAN_SLAM_SRC_MAP_H_
 
-#include <boost/config.hpp>
-#include <boost/graph/adjacency_list.hpp>
 #include <opencv2/core/mat.hpp>
 #include <set>
 #include <third_party/g2o/g2o/types/se3quat.h>
@@ -21,13 +19,6 @@ namespace clean_slam {
 using namespace boost;
 
 class Map {
-public:
-  typedef property<edge_weight_t, int> EdgeProperty;
-  typedef KeyFrame VertexProperty;
-  typedef adjacency_list<vecS, vecS, undirectedS, VertexProperty, EdgeProperty>
-      Graph;
-  typedef boost::graph_traits<Graph>::vertex_descriptor vertex_t;
-  typedef boost::graph_traits<Graph>::edge_descriptor edge_t;
 
 public:
   Map() = default;

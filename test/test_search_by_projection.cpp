@@ -70,7 +70,7 @@ public:
     _mask = cv::Mat(_projected_map_points.size(), 1, CV_8U, true);
 
     _frame = std::make_unique<Frame>(key_points, map_points, &_map,
-                                     g2o::SE3Quat{}, double{}, Map::vertex_t{});
+                                     g2o::SE3Quat{}, double{}, vertex_t{});
   }
 
   std::vector<cv::DMatch> SearchByProjection(const cv::Mat &mask,

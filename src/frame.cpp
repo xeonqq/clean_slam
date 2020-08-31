@@ -112,5 +112,5 @@ const KeyFrame &Frame::GetRefKeyFrame() const {
 size_t Frame::GetRefKeyFrameNumKeyPoints() const {
   return GetRefKeyFrame().NumKeyPoints();
 }
-Map::vertex_t Frame::GetRefKfVertex() const { return _ref_kf; }
+vertex_t Frame::GetRefKfVertex() const { return _ref_kf; }
 } // namespace clean_slam
