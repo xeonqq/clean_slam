@@ -16,6 +16,7 @@ public:
   KeyFrame(const g2o::SE3Quat &Tcw, const std::vector<cv::KeyPoint> &keypoints,
            const cv::Mat &descriptors);
   void AddMatchedMapPoint(MapPoint *map_point, size_t index);
+  void EraseMapPoint(MapPoint *map_point);
   const g2o::SE3Quat &GetTcw() const;
   const cv::Mat &GetDescriptors() const;
   const std::vector<cv::KeyPoint> &GetKeyPoints() const;

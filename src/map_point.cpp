@@ -2,8 +2,10 @@
 // Created by root on 8/23/20.
 //
 #include "map_point.h"
+#include "cv_algorithms.h"
+#include "key_frame.h"
 #include <boost/range/algorithm.hpp>
-
+#include <boost/range/algorithm/for_each.hpp>
 namespace clean_slam {
 
 static size_t GenerateMapPointId() {
@@ -19,6 +21,17 @@ GetMapPointsPositions(const std::vector<MapPoint *> &map_points) {
       map_points, std::back_inserter(map_points_positions),
       [](const auto &map_point) { return map_point->GetPoint3D(); });
   return map_points_positions;
+}
+
+Eigen::Vector3d
+AverageViewingDirection(const MapPoint &map_point,
+                        const std::vector<KeyFrame *> &key_frames) {
+  Eigen::Vector3d result{0, 0, 0};
+  for (const auto key_frame : key_frames) {
+    result += ViewingDirection(key_frame->GetTcw(), map_point.GetPoint3D());
+  }
+  result.normalize();
+  return result;
 }
 
 MapPoint::MapPoint(const Eigen::Vector3d &point_3_d,
@@ -39,13 +52,21 @@ const Eigen::Vector3d &MapPoint::GetPoint3D() const { return _point_3d; }
 const Eigen::Vector3d &MapPoint::GetViewDirection() const {
   return _view_direction;
 }
+
 bool MapPoint::operator<(const MapPoint &rhs) const { return _id < rhs._id; }
 
-void MapPoint::Update() { _view_direction = Signal<OnUpdateEvent>(this); }
+void MapPoint::Update() {
+  auto key_frames = _events();
+  _view_direction = AverageViewingDirection(*this, key_frames);
+}
 
 const cv::Mat &MapPoint::GetRepresentativeDescriptor() const {
   return _representative_descriptor;
 }
 
-MapPoint::~MapPoint() { Signal<OnDeleteEvent>(this); }
+MapPoint::~MapPoint() {
+  auto key_frames = _events();
+  boost::range::for_each(
+      key_frames, [&](auto key_frame) { key_frame->EraseMapPoint(this); });
+}
 } // namespace clean_slam

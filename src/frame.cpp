@@ -113,4 +113,10 @@ size_t Frame::GetRefKeyFrameNumKeyPoints() const {
   return GetRefKeyFrame().NumKeyPoints();
 }
 vertex_t Frame::GetRefKfVertex() const { return _ref_kf; }
+
+void Frame::TrackLocalMap() {
+  for (const auto map_point : _matched_map_points) {
+    auto observers = map_point->Observers();
+  }
+}
 } // namespace clean_slam

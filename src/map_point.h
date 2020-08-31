@@ -16,30 +16,21 @@ using namespace boost::signals2;
 // forward decl
 class KeyFrame;
 
-struct ViewDirectionAverageCombinator {
-  typedef Eigen::Vector3d result_type;
+struct KeyFramesCollectionCombinator {
+  typedef std::vector<KeyFrame *> result_type;
 
   template <typename InputIterator>
   result_type operator()(InputIterator first, InputIterator last) const {
-    result_type result;
-    for (; first != last; ++first) {
-      result += *first;
-    }
-    result.normalize();
+    result_type result{first, last};
     return result;
   }
 };
 
 class MapPoint {
 public:
-  struct OnDeleteEvent {
-    using type = void(MapPoint *);
-    using combiner_type =
-        boost::signals2::signal<OnDeleteEvent::type>::combiner_type;
-  };
-  struct OnUpdateEvent {
-    using type = Eigen::Vector3d(MapPoint *);
-    using combiner_type = ViewDirectionAverageCombinator;
+  struct OnInspectionEvent {
+    using type = KeyFrame *();
+    using combiner_type = KeyFramesCollectionCombinator;
   };
 
   MapPoint(const Eigen::Vector3d &point_3_d,
@@ -48,15 +39,13 @@ public:
            const BoundF &distance_bound);
   MapPoint();
 
-  template <typename Func, typename Event>
-  boost::signals2::connection AddObserver(Func func, Event) {
-    return GetSignal<Event>().connect(func);
+  template <typename Func> boost::signals2::connection AddObserver(Func func) {
+    return _events.connect(func);
   }
 
-  template <typename Event = OnDeleteEvent> size_t NumOfObservers() const {
-    return GetSignal<Event>().num_slots();
-  }
+  size_t NumOfObservers() const { return _events.num_slots(); }
 
+  std::vector<KeyFrame *> Observers() const { return _events(); }
   bool operator<(const MapPoint &rhs) const;
 
   void Update();
@@ -68,23 +57,6 @@ public:
   const Eigen::Vector3d &GetViewDirection() const;
 
   ~MapPoint();
-
-private:
-  template <typename Event>
-  using signal_type = boost::signals2::signal<typename Event::type,
-                                              typename Event::combiner_type>;
-
-  template <typename Event> const signal_type<Event> &GetSignal() const {
-    return std::get<signal_type<Event>>(_events);
-  }
-  template <typename Event> signal_type<Event> &GetSignal() {
-    return std::get<signal_type<Event>>(_events);
-  }
-
-  template <typename Event, typename... Args>
-  typename signal_type<Event>::result_type Signal(Args &&... args) {
-    return GetSignal<Event>()(std::forward<Args>(args)...);
-  }
 
 private:
   size_t _id;
@@ -108,9 +80,9 @@ private:
 
   const KeyFrame *_reference_kf;
   // observer
-  std::tuple<boost::signals2::signal<OnDeleteEvent::type>,
-             boost::signals2::signal<OnUpdateEvent::type,
-                                     OnUpdateEvent::combiner_type>>
+
+  boost::signals2::signal<OnInspectionEvent::type,
+                          OnInspectionEvent::combiner_type>
       _events;
 };
 

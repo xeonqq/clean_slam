@@ -145,6 +145,10 @@ void SlamCore::TrackByMotionModel(const cv::Mat &image, double timestamp) {
   }
 }
 
+void SlamCore::TrackLocalMap() {
+  auto &current_frame = _frames.back();
+  // find keyframes (K1) which share map points with the current frame
+}
 CameraTrajectory SlamCore::GetTrajectory() const {
   CameraTrajectory trajectory;
   boost::range::transform(

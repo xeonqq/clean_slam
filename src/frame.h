@@ -35,6 +35,8 @@ public:
                      const cv::Mat &mask, int search_radius,
                      const OctaveScales &octave_scales) const;
 
+  void TrackLocalMap();
+
   std::vector<MapPoint *>
   GetMatchedMapPoints(const std::vector<cv::DMatch> &matches) const;
 

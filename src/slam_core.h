@@ -36,6 +36,8 @@ public:
            Viewer *viewer, const OctaveScales &octave_scale);
   void ProcessFirstImage(const cv::Mat &image, double timestamp);
   void TrackByMotionModel(const cv::Mat &image, double timestamp);
+  void TrackLocalMap();
+
   CameraTrajectory GetTrajectory() const;
 
   struct ProcessFirstImageAction {

@@ -1,5 +1,4 @@
 #include "key_frame.h"
-#include "cv_algorithms.h"
 
 namespace clean_slam {
 
@@ -9,16 +8,12 @@ KeyFrame::KeyFrame(const g2o::SE3Quat &Tcw,
     : _Tcw{Tcw}, _descriptors(descriptors), _key_points(keypoints) {}
 
 void KeyFrame::AddMatchedMapPoint(MapPoint *map_point, size_t index) {
-  _connections.push_back(map_point->AddObserver(
-      [&](MapPoint *map_point) { _matched_map_point_to_idx.erase(map_point); },
-      MapPoint::OnDeleteEvent{}));
-  _connections.push_back(map_point->AddObserver(
-      [&](MapPoint *map_point) {
-        return ViewingDirection(_Tcw, map_point->GetPoint3D());
-      },
-      MapPoint::OnUpdateEvent{}));
-
+  _connections.push_back(map_point->AddObserver([&]() { return this; }));
   _matched_map_point_to_idx.emplace(map_point, index);
+}
+
+void KeyFrame::EraseMapPoint(MapPoint *map_point) {
+  _matched_map_point_to_idx.erase(map_point);
 }
 
 size_t KeyFrame::NumKeyPoints() const { return _key_points.size(); }
