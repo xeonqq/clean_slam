@@ -5,6 +5,7 @@
 #ifndef CLEAN_SLAM_SRC_FRAME_H_
 #define CLEAN_SLAM_SRC_FRAME_H_
 #include "cv_algorithms.h"
+#include "key_frame.h"
 #include "map.h"
 #include "orb_extractor.h"
 #include "orb_feature_matcher.h"

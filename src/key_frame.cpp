@@ -4,8 +4,9 @@ namespace clean_slam {
 
 KeyFrame::KeyFrame(const g2o::SE3Quat &Tcw,
                    const std::vector<cv::KeyPoint> &keypoints,
-                   const cv::Mat &descriptors)
-    : _Tcw{Tcw}, _descriptors(descriptors), _key_points(keypoints) {}
+                   const cv::Mat &descriptors, vertex_t vertex)
+    : _Tcw{Tcw}, _descriptors(descriptors), _key_points(keypoints),
+      _vertex(vertex) {}
 
 void KeyFrame::AddMatchedMapPoint(MapPoint *map_point, size_t index) {
   _connections.push_back(map_point->AddObserver([&]() { return this; }));
@@ -31,5 +32,7 @@ const cv::Mat &KeyFrame::GetDescriptors() const { return _descriptors; }
 const std::vector<cv::KeyPoint> &KeyFrame::GetKeyPoints() const {
   return _key_points;
 }
+
+vertex_t KeyFrame::GetVertex() const { return _vertex; }
 
 } // namespace clean_slam

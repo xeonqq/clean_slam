@@ -5,12 +5,12 @@
 #ifndef CLEAN_SLAM_SRC_GRAPH_H_
 #define CLEAN_SLAM_SRC_GRAPH_H_
 
-#include "key_frame.h"
 #include <boost/config.hpp>
 #include <boost/graph/adjacency_list.hpp>
 
 namespace clean_slam {
 
+class KeyFrame;
 
 typedef boost::property<boost::edge_weight_t, int> EdgeProperty;
 typedef KeyFrame VertexProperty;

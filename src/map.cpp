@@ -4,6 +4,7 @@
 
 #include "map.h"
 #include "cv_algorithms.h"
+#include "key_frame.h"
 #include <boost/graph/graphviz.hpp>
 #include <boost/range/algorithm/transform.hpp>
 
@@ -15,7 +16,7 @@ vertex_t Map::AddKeyFrame(const g2o::SE3Quat &Tcw,
                           const cv::Mat &descriptors) {
 
   const auto vertex = add_vertex(_covisibility_graph);
-  _covisibility_graph[vertex] = KeyFrame{Tcw, key_points, descriptors};
+  _covisibility_graph[vertex] = KeyFrame{Tcw, key_points, descriptors, vertex};
   return vertex;
 }
 
