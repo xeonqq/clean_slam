@@ -114,17 +114,30 @@ size_t Frame::GetRefKeyFrameNumKeyPoints() const {
 }
 vertex_t Frame::GetRefKfVertex() const { return _ref_kf; }
 
-std::set<const KeyFrame *> Frame::GetKeyFramesShareSameMapPoints() const {
-  std::set<const KeyFrame *>
-      key_frames_share_map_points; // K1 from orb_slam paper
+std::set<vertex_t> Frame::GetKeyFramesShareSameMapPoints() const {
+  std::set<vertex_t> key_frames_share_map_points; // K1 from orb_slam paper
   for (const auto map_point : _matched_map_points) {
     const auto key_frames_observing_map_point = map_point->Observers();
     for (const auto key_frame : key_frames_observing_map_point) {
       key_frames_share_map_points.insert(
-          key_frame); // remove duplication, since many map_points are observed
-                      // from the same key frame
+          key_frame->GetVertex()); // remove duplication, since many map_points
+                                   // are observed from the same key frame
     }
   }
   return key_frames_share_map_points;
+}
+
+std::set<vertex_t> Frame::GetKeyFramesForLocalMapping() const {
+  const auto key_frames_share_same_map_points =
+      GetKeyFramesShareSameMapPoints();
+  auto key_frames = key_frames_share_same_map_points;
+  for (auto key_frame_share_same_map_points :
+       key_frames_share_same_map_points) {
+    const auto neighbors = _map->GetNeighbors(key_frame_share_same_map_points);
+    boost::range::transform(neighbors,
+                            std::inserter(key_frames, key_frames.end()),
+                            [](vertex_t v) { return v; });
+  }
+  return key_frames;
 }
 } // namespace clean_slam

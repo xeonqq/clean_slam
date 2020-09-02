@@ -24,9 +24,10 @@ public:
   Map() = default;
   Map(const OctaveScales &);
 
-  void AddMapPoints(const std::vector<Eigen::Vector3d> &points_3d,
-                    const std::vector<int> &matched_key_points_indexes,
-                    const vertex_t &key_frame_vertex);
+  std::vector<MapPoint *>
+  AddMapPoints(const std::vector<Eigen::Vector3d> &points_3d,
+               const std::vector<int> &matched_key_points_indexes,
+               const vertex_t &key_frame_vertex);
 
   std::vector<MapPoint *>
   AddMapPoints(const std::vector<Eigen::Vector3d> &points_3d,
@@ -48,6 +49,8 @@ public:
   const std::set<MapPoint> &GetMapPoints() const;
 
   const KeyFrame &GetKeyFrame(const vertex_t &kf_vertex) const;
+
+  std::vector<vertex_t> GetNeighbors(vertex_t vertex) const;
   ~Map();
 
 private:

@@ -25,19 +25,24 @@ void Map::AddKeyFramesWeight(const vertex_t &v0, const vertex_t &v1,
   add_edge(v0, v1, weight, _covisibility_graph);
 }
 
-void Map::AddMapPoints(const std::vector<Eigen::Vector3d> &points_3d,
-                       const std::vector<int> &matched_key_points_indexes,
-                       const vertex_t &key_frame_vertex) {
+std::vector<MapPoint *>
+Map::AddMapPoints(const std::vector<Eigen::Vector3d> &points_3d,
+                  const std::vector<int> &matched_key_points_indexes,
+                  const vertex_t &key_frame_vertex) {
+  std::vector<MapPoint *> map_points;
   auto &key_frame = _covisibility_graph[key_frame_vertex];
   const auto &key_points = key_frame.GetKeyPoints();
   const auto &Tcw = key_frame.GetTcw();
   const auto &descriptors = key_frame.GetDescriptors();
   for (std::size_t i{0}; i < points_3d.size(); ++i) {
     const auto matched_key_point_index = matched_key_points_indexes[i];
-    auto &map_point = AddMapPoint(Tcw, points_3d[i], descriptors.row(i),
-                                  key_points[matched_key_point_index]);
+    auto &map_point =
+        AddMapPoint(Tcw, points_3d[i], descriptors.row(matched_key_point_index),
+                    key_points[matched_key_point_index]);
+    map_points.push_back(&map_point);
     key_frame.AddMatchedMapPoint(&map_point, matched_key_point_index);
   }
+  return map_points;
 }
 
 std::vector<MapPoint *>
@@ -84,6 +89,12 @@ const std::set<MapPoint> &Map::GetMapPoints() const { return _map_points; }
 
 const KeyFrame &Map::GetKeyFrame(const vertex_t &kf_vertex) const {
   return _covisibility_graph[kf_vertex];
+}
+
+std::vector<vertex_t> Map::GetNeighbors(vertex_t vertex) const {
+  graph_traits<Graph>::adjacency_iterator ai, a_end;
+  tie(ai, a_end) = boost::adjacent_vertices(vertex, _covisibility_graph);
+  return std::vector<vertex_t>(ai, a_end);
 }
 
 Map::~Map() { write_graphviz(std::cout, _covisibility_graph); }
