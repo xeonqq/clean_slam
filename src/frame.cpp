@@ -114,9 +114,17 @@ size_t Frame::GetRefKeyFrameNumKeyPoints() const {
 }
 vertex_t Frame::GetRefKfVertex() const { return _ref_kf; }
 
-void Frame::TrackLocalMap() {
+std::set<const KeyFrame *> Frame::GetKeyFramesShareSameMapPoints() const {
+  std::set<const KeyFrame *>
+      key_frames_share_map_points; // K1 from orb_slam paper
   for (const auto map_point : _matched_map_points) {
-    auto observers = map_point->Observers();
+    const auto key_frames_observing_map_point = map_point->Observers();
+    for (const auto key_frame : key_frames_observing_map_point) {
+      key_frames_share_map_points.insert(
+          key_frame); // remove duplication, since many map_points are observed
+                      // from the same key frame
+    }
   }
+  return key_frames_share_map_points;
 }
 } // namespace clean_slam
