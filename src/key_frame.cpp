@@ -1,4 +1,6 @@
 #include "key_frame.h"
+#include <boost/range/adaptor/map.hpp>
+#include <boost/range/algorithm/copy.hpp>
 
 namespace clean_slam {
 
@@ -33,6 +35,13 @@ const std::vector<cv::KeyPoint> &KeyFrame::GetKeyPoints() const {
   return _key_points;
 }
 
+std::vector<const MapPoint *> KeyFrame::GetMatchedMapPoints() const {
+  std::vector<const MapPoint *> matched_map_points;
+  matched_map_points.reserve(_matched_map_point_to_idx.size());
+  boost::copy(_matched_map_point_to_idx | boost::adaptors::map_keys,
+              std::back_inserter(matched_map_points));
+  return matched_map_points;
+}
 vertex_t KeyFrame::GetVertex() const { return _vertex; }
 
 } // namespace clean_slam

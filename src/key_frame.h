@@ -21,6 +21,7 @@ public:
   const g2o::SE3Quat &GetTcw() const;
   const cv::Mat &GetDescriptors() const;
   const std::vector<cv::KeyPoint> &GetKeyPoints() const;
+  std::vector<const MapPoint *> GetMatchedMapPoints() const;
   size_t NumKeyPoints() const;
   size_t NumberOfMatchedMapPoints() const;
   vertex_t GetVertex() const;

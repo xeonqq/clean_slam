@@ -2,6 +2,7 @@
 #define CLEAN_SLAM_SRC_MAP_POINT_H
 
 #include <Eigen/Dense>
+#include <boost/range/algorithm.hpp>
 #include <boost/signals2.hpp>
 #include <iostream>
 #include <opencv2/core/mat.hpp>
@@ -86,8 +87,16 @@ private:
       _events;
 };
 
+template <typename MapPoints>
 std::vector<Eigen::Vector3d>
-GetMapPointsPositions(const std::vector<MapPoint *> &map_points);
+GetMapPointsPositions(const MapPoints &map_points) {
+  std::vector<Eigen::Vector3d> map_points_positions;
+  map_points_positions.reserve(map_points.size());
+  boost::range::transform(
+      map_points, std::back_inserter(map_points_positions),
+      [](const auto &map_point) { return map_point->GetPoint3D(); });
+  return map_points_positions;
+}
 } // namespace clean_slam
 
 namespace std {

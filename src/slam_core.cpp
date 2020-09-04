@@ -147,7 +147,22 @@ void SlamCore::TrackByMotionModel(const cv::Mat &image, double timestamp) {
 
 void SlamCore::TrackLocalMap() {
   auto &current_frame = _frames.back();
-  // find keyframes (K1) which share map points with the current frame
+  auto key_frames_for_local_mapping =
+      current_frame.GetKeyFramesForLocalMapping();
+  std::set<const MapPoint *> map_points_to_project;
+  for (auto kf_vertex : key_frames_for_local_mapping) {
+    const auto &key_frame = _map.GetKeyFrame(kf_vertex);
+    boost::copy(
+        key_frame.GetMatchedMapPoints(),
+        std::inserter(map_points_to_project, map_points_to_project.end()));
+  }
+  // todo: filter already matched map points from current frame
+
+  std::vector<Eigen::Vector2d> points_reprojected;
+  points_reprojected.reserve(map_points_to_project.size());
+  clean_slam::ReprojectPoints3d(GetMapPointsPositions(map_points_to_project),
+                                std::begin(points_reprojected),
+                                current_frame.GetTcw(), _camera_intrinsic);
 }
 CameraTrajectory SlamCore::GetTrajectory() const {
   CameraTrajectory trajectory;
