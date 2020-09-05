@@ -34,10 +34,10 @@ std::vector<Eigen::Vector2d>
 Frame::ReprojectPoints3d(const g2o::SE3Quat &current_pose,
                          const cv::Mat &camera_intrinsic) const {
   std::vector<Eigen::Vector2d> points_reprojected;
-  points_reprojected.resize(_matched_map_points.size());
+  points_reprojected.reserve(_matched_map_points.size());
   clean_slam::ReprojectPoints3d(GetMapPointsPositions(_matched_map_points),
-                                std::begin(points_reprojected), current_pose,
-                                camera_intrinsic);
+                                std::back_inserter(points_reprojected),
+                                current_pose, camera_intrinsic);
   return points_reprojected;
 }
 
@@ -127,7 +127,7 @@ std::set<vertex_t> Frame::GetKeyFramesShareSameMapPoints() const {
   return key_frames_share_map_points;
 }
 
-std::set<vertex_t> Frame::GetKeyFramesForLocalMapping() const {
+std::set<vertex_t> Frame::GetKeyFramesToTrackLocalMap() const {
   const auto key_frames_share_same_map_points =
       GetKeyFramesShareSameMapPoints();
   auto key_frames = key_frames_share_same_map_points;
@@ -139,5 +139,8 @@ std::set<vertex_t> Frame::GetKeyFramesForLocalMapping() const {
                             [](vertex_t v) { return v; });
   }
   return key_frames;
+}
+const std::vector<MapPoint *> &Frame::GetMatchedMapPoints() const {
+  return _matched_map_points;
 }
 } // namespace clean_slam

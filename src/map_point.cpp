@@ -53,9 +53,19 @@ const cv::Mat &MapPoint::GetRepresentativeDescriptor() const {
   return _representative_descriptor;
 }
 
+bool MapPoint::IsObservableFromDistance(float distance) const {
+  return _distance_bound.IsWithIn(distance);
+}
+
+int MapPoint::PredictOctaveScale(float distance,
+                                 const OctaveScales &octave_scales) const {
+  return octave_scales.MapDistanceToOctaveLevel(distance, _distance_bound);
+}
+
 MapPoint::~MapPoint() {
   auto key_frames = _events();
   boost::range::for_each(
       key_frames, [&](auto key_frame) { key_frame->EraseMapPoint(this); });
 }
+
 } // namespace clean_slam

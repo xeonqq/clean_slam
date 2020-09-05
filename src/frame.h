@@ -35,7 +35,7 @@ public:
                      const std::vector<Eigen::Vector2d> &projected_map_points,
                      const cv::Mat &mask, int search_radius,
                      const OctaveScales &octave_scales) const;
-  std::set<vertex_t> GetKeyFramesForLocalMapping() const;
+  std::set<vertex_t> GetKeyFramesToTrackLocalMap() const;
 
   std::vector<MapPoint *>
   GetMatchedMapPoints(const std::vector<cv::DMatch> &matches) const;
@@ -49,6 +49,7 @@ public:
   const KeyFrame &GetRefKeyFrame() const;
   size_t GetRefKeyFrameNumKeyPoints() const;
   vertex_t GetRefKfVertex() const;
+  const std::vector<MapPoint *> &GetMatchedMapPoints() const;
 
 private:
   std::set<vertex_t> GetKeyFramesShareSameMapPoints() const;

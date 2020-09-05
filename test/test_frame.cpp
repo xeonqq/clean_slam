@@ -37,7 +37,7 @@ TEST(Frame, GetKeyFramesForLocalMapping) {
   Frame frame{{{}}, map_points_kf0_1, &map, {}, {}, kf1};
 
   // When
-  auto key_frames_for_local_mapping = frame.GetKeyFramesForLocalMapping();
+  auto key_frames_for_local_mapping = frame.GetKeyFramesToTrackLocalMap();
 
   EXPECT_THAT(key_frames_for_local_mapping,
               ::testing::UnorderedElementsAre(kf0, kf1, kf2));

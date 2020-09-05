@@ -6,15 +6,16 @@
 #include "cv_algorithms.h"
 #include "cv_utils.h"
 #include <boost/foreach.hpp>
+#include <boost/range/adaptor/indexed.hpp>
 #include <boost/range/adaptor/transformed.hpp>
 #include <boost/range/algorithm.hpp>
+#include <boost/range/combine.hpp>
 #include <iterator>
 #include <opencv2/core/core.hpp>
 #include <opencv2/features2d/features2d.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/opencv.hpp>
 #include <third_party/spdlog/spdlog.h>
-
 #define DEBUG
 namespace clean_slam {
 
@@ -134,7 +135,7 @@ void SlamCore::TrackByMotionModel(const cv::Mat &image, double timestamp) {
       mask[i] = true;
     }
     */
-
+  TrackLocalMap();
   if (_viewer) {
     _viewer->OnNotify(Content{Tcw, {}});
     _viewer->OnNotify(image, orb_features);
@@ -147,22 +148,62 @@ void SlamCore::TrackByMotionModel(const cv::Mat &image, double timestamp) {
 
 void SlamCore::TrackLocalMap() {
   auto &current_frame = _frames.back();
-  auto key_frames_for_local_mapping =
-      current_frame.GetKeyFramesForLocalMapping();
+  auto key_frames_to_track_local_map =
+      current_frame.GetKeyFramesToTrackLocalMap();
   std::set<const MapPoint *> map_points_to_project;
-  for (auto kf_vertex : key_frames_for_local_mapping) {
+  for (auto kf_vertex : key_frames_to_track_local_map) {
     const auto &key_frame = _map.GetKeyFrame(kf_vertex);
     boost::copy(
         key_frame.GetMatchedMapPoints(),
         std::inserter(map_points_to_project, map_points_to_project.end()));
   }
-  // todo: filter already matched map points from current frame
-
+  for (auto map_point : current_frame.GetMatchedMapPoints()) {
+    map_points_to_project.erase(map_point);
+  }
   std::vector<Eigen::Vector2d> points_reprojected;
   points_reprojected.reserve(map_points_to_project.size());
-  clean_slam::ReprojectPoints3d(GetMapPointsPositions(map_points_to_project),
-                                std::begin(points_reprojected),
+  const auto points_3d = GetMapPointsPositions(map_points_to_project);
+  clean_slam::ReprojectPoints3d(points_3d,
+                                std::back_inserter(points_reprojected),
                                 current_frame.GetTcw(), _camera_intrinsic);
+  cv::Mat mask = cv::Mat::zeros(points_reprojected.size(), 1, CV_8U);
+
+  const auto &x_bounds = _undistorted_image_boundary.GetXBounds();
+  const auto &y_bounds = _undistorted_image_boundary.GetYBounds();
+
+  for (const auto &zipped :
+       boost::combine(points_reprojected, map_points_to_project) |
+           boost::adaptors::indexed()) {
+    Eigen::Vector2d point_reprojected;
+    const MapPoint *map_point;
+    boost::tie(point_reprojected, map_point) = zipped.value();
+
+    //  1. check points in undistorted range
+    if (!IsPointWithInBounds(point_reprojected, x_bounds, y_bounds))
+      continue;
+
+    // 2. check viewing direction feasible
+    auto camera_pose_in_world = current_frame.GetTcw().inverse();
+    const auto viewing_direction =
+        (map_point->GetPoint3D() - camera_pose_in_world.translation())
+            .normalized();
+    const auto proj = map_point->GetViewDirection().dot(viewing_direction);
+    const double kViewAngleCosThreshold = std::cos(M_PI / 3);
+    if (proj < kViewAngleCosThreshold)
+      continue;
+
+    //  3. check new depth of points (wrt to new camera pose) is within
+    //  scale pyramid range
+    const auto depth =
+        (map_point->GetPoint3D() - camera_pose_in_world.translation()).norm();
+    if (!map_point->IsObservableFromDistance(depth))
+      continue;
+
+    int predicted_octave_level =
+        map_point->PredictOctaveScale(depth, _octave_scales);
+
+    mask.at<uint8_t>(zipped.index()) = 1;
+  }
 }
 CameraTrajectory SlamCore::GetTrajectory() const {
   CameraTrajectory trajectory;

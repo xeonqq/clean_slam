@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "bound.h"
+#include "octave_scales.h"
 namespace clean_slam {
 
 using namespace boost::signals2;
@@ -57,6 +58,13 @@ public:
 
   const Eigen::Vector3d &GetViewDirection() const;
 
+  const cv::Mat &GetRepresentativeDescriptor() const;
+
+  bool IsObservableFromDistance(float distance) const;
+
+  int PredictOctaveScale(float distance,
+                         const OctaveScales &octave_scales) const;
+
   ~MapPoint();
 
 private:
@@ -72,16 +80,10 @@ private:
   // where this MapPoint is observed
   cv::Mat _representative_descriptor;
 
-public:
-  const cv::Mat &GetRepresentativeDescriptor() const;
-
-private:
   // distance bound calculated from reference key frame
   BoundF _distance_bound;
 
-  const KeyFrame *_reference_kf;
   // observer
-
   boost::signals2::signal<OnInspectionEvent::type,
                           OnInspectionEvent::combiner_type>
       _events;
