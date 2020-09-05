@@ -97,5 +97,13 @@ std::vector<vertex_t> Map::GetNeighbors(vertex_t vertex) const {
   return std::vector<vertex_t>(ai, a_end);
 }
 
-Map::~Map() { write_graphviz(std::cout, _covisibility_graph); }
+Map::~Map() {
+  boost::dynamic_properties dp;
+  dp.property("node_id", get(boost::vertex_index, _covisibility_graph));
+  dp.property("label", get(boost::edge_weight, _covisibility_graph));
+  std::ofstream f{"graph.dot"};
+  write_graphviz_dp(f, _covisibility_graph, dp);
+  std::cout
+      << "\nTo visualize the graph run: dot -Tpng graph.dot > graph.png\n";
+}
 } // namespace clean_slam
