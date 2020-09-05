@@ -8,6 +8,7 @@
 #include "bound.h"
 #include "octave_scales.h"
 #include "orb_extractor.h"
+#include "orb_feature_matcher.h"
 #include <Eigen/Dense>
 #include <boost/range/algorithm.hpp>
 #include <opencv2/core/mat.hpp>
@@ -35,6 +36,15 @@ void ReprojectPoints3d(const SinglePassRange1 &points_3d, OutputIterator out,
     return point_image;
   });
 }
+
+std::vector<cv::DMatch>
+SearchByProjection(const OrbFeatureMatcher &matcher,
+                   const std::vector<Eigen::Vector2d> &projected_map_points,
+                   const cv::Mat &projected_map_points_descriptors,
+                   const std::vector<uint8_t> &map_points_octaves,
+                   const OrbFeatures &features, const cv::Mat &mask,
+                   int search_radius, const OctaveScales &octave_scales,
+                   int num_nearest_neighbor, int descriptor_distance_threshold);
 
 bool KeyPointWithinRadius(const cv::KeyPoint &key_point,
                           const Eigen::Vector2d &point, float radius);
