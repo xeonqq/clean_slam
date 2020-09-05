@@ -113,28 +113,6 @@ void SlamCore::TrackByMotionModel(const cv::Mat &image, double timestamp) {
   cv::imwrite(png_name, out);
 #endif
 
-  /*
-    for (size_t i = 0; i < points_reprojected.size(); ++i) {
-      const auto &point = points_reprojected[i];
-
-      //  1. check points in undistorted range
-      if (!IsPointWithInBounds(point, x_bounds, y_bounds))
-        continue;
-
-      //  2. check new depth of points (wrt to new camera pose) is within
-      //  scale pyramid range
-          const auto depth =
-              (points_3d[i] - camera_pose_in_world.translation()).norm();
-          if (!distance_bounds[i].IsWithIn(depth))
-            continue;
-
-          int predicted_octave_level =
-              _octave_scales.MapDistanceToOctaveLevel(depth,
-              distance_bounds[i]);
-
-      mask[i] = true;
-    }
-    */
   TrackLocalMap();
   if (_viewer) {
     _viewer->OnNotify(Content{Tcw, {}});
