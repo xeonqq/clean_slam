@@ -135,5 +135,4 @@ void Viewer::Run() {
     }
   }
 }
-const cv::Mat &Viewer::GetImage() const { return _image; }
 } // namespace clean_slam

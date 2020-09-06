@@ -18,24 +18,34 @@ struct Content {
   std::vector<Eigen::Vector3d> triangulated_points;
 };
 
-class Viewer {
+class IViewer {
+public:
+  virtual void Run(){};
+  virtual void OnNotify(const Content &content){};
+  virtual void OnNotify(const cv::Mat &image,
+                        const OrbFeatures &orb_features){};
+  ~IViewer() = default;
+};
+
+class NullViewer : public IViewer {};
+
+class Viewer : public IViewer {
 
 public:
   Viewer(const ViewerSettings &viewer_settings);
-  void Run();
+  void Run() override;
 
-  void OnNotify(const Content &content) {
+  void OnNotify(const Content &content) override {
     std::lock_guard<std::mutex> lock(_mutex);
     _contents.push_back(content);
   }
 
-  void OnNotify(const cv::Mat &image, const OrbFeatures &orb_features) {
+  void OnNotify(const cv::Mat &image,
+                const OrbFeatures &orb_features) override {
     std::lock_guard<std::mutex> lock(_mutex);
     _image = image;
     _features = orb_features;
   }
-
-  const cv::Mat &GetImage() const;
 
 private:
   std::mutex _mutex;

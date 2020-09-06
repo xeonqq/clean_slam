@@ -19,7 +19,7 @@ void SlamSystem::Run() {
   spdlog::set_level(spdlog::level::info); // Set global log level to debug
 
   if (_dataset_loader) {
-    std::thread viewer_thread = _ioc_factory.CreateViewerThread();
+    auto viewer_thread = _ioc_factory.CreateViewerThread();
 
     size_t i = 0;
     for (const auto &image_file : _dataset_loader->GetImageFiles()) {
@@ -41,8 +41,10 @@ void SlamSystem::Run() {
       if (i > 100)
         break;
     }
-    viewer_thread.join();
-    cv::destroyAllWindows();
+    if (viewer_thread) {
+      viewer_thread->join();
+      cv::destroyAllWindows();
+    }
   }
 }
 } // namespace clean_slam

@@ -21,7 +21,7 @@ public:
   MapInitializer(OrbExtractor *orb_extractor,
                  const OrbFeatureMatcher *orb_feature_matcher,
                  Optimizer *optimizer, const cv::Mat &camera_intrinsic,
-                 Map *map, std::vector<Frame> *frames, Viewer *viewer);
+                 Map *map, std::vector<Frame> *frames, IViewer *viewer);
 
   void ProcessFirstImage(const cv::Mat &image, double timestamp);
   bool InitializeCameraPose(const cv::Mat &image, double timestamp);
@@ -33,7 +33,7 @@ private:
   CameraMotionEstimator _camera_motion_estimator;
   Map *_map;
   std::vector<Frame> *_frames;
-  Viewer *_viewer;
+  IViewer *_viewer;
   OrbFeatures _previous_orb_features;
   double _previous_timestamp;
 };

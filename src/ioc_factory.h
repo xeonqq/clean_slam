@@ -17,14 +17,15 @@
 namespace clean_slam {
 class IocFactory {
 public:
-  IocFactory(const DatasetLoader *dataset_loader);
+  IocFactory(const DatasetLoader *dataset_loader, bool use_gui);
   std::unique_ptr<boost::msm::back::state_machine<SlamCore>> CreateSlamCore();
-  std::thread CreateViewerThread();
+  boost::optional<std::thread> CreateViewerThread();
 
 private:
-  const DatasetLoader *dataset_loader;
+  const bool _use_gui;
+  const DatasetLoader *_dataset_loader;
   OrbExtractor _orb_extractor;
-  Viewer _viewer;
+  std::unique_ptr<IViewer> _viewer;
   OctaveScales _octave_scales;
   Optimizer _optimizer;
   OptimizerOnlyPose _optimizer_only_pose;

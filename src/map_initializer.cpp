@@ -16,7 +16,7 @@ MapInitializer::MapInitializer(OrbExtractor *orb_extractor,
                                const OrbFeatureMatcher *orb_feature_matcher,
                                Optimizer *optimizer,
                                const cv::Mat &camera_intrinsic, Map *map,
-                               std::vector<Frame> *frames, Viewer *viewer)
+                               std::vector<Frame> *frames, IViewer *viewer)
     : _orb_extractor(orb_extractor), _orb_feature_matcher{orb_feature_matcher},
       _optimizer(optimizer), _camera_motion_estimator{camera_intrinsic},
       _map{map}, _frames{frames}, _viewer{viewer} {}

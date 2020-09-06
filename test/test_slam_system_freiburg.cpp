@@ -78,7 +78,7 @@ TEST(SlamSystemFreiburgTest, Run) {
   dataset_loader.LoadFreiburgDataset(
       DATASET_DIR + std::string("/rgbd_dataset_freiburg1_xyz"),
       CONFIG_DIR + std::string("/TUM1.yaml"));
-  SlamSystem system{&dataset_loader};
+  SlamSystem system{&dataset_loader, false};
 
   // act
   system.Run();

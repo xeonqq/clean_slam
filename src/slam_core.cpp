@@ -24,7 +24,7 @@ const double kViewAngleCosThreshold = std::cos(M_PI / 3);
 SlamCore::SlamCore(const cv::Mat &camera_intrinsics,
                    const cv::Mat &camera_distortion_coeffs,
                    OrbExtractor *orb_extractor, Optimizer *optimizer,
-                   OptimizerOnlyPose *optimizer_only_pose, Viewer *viewer,
+                   OptimizerOnlyPose *optimizer_only_pose, IViewer *viewer,
                    const OctaveScales &octave_scale)
     : _camera_intrinsic(camera_intrinsics), _orb_extractor(orb_extractor),
       _optimizer{optimizer}, _optimizer_only_pose{optimizer_only_pose},
@@ -106,10 +106,8 @@ void SlamCore::TrackByMotionModel(const cv::Mat &image, double timestamp) {
 #endif
 
   const auto &current_frame = _frames.back();
-  if (_viewer) {
-    _viewer->OnNotify(Content{Tcw, {}});
-    _viewer->OnNotify(image, current_frame.GetOrbFeatures());
-  }
+  _viewer->OnNotify(Content{Tcw, {}});
+  _viewer->OnNotify(image, current_frame.GetOrbFeatures());
 
   if ((matches.size() < _frames.back().GetRefKeyFrameNumKeyPoints() * 0.9) &&
       current_frame.GetOrbFeatures().NumKeyPoints() > 50) {

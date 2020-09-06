@@ -33,7 +33,7 @@ public:
   SlamCore(const cv::Mat &camera_intrinsics,
            const cv::Mat &camera_distortion_coeffs, OrbExtractor *orb_extractor,
            Optimizer *optimizer, OptimizerOnlyPose *optimizer_only_pose,
-           Viewer *viewer, const OctaveScales &octave_scale);
+           IViewer *viewer, const OctaveScales &octave_scale);
   void ProcessFirstImage(const cv::Mat &image, double timestamp);
   void TrackByMotionModel(const cv::Mat &image, double timestamp);
   void TrackLocalMap(Frame &current_frame);
@@ -87,7 +87,7 @@ private:
   OrbExtractor *_orb_extractor;
   Optimizer *_optimizer;
   OptimizerOnlyPose *_optimizer_only_pose;
-  Viewer *_viewer;
+  IViewer *_viewer;
 
   OrbFeatureMatcher _orb_feature_matcher;
   UndistortedImageBoundary _undistorted_image_boundary;

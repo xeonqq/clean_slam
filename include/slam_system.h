@@ -18,9 +18,9 @@ namespace clean_slam {
 class SlamSystem {
 public:
   SlamSystem() = default;
-  SlamSystem(const DatasetLoader *dataset_loader)
-      : _dataset_loader{dataset_loader},
-        _ioc_factory{dataset_loader}, _core{_ioc_factory.CreateSlamCore()} {}
+  SlamSystem(const DatasetLoader *dataset_loader, bool use_gui = true)
+      : _dataset_loader{dataset_loader}, _ioc_factory{dataset_loader, use_gui},
+        _core{_ioc_factory.CreateSlamCore()} {}
   void Run();
   CameraTrajectory GetCamTrajectory() const;
 
