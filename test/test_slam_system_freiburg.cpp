@@ -64,6 +64,21 @@ struct Report {
     std::cout << "Report: \ntrajectory size: " << _count << "\n"
               << "mean translate error: " << GetMeanTranslationError() << "\n"
               << "mean rotation error: " << GetMeanRotationError() << std::endl;
+    write_plot_py();
+  }
+  void write_plot_py() {
+    std::ofstream file{"plot_errors.py"};
+    file << "import matplotlib.pyplot as plt\n";
+    file << "translation_errors =  [\n";
+    boost::copy(_translation_errors, std::ostream_iterator<double>(file, ","));
+
+    file << "]\nrotation_errors =  [\n";
+    boost::copy(_rotation_errors, std::ostream_iterator<double>(file, ","));
+    file << "]\n";
+    file << "plt.plot(translation_errors, "
+            "label='translation')\nplt.plot(rotation_errors, "
+            "label='rotation')\nplt.legend()\nplt.show()";
+    std::cout << "To plot the errors, run: python3 plot_errors.py\n";
   }
   int _count{0};
   std::vector<double> _rotation_errors;
