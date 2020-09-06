@@ -7,6 +7,7 @@
 
 #include "bound.h"
 #include <Eigen/Dense>
+#include <boost/range/size.hpp>
 #include <iostream>
 #include <opencv2/imgcodecs.hpp>
 #include <string>
@@ -68,7 +69,25 @@ std::vector<typename Vec::value_type> FilterByIndex(const Vec &vec,
   return result;
 }
 
+template <typename Vec, typename Rng>
+std::vector<typename Vec::value_type> RemoveByIndex(const Vec &vec,
+                                                    const Rng &indexes) {
+  std::vector<typename Vec::value_type> result;
+  result.reserve(vec.size() - boost::size(indexes));
+  std::vector<bool> indexes_to_keep_mask(vec.size(), true);
+  for (auto index : indexes) {
+    indexes_to_keep_mask[index] = false;
+  }
+  for (size_t i{0}; i < vec.size(); ++i) {
+    if (indexes_to_keep_mask[i]) {
+      result.push_back(vec[i]);
+    }
+  }
+  return result;
+}
+
 cv::Mat FilterByIndex(const cv::Mat &mat, const std::vector<int> &indexes);
+cv::Mat RemoveByIndex(const cv::Mat &mat, const std::vector<int> &indexes);
 
 Eigen::Vector2d Point2fToVector2d(const cv::Point2f &point2f);
 

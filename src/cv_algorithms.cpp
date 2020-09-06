@@ -72,7 +72,7 @@ std::vector<cv::DMatch> SearchByProjection(
   for (const auto &matches_per_map_point :
        matches_for_map_points | boost::adaptors::indexed()) {
 
-    if (!mask.at<uint8_t>(matches_per_map_point.index()))
+    if (!mask.empty() && !mask.at<uint8_t>(matches_per_map_point.index()))
       continue;
 
     for (const cv::DMatch &m : matches_per_map_point.value()) {

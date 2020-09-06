@@ -41,6 +41,13 @@ public:
                      const Frame &prev_frame, const cv::Mat &mask,
                      int search_radius, const OctaveScales &octave_scales);
 
+  std::vector<cv::DMatch> SearchUnmatchedKeyPointsByProjection(
+      const OrbFeatureMatcher &matcher,
+      const std::vector<Eigen::Vector2d> &projected_map_points,
+      const cv::Mat &projected_map_points_descriptors,
+      const std::vector<uint8_t> &map_points_octaves, int search_radius,
+      const OctaveScales &octave_scales);
+
   void OptimizePose(OptimizerOnlyPose *optimizer_only_pose);
 
   std::set<vertex_t> GetKeyFramesToTrackLocalMap() const;
@@ -48,13 +55,9 @@ public:
   std::vector<MapPoint *>
   GetMatchedMapPoints(const std::vector<cv::DMatch> &matches) const;
 
-  std::vector<cv::KeyPoint>
-  GetMatchedKeyPoints(const std::vector<cv::DMatch> &matches) const;
-
   const g2o::SE3Quat &GetTcw() const { return _Tcw; }
   double GetTimestamp() const { return _timestamp; }
 
-  const std::vector<cv::KeyPoint> &GetKeyPoints() const;
   std::vector<uint8_t> GetMatchedMapPointsOctaves() const;
   cv::Mat GetMatchedMapPointsDescriptors() const;
   const KeyFrame &GetRefKeyFrame() const;
@@ -67,10 +70,14 @@ public:
 
 private:
   std::set<vertex_t> GetKeyFramesShareSameMapPoints() const;
+  std::vector<cv::KeyPoint> GetMatchedKeyPoints() const;
+  std::vector<cv::KeyPoint> GetUnmatchedKeyPoints() const;
+  cv::Mat GetUnmatchedKeyPointsDescriptors() const;
 
 private:
   OrbFeatures _orb_features;
-  std::vector<cv::KeyPoint> _matched_key_points;
+  std::vector<cv::KeyPoint> _matched_key_points; // not needed;
+  std::vector<int> _matched_key_points_idxs;
   std::vector<MapPoint *> _matched_map_points;
   const Map *_map;
   g2o::SE3Quat _Tcw;
