@@ -99,6 +99,15 @@ GetMapPointsPositions(const MapPoints &map_points) {
       [](const auto &map_point) { return map_point->GetPoint3D(); });
   return map_points_positions;
 }
+
+template <typename MapPoints>
+cv::Mat GetMapPointsDescriptors(const MapPoints &map_points) {
+  cv::Mat descriptors = cv::Mat(map_points.size(), 32, CV_8UC1);
+  for (size_t i = 0; i < map_points.size(); ++i) {
+    map_points[i]->GetRepresentativeDescriptor().copyTo(descriptors.row(i));
+  }
+  return descriptors;
+}
 } // namespace clean_slam
 
 namespace std {

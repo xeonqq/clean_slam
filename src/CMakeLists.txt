@@ -21,7 +21,7 @@ include_directories(
 )
 file(GLOB_RECURSE SRC_FILES ${PROJECT_SOURCE_DIR}/src/*.cpp)
 
-add_library(${PROJECT_NAME} SHARED ${SRC_FILES} graph.h)
+add_library(${PROJECT_NAME} SHARED ${SRC_FILES})
 
 target_link_libraries(${PROJECT_NAME}
         ${OpenCV_LIBS}

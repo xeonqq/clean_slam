@@ -63,7 +63,7 @@ g2o::SE3Quat OptimizerOnlyPose::Optimize(
   _bundle_adjustment.Optimize(20, false);
   //  spdlog::info("pose after bundle adjustment: {}", );
   const auto optimized_pose = _bundle_adjustment.GetOptimizedPose(0);
-  std::cerr << "pose after bundle adjustment: " << optimized_pose << std::endl;
+  std::cerr << "pose after bundle adjustment:\n" << optimized_pose << std::endl;
   return optimized_pose;
 }
 

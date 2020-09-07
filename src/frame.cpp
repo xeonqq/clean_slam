@@ -9,13 +9,9 @@
 namespace clean_slam {
 
 cv::Mat Frame::GetMatchedMapPointsDescriptors() const {
-  cv::Mat descriptors = cv::Mat(_matched_map_points.size(), 32, CV_8UC1);
-  for (size_t i = 0; i < _matched_map_points.size(); ++i) {
-    _matched_map_points[i]->GetRepresentativeDescriptor().copyTo(
-        descriptors.row(i));
-  }
-  return descriptors;
+  return GetMapPointsDescriptors(_matched_map_points);
 }
+
 std::vector<uint8_t> Frame::GetMatchedMapPointsOctaves() const {
   std::vector<uint8_t> octaves;
   octaves.reserve(_matched_key_points.size());
@@ -36,7 +32,7 @@ Frame::ReprojectPoints3d(const std::vector<Eigen::Vector3d> &points_3d,
   return points_reprojected;
 }
 
-std::vector<cv::DMatch> Frame::SearchByProjection(
+FrameArtifact Frame::SearchByProjection(
     const OrbFeatureMatcher &matcher,
     const std::vector<Eigen::Vector2d> &projected_map_points,
     const Frame &prev_frame, const cv::Mat &mask, int search_radius,
@@ -49,27 +45,13 @@ std::vector<cv::DMatch> Frame::SearchByProjection(
       search_radius, octave_scales, kNumNearestNeighbor,
       kDescriptorDistanceThreshold);
 
-  _matched_key_points_idxs = TrainIdxs{}(matches_map_point_to_key_point);
-  _matched_key_points = GetMatchedKeyPoints();
+  auto matched_key_points_indexes = TrainIdxs{}(matches_map_point_to_key_point);
+  _matched_key_points = FilterByIndex(_orb_features.GetUndistortedKeyPoints(),
+                                      matched_key_points_indexes);
   _matched_map_points =
       prev_frame.GetMatchedMapPoints(matches_map_point_to_key_point);
-  return matches_map_point_to_key_point;
-}
 
-std::vector<cv::DMatch> Frame::SearchUnmatchedKeyPointsByProjection(
-    const OrbFeatureMatcher &matcher,
-    const std::vector<Eigen::Vector2d> &projected_map_points,
-    const cv::Mat &projected_map_points_descriptors,
-    const std::vector<uint8_t> &map_points_octaves, int search_radius,
-    const OctaveScales &octave_scales) {
-
-  const auto matches_map_point_to_key_point = clean_slam::SearchByProjection(
-      matcher, projected_map_points, projected_map_points_descriptors,
-      map_points_octaves,
-      OrbFeatures(GetUnmatchedKeyPoints(), GetUnmatchedKeyPointsDescriptors()),
-      cv::Mat{}, search_radius, octave_scales, kNumNearestNeighbor,
-      kDescriptorDistanceThreshold);
-  return matches_map_point_to_key_point;
+  return FrameArtifact(this, std::move(matched_key_points_indexes));
 }
 
 void Frame::OptimizePose(OptimizerOnlyPose *optimizer_only_pose) {
@@ -87,19 +69,8 @@ Frame::GetMatchedMapPoints(const std::vector<cv::DMatch> &matches) const {
   return FilterByIndex(_matched_map_points, matched_indexes);
 }
 
-std::vector<cv::KeyPoint> Frame::GetMatchedKeyPoints() const {
-  return FilterByIndex(_orb_features.GetUndistortedKeyPoints(),
-                       _matched_key_points_idxs);
-}
-
-std::vector<cv::KeyPoint> Frame::GetUnmatchedKeyPoints() const {
-  return RemoveByIndex(_orb_features.GetUndistortedKeyPoints(),
-                       _matched_key_points_idxs);
-}
-
-cv::Mat Frame::GetUnmatchedKeyPointsDescriptors() const {
-  return RemoveByIndex(_orb_features.GetDescriptors(),
-                       _matched_key_points_idxs);
+const std::vector<cv::KeyPoint> &Frame::GetMatchedKeyPoints() const {
+  return _matched_key_points;
 }
 
 const KeyFrame &Frame::GetRefKeyFrame() const {
@@ -144,4 +115,8 @@ const std::vector<cv::KeyPoint> &Frame::GetUndistortedKeyPoints() const {
   return _orb_features.GetUndistortedKeyPoints();
 }
 const OrbFeatures &Frame::GetOrbFeatures() const { return _orb_features; }
+
+size_t Frame::GetNumMatchedMapPoints() const {
+  return _matched_map_points.size();
+}
 } // namespace clean_slam

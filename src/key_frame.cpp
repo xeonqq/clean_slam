@@ -35,8 +35,8 @@ const std::vector<cv::KeyPoint> &KeyFrame::GetKeyPoints() const {
   return _key_points;
 }
 
-std::vector<const MapPoint *> KeyFrame::GetMatchedMapPoints() const {
-  std::vector<const MapPoint *> matched_map_points;
+std::vector<MapPoint *> KeyFrame::GetMatchedMapPoints() const {
+  std::vector<MapPoint *> matched_map_points;
   matched_map_points.reserve(_matched_map_point_to_idx.size());
   boost::copy(_matched_map_point_to_idx | boost::adaptors::map_keys,
               std::back_inserter(matched_map_points));

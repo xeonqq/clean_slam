@@ -5,6 +5,7 @@
 #ifndef CLEAN_SLAM_SRC_FRAME_H_
 #define CLEAN_SLAM_SRC_FRAME_H_
 #include "cv_algorithms.h"
+#include "frame_artifact.h"
 #include "key_frame.h"
 #include "map.h"
 #include "optimizer.h"
@@ -35,18 +36,11 @@ public:
   ReprojectPoints3d(const std::vector<Eigen::Vector3d> &points_3d,
                     const cv::Mat &camera_intrinsic) const;
 
-  std::vector<cv::DMatch>
+  FrameArtifact
   SearchByProjection(const OrbFeatureMatcher &matcher,
                      const std::vector<Eigen::Vector2d> &projected_map_points,
                      const Frame &prev_frame, const cv::Mat &mask,
                      int search_radius, const OctaveScales &octave_scales);
-
-  std::vector<cv::DMatch> SearchUnmatchedKeyPointsByProjection(
-      const OrbFeatureMatcher &matcher,
-      const std::vector<Eigen::Vector2d> &projected_map_points,
-      const cv::Mat &projected_map_points_descriptors,
-      const std::vector<uint8_t> &map_points_octaves, int search_radius,
-      const OctaveScales &octave_scales);
 
   void OptimizePose(OptimizerOnlyPose *optimizer_only_pose);
 
@@ -67,17 +61,17 @@ public:
 
   const std::vector<cv::KeyPoint> &GetUndistortedKeyPoints() const;
   const OrbFeatures &GetOrbFeatures() const;
+  size_t GetNumMatchedMapPoints() const;
+
+  const std::vector<cv::KeyPoint> &GetMatchedKeyPoints() const;
 
 private:
   std::set<vertex_t> GetKeyFramesShareSameMapPoints() const;
-  std::vector<cv::KeyPoint> GetMatchedKeyPoints() const;
-  std::vector<cv::KeyPoint> GetUnmatchedKeyPoints() const;
-  cv::Mat GetUnmatchedKeyPointsDescriptors() const;
+  friend FrameArtifact;
 
 private:
   OrbFeatures _orb_features;
-  std::vector<cv::KeyPoint> _matched_key_points; // not needed;
-  std::vector<int> _matched_key_points_idxs;
+  std::vector<cv::KeyPoint> _matched_key_points;
   std::vector<MapPoint *> _matched_map_points;
   const Map *_map;
   g2o::SE3Quat _Tcw;

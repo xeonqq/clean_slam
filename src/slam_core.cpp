@@ -63,43 +63,48 @@ void SlamCore::TrackByMotionModel(const cv::Mat &image, double timestamp) {
         IsPointWithInBounds(points_reprojected[i], x_bounds, y_bounds);
   }
   const int search_radius = 7;
-  auto matches =
+  auto frame_artifact =
       frame.SearchByProjection(_orb_feature_matcher, points_reprojected,
                                prev_frame, mask, search_radius, _octave_scales);
-  if (matches.size() < 20) {
+  if (frame_artifact.NumOfMatches() < 20) {
     spdlog::info(
         "Search again with larger radius, num matched map points < 20: {}",
-        matches.size());
-    matches = frame.SearchByProjection(_orb_feature_matcher, points_reprojected,
-                                       prev_frame, mask, search_radius * 2,
-                                       _octave_scales);
+        frame_artifact.NumOfMatches());
+    frame_artifact = frame.SearchByProjection(
+        _orb_feature_matcher, points_reprojected, prev_frame, mask,
+        search_radius * 2, _octave_scales);
     spdlog::info("After search again , num matched map points: {}",
-                 matches.size());
+                 frame_artifact.NumOfMatches());
   }
 
-  TrackLocalMap(frame);
   const int kNumMatchedMapPointsForBA = 20;
-  if (matches.size() > kNumMatchedMapPointsForBA) {
-    spdlog::info("Num matched map points: {}", matches.size());
+  if (frame_artifact.NumOfMatches() > kNumMatchedMapPointsForBA) {
+    spdlog::info("Num matched map points: {}", frame_artifact.NumOfMatches());
     frame.OptimizePose(_optimizer_only_pose);
+  }
+  TrackLocalMap(frame_artifact);
+  if (frame.GetNumMatchedMapPoints() > kNumMatchedMapPointsForBA) {
+    _frames.push_back(std::move(frame));
   } else {
     spdlog::warn("Num matched map points < {}, only: {}",
-                 kNumMatchedMapPointsForBA, matches.size());
+                 kNumMatchedMapPointsForBA, frame.GetNumMatchedMapPoints());
     return;
   }
-
-  _frames.push_back(std::move(frame));
 #if 0
   static int i = 0;
   ++i;
   cv::Mat out;
+  static cv::Mat prev_image;
   try {
-    cv::drawMatches(_key_frame_graph.GetReferenceKeyFrameImage(),
-                    prev_frame.GetKeyPoints(), image,
-                    orb_features.GetUndistortedKeyPoints(), matches, out);
+    const auto& kf = frame.GetRefKeyFrame();
+    if (!prev_image.empty())
+    cv::drawMatches(prev_image,
+                    prev_frame.GetMatchedKeyPoints(), image,
+                    frame.GetUndistortedKeyPoints(), matches, out);
   } catch (std::exception &e) {
     std::cerr << "TrackException: " << e.what() << std::endl;
   }
+  prev_image = image;
   std::string png_name = std::string("matches_by_motion_track_knn") +
                          std::to_string(i) + std::string(".png");
   cv::imwrite(png_name, out);
@@ -109,48 +114,47 @@ void SlamCore::TrackByMotionModel(const cv::Mat &image, double timestamp) {
   _viewer->OnNotify(Content{Tcw, {}});
   _viewer->OnNotify(image, current_frame.GetOrbFeatures());
 
-  if ((matches.size() < _frames.back().GetRefKeyFrameNumKeyPoints() * 0.9) &&
+  if ((frame_artifact.NumOfMatches() <
+       _frames.back().GetRefKeyFrameNumKeyPoints() * 0.9) &&
       current_frame.GetOrbFeatures().NumKeyPoints() > 50) {
   }
 }
 
-void SlamCore::TrackLocalMap(Frame &current_frame) {
-  auto key_frames_to_track_local_map =
-      current_frame.GetKeyFramesToTrackLocalMap();
-  std::set<const MapPoint *> map_points_to_project;
+void SlamCore::TrackLocalMap(FrameArtifact &frame_artifact) {
+  auto &frame = frame_artifact.GetFrame();
+  auto key_frames_to_track_local_map = frame.GetKeyFramesToTrackLocalMap();
+  std::set<MapPoint *> map_points_to_project;
   for (auto kf_vertex : key_frames_to_track_local_map) {
     const auto &key_frame = _map.GetKeyFrame(kf_vertex);
     boost::copy(
         key_frame.GetMatchedMapPoints(),
         std::inserter(map_points_to_project, map_points_to_project.end()));
   }
-  for (auto map_point : current_frame.GetMatchedMapPoints()) {
+  for (auto map_point : frame.GetMatchedMapPoints()) {
     map_points_to_project.erase(map_point);
   }
 
-  std::vector<Eigen::Vector2d> points_reprojected =
-      current_frame.ReprojectPoints3d(
-          GetMapPointsPositions(map_points_to_project), _camera_intrinsic);
+  std::vector<Eigen::Vector2d> points_reprojected = frame.ReprojectPoints3d(
+      GetMapPointsPositions(map_points_to_project), _camera_intrinsic);
 
   const auto &x_bounds = _undistorted_image_boundary.GetXBounds();
   const auto &y_bounds = _undistorted_image_boundary.GetYBounds();
 
+  std::vector<MapPoint *> valid_map_points;
   std::vector<Eigen::Vector2d> valid_map_points_reprojected;
-  cv::Mat valid_map_points_descriptors;
   std::vector<uint8_t> valid_map_points_octaves;
-  for (const auto &zipped :
-       boost::combine(points_reprojected, map_points_to_project) |
-           boost::adaptors::indexed()) {
+  auto combined = boost::combine(points_reprojected, map_points_to_project);
+  for (auto it = combined.begin(); it != combined.end(); ++it) {
     Eigen::Vector2d point_reprojected;
-    const MapPoint *map_point;
-    boost::tie(point_reprojected, map_point) = zipped.value();
+    MapPoint *map_point;
+    boost::tie(point_reprojected, map_point) = *it;
 
     //  1. check points in undistorted range
     if (!IsPointWithInBounds(point_reprojected, x_bounds, y_bounds))
       continue;
 
     // 2. check viewing direction feasible
-    auto camera_pose_in_world = current_frame.GetTcw().inverse();
+    auto camera_pose_in_world = frame.GetTcw().inverse();
     const auto viewing_direction =
         (map_point->GetPoint3D() - camera_pose_in_world.translation())
             .normalized();
@@ -168,17 +172,21 @@ void SlamCore::TrackLocalMap(Frame &current_frame) {
     int predicted_octave_level =
         map_point->PredictOctaveScale(depth, _octave_scales);
     valid_map_points_octaves.push_back(predicted_octave_level);
+    valid_map_points.push_back(map_point);
     valid_map_points_reprojected.push_back(point_reprojected);
-    valid_map_points_descriptors.push_back(
-        map_point->GetRepresentativeDescriptor());
   }
-  auto matches = current_frame.SearchUnmatchedKeyPointsByProjection(
-      _orb_feature_matcher, valid_map_points_reprojected,
-      valid_map_points_descriptors, valid_map_points_octaves, 7,
-      _octave_scales);
+  auto matches = frame_artifact.SearchUnmatchedKeyPointsByProjection(
+      _orb_feature_matcher, valid_map_points, valid_map_points_reprojected,
+      valid_map_points_octaves, 7, _octave_scales);
   spdlog::info("Num additional matched map points track local map: {}",
-               matches.size());
+               matches);
+  if (frame.GetNumMatchedMapPoints() > 20) {
+    spdlog::info("optimize in track local map with num map points: {}",
+                 frame.GetNumMatchedMapPoints());
+    frame.OptimizePose(_optimizer_only_pose);
+  }
 }
+
 CameraTrajectory SlamCore::GetTrajectory() const {
   CameraTrajectory trajectory;
   boost::range::transform(
