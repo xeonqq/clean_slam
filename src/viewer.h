@@ -24,7 +24,7 @@ public:
   virtual void OnNotify(const Content &content){};
   virtual void OnNotify(const cv::Mat &image,
                         const OrbFeatures &orb_features){};
-  ~IViewer() = default;
+  virtual ~IViewer() = default;
 };
 
 class NullViewer : public IViewer {};

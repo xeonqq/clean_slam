@@ -46,7 +46,7 @@ public:
       double robust_kernel_delta = sqrt(5.991));
 
   void Clear();
-  void Optimize(int iterations = 20, bool verbose = false);
+  int Optimize(int iterations = 20, bool verbose = false);
 
   const g2o::SE3Quat &GetOptimizedPose(int id) const;
   const Eigen::Vector3d &GetOptimizedPoint(int id) const;

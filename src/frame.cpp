@@ -38,7 +38,7 @@ FrameArtifact Frame::SearchByProjection(
     const Frame &prev_frame, const cv::Mat &mask, int search_radius,
     const OctaveScales &octave_scales) {
 
-  const auto matches_map_point_to_key_point = clean_slam::SearchByProjection(
+  auto matches_map_point_to_key_point = clean_slam::SearchByProjection(
       matcher, projected_map_points,
       prev_frame.GetMatchedMapPointsDescriptors(),
       prev_frame.GetMatchedMapPointsOctaves(), _orb_features, mask,
@@ -51,7 +51,8 @@ FrameArtifact Frame::SearchByProjection(
   _matched_map_points =
       prev_frame.GetMatchedMapPoints(matches_map_point_to_key_point);
 
-  return FrameArtifact(this, std::move(matched_key_points_indexes));
+  return FrameArtifact(this, std::move(matched_key_points_indexes),
+                       std::move(matches_map_point_to_key_point));
 }
 
 void Frame::OptimizePose(OptimizerOnlyPose *optimizer_only_pose) {

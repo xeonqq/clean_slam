@@ -15,9 +15,11 @@ namespace clean_slam {
 class Frame;
 class FrameArtifact {
 public:
-  FrameArtifact(Frame *frame, std::vector<int> &&matched_key_points_idxs)
+  FrameArtifact(Frame *frame, std::vector<int> &&matched_key_points_idxs,
+                std::vector<cv::DMatch> &&matches)
       : _frame(frame),
-        _matched_key_points_idxs(std::move(matched_key_points_idxs)) {}
+        _matched_key_points_idxs(std::move(matched_key_points_idxs)),
+        _matches{std::move(matches)} {}
 
   size_t SearchUnmatchedKeyPointsByProjection(
       const OrbFeatureMatcher &matcher,
@@ -28,6 +30,8 @@ public:
 
   size_t NumOfMatches() const { return _matched_key_points_idxs.size(); }
   Frame &GetFrame();
+  const Frame &GetFrame() const;
+  const std::vector<cv::DMatch> &GetMatches() const { return _matches; }
 
 private:
   std::vector<cv::KeyPoint> GetUnmatchedKeyPoints() const;
@@ -37,6 +41,7 @@ private:
 private:
   Frame *_frame;
   std::vector<int> _matched_key_points_idxs;
+  std::vector<cv::DMatch> _matches; // for debug only
 };
 } // namespace clean_slam
 #endif // CLEAN_SLAM_SRC_FRAME_ARTIFACT_H_

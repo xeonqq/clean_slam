@@ -21,6 +21,28 @@ namespace clean_slam {
 
 const double kViewAngleCosThreshold = std::cos(M_PI / 3);
 
+void DrawMatches(const cv::Mat &image, const FrameArtifact &frame_artifact,
+                 const Frame &prev_frame) {
+  static int i = 0;
+  static cv::Mat prev_image;
+  ++i;
+  cv::Mat out;
+  try {
+    //    const auto& kf = frame.GetRefKeyFrame();
+    if (!prev_image.empty()) {
+      cv::drawMatches(prev_image, prev_frame.GetMatchedKeyPoints(), image,
+                      frame_artifact.GetFrame().GetUndistortedKeyPoints(),
+                      frame_artifact.GetMatches(), out);
+      std::string png_name = std::string("matches_by_motion_track_knn") +
+                             std::to_string(i) + std::string(".png");
+      cv::imwrite(png_name, out);
+    }
+    prev_image = image;
+  } catch (std::exception &e) {
+    std::cerr << "TrackException: " << e.what() << std::endl;
+  }
+}
+
 SlamCore::SlamCore(const cv::Mat &camera_intrinsics,
                    const cv::Mat &camera_distortion_coeffs,
                    OrbExtractor *orb_extractor, Optimizer *optimizer,
@@ -83,33 +105,17 @@ void SlamCore::TrackByMotionModel(const cv::Mat &image, double timestamp) {
     frame.OptimizePose(_optimizer_only_pose);
   }
   TrackLocalMap(frame_artifact);
+
   if (frame.GetNumMatchedMapPoints() > kNumMatchedMapPointsForBA) {
+#if 0
+    DrawMatches(image, frame_artifact, prev_frame);
+#endif
     _frames.push_back(std::move(frame));
   } else {
     spdlog::warn("Num matched map points < {}, only: {}",
                  kNumMatchedMapPointsForBA, frame.GetNumMatchedMapPoints());
     return;
   }
-#if 0
-  static int i = 0;
-  ++i;
-  cv::Mat out;
-  static cv::Mat prev_image;
-  try {
-    const auto& kf = frame.GetRefKeyFrame();
-    if (!prev_image.empty())
-    cv::drawMatches(prev_image,
-                    prev_frame.GetMatchedKeyPoints(), image,
-                    frame.GetUndistortedKeyPoints(), matches, out);
-  } catch (std::exception &e) {
-    std::cerr << "TrackException: " << e.what() << std::endl;
-  }
-  prev_image = image;
-  std::string png_name = std::string("matches_by_motion_track_knn") +
-                         std::to_string(i) + std::string(".png");
-  cv::imwrite(png_name, out);
-#endif
-
   const auto &current_frame = _frames.back();
   _viewer->OnNotify(Content{Tcw, {}});
   _viewer->OnNotify(image, current_frame.GetOrbFeatures());

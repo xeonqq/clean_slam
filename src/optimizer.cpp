@@ -4,6 +4,9 @@
 
 #include "optimizer.h"
 #include "cv_utils.h"
+#include "spdlog/fmt/ostr.h"
+#include "spdlog/spdlog.h"
+
 namespace clean_slam {
 
 OptimizedResult
@@ -32,10 +35,10 @@ Optimizer::Optimize(const g2o::SE3Quat &Tcw,
               _octave_scales.GetOctaveInvSigma2Scales()[key_point.octave]);
     }
   }
-  _bundle_adjustment.Optimize(20, false);
-  //  spdlog::info("pose after bundle adjustment: {}", );
+  const auto iterations = _bundle_adjustment.Optimize(20, false);
   const auto optimized_pose = _bundle_adjustment.GetOptimizedPose(1);
-  std::cerr << optimized_pose << std::endl;
+  spdlog::debug("pose after {} iters full BA:\n {}", iterations,
+                optimized_pose);
   std::vector<Eigen::Vector3d> optimized_points;
   optimized_points.reserve(points_3d_in_world.size());
   for (size_t point_id = 0; point_id < points_3d_in_world.size(); ++point_id) {
@@ -60,10 +63,10 @@ g2o::SE3Quat OptimizerOnlyPose::Optimize(
             _octave_scales.GetOctaveInvSigma2Scales()[key_point.octave]);
   }
 
-  _bundle_adjustment.Optimize(20, false);
-  //  spdlog::info("pose after bundle adjustment: {}", );
+  const auto iterations = _bundle_adjustment.Optimize(20, false);
   const auto optimized_pose = _bundle_adjustment.GetOptimizedPose(0);
-  std::cerr << "pose after bundle adjustment:\n" << optimized_pose << std::endl;
+  spdlog::debug("pose after {} iters BA pose only:\n {}", iterations,
+                optimized_pose);
   return optimized_pose;
 }
 

@@ -79,10 +79,10 @@ void BundleAdjustment::AddEdgeOnlyPose(const Eigen::Vector3d &point_3d,
   _optimizer.addEdge(e);
 }
 
-void BundleAdjustment::Optimize(int iterations, bool verbose) {
+int BundleAdjustment::Optimize(int iterations, bool verbose) {
   _optimizer.setVerbose(verbose);
   _optimizer.initializeOptimization();
-  _optimizer.optimize(iterations);
+  return _optimizer.optimize(iterations);
 }
 
 const g2o::SE3Quat &BundleAdjustment::GetOptimizedPose(int id) const {

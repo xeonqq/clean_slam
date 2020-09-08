@@ -19,6 +19,7 @@ cv::Mat FrameArtifact::GetUnmatchedKeyPointsDescriptors() const {
                        _matched_key_points_idxs);
 }
 Frame &FrameArtifact::GetFrame() { return *_frame; }
+const Frame &FrameArtifact::GetFrame() const { return *_frame; }
 
 size_t FrameArtifact::SearchUnmatchedKeyPointsByProjection(
     const OrbFeatureMatcher &matcher, const std::vector<MapPoint *> &map_points,
