@@ -20,6 +20,13 @@ vertex_t Map::AddKeyFrame(const g2o::SE3Quat &Tcw,
   return vertex;
 }
 
+vertex_t Map::AddKeyFrame(const g2o::SE3Quat &Tcw,
+                          const OrbFeatures &orb_features) {
+  const auto vertex = add_vertex(_covisibility_graph);
+  _covisibility_graph[vertex] = KeyFrame{Tcw, orb_features, vertex};
+  return vertex;
+}
+
 void Map::AddKeyFramesWeight(const vertex_t &v0, const vertex_t &v1,
                              int weight) {
   add_edge(v0, v1, weight, _covisibility_graph);

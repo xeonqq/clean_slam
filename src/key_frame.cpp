@@ -3,6 +3,10 @@
 #include <boost/range/algorithm/copy.hpp>
 
 namespace clean_slam {
+KeyFrame::KeyFrame(const g2o::SE3Quat &Tcw, const OrbFeatures &orb_features,
+                   vertex_t vertex)
+    : _Tcw{Tcw}, _descriptors(orb_features.GetDescriptors()),
+      _key_points(orb_features.GetUndistortedKeyPoints()), _vertex(vertex) {}
 
 KeyFrame::KeyFrame(const g2o::SE3Quat &Tcw,
                    const std::vector<cv::KeyPoint> &keypoints,

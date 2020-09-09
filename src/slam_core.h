@@ -37,6 +37,7 @@ public:
   void ProcessFirstImage(const cv::Mat &image, double timestamp);
   void TrackByMotionModel(const cv::Mat &image, double timestamp);
   void TrackLocalMap(FrameArtifact &frame);
+  void InsertKeyFrame(const Frame &frame);
 
   CameraTrajectory GetTrajectory() const;
 
@@ -96,6 +97,7 @@ private:
 
   Map _map;
 
+  size_t _num_frames_since_last_key_frame{0};
   std::vector<Frame> _frames;
 };
 } // namespace clean_slam

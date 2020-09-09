@@ -2,6 +2,7 @@
 #define CLEAN_SLAM_SRC_KEY_FRAME_H
 #include "graph.h"
 #include "map_point.h"
+#include "orb_extractor.h"
 #include <boost/signals2.hpp>
 #include <opencv2/core/mat.hpp>
 #include <set>
@@ -14,6 +15,8 @@ class KeyFrame {
 
 public:
   KeyFrame() = default;
+  KeyFrame(const g2o::SE3Quat &Tcw, const OrbFeatures &orb_features,
+           vertex_t vertex);
   KeyFrame(const g2o::SE3Quat &Tcw, const std::vector<cv::KeyPoint> &keypoints,
            const cv::Mat &descriptors, vertex_t vertex);
   void AddMatchedMapPoint(MapPoint *map_point, size_t index);

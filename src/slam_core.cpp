@@ -59,6 +59,7 @@ void SlamCore::ProcessFirstImage(const cv::Mat &image, double timestamp) {
 }
 
 void SlamCore::TrackByMotionModel(const cv::Mat &image, double timestamp) {
+  ++_num_frames_since_last_key_frame;
   // const velocity model
   const auto &prev_frame = _frames.back();
   const auto &prev_prev_frame = _frames[_frames.size() - 2];
@@ -106,6 +107,8 @@ void SlamCore::TrackByMotionModel(const cv::Mat &image, double timestamp) {
   }
   TrackLocalMap(frame_artifact);
 
+  InsertKeyFrame(frame);
+
   if (frame.GetNumMatchedMapPoints() > kNumMatchedMapPointsForBA) {
 #if 0
     DrawMatches(image, frame_artifact, prev_frame);
@@ -119,10 +122,20 @@ void SlamCore::TrackByMotionModel(const cv::Mat &image, double timestamp) {
   const auto &current_frame = _frames.back();
   _viewer->OnNotify(Content{Tcw, {}});
   _viewer->OnNotify(image, current_frame.GetOrbFeatures());
+}
+void SlamCore::InsertKeyFrame(const Frame &frame) {
+  if (_num_frames_since_last_key_frame > 20 &&
+      (frame.GetNumMatchedMapPoints() <
+       frame.GetRefKeyFrameNumKeyPoints() * 0.9) &&
+      frame.GetOrbFeatures().NumKeyPoints() > 50) {
 
-  if ((frame_artifact.NumOfMatches() <
-       _frames.back().GetRefKeyFrameNumKeyPoints() * 0.9) &&
-      current_frame.GetOrbFeatures().NumKeyPoints() > 50) {
+    spdlog::debug("Insert kf");
+    const auto kf = _map.AddKeyFrame(frame.GetTcw(), frame.GetOrbFeatures());
+    const auto &key_frame = _map.GetKeyFrame(kf);
+    for (auto map_point : frame.GetMatchedMapPoints()) {
+      //      key_frame.AddMatchedMapPoint(map_point, );
+    }
+    _num_frames_since_last_key_frame = 0;
   }
 }
 

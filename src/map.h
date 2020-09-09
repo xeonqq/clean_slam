@@ -14,6 +14,7 @@
 #include "graph.h"
 #include "map_point.h"
 #include "octave_scales.h"
+#include "orb_extractor.h"
 
 namespace clean_slam {
 using namespace boost;
@@ -44,6 +45,8 @@ public:
   vertex_t AddKeyFrame(const g2o::SE3Quat &Tcw,
                        const std::vector<cv::KeyPoint> &key_points,
                        const cv::Mat &descriptors);
+  vertex_t AddKeyFrame(const g2o::SE3Quat &Tcw,
+                       const OrbFeatures &orb_features);
 
   void AddKeyFramesWeight(const vertex_t &v0, const vertex_t &v1, int weight);
   const std::set<MapPoint> &GetMapPoints() const;
