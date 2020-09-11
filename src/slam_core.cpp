@@ -62,7 +62,7 @@ void SlamCore::TrackByMotionModel(const cv::Mat &image, double timestamp) {
   ++_num_frames_since_last_key_frame;
   // const velocity model
   const auto &prev_frame = _frames.back();
-  const auto &prev_prev_frame = _frames[_frames.size() - 2];
+  const auto &prev_prev_frame = *(++_frames.rbegin());
   const auto &prev_Tcw = prev_frame.GetTcw();
   g2o::SE3Quat velocity =
       clean_slam::GetVelocity(prev_Tcw, prev_prev_frame.GetTcw());
@@ -123,18 +123,16 @@ void SlamCore::TrackByMotionModel(const cv::Mat &image, double timestamp) {
   _viewer->OnNotify(Content{Tcw, {}});
   _viewer->OnNotify(image, current_frame.GetOrbFeatures());
 }
-void SlamCore::InsertKeyFrame(const Frame &frame) {
+void SlamCore::InsertKeyFrame(Frame &frame) {
   if (_num_frames_since_last_key_frame > 20 &&
       (frame.GetNumMatchedMapPoints() <
        frame.GetRefKeyFrameNumKeyPoints() * 0.9) &&
       frame.GetOrbFeatures().NumKeyPoints() > 50) {
 
     spdlog::debug("Insert kf");
-    const auto kf = _map.AddKeyFrame(frame.GetTcw(), frame.GetOrbFeatures());
+    const auto kf = _map.AddKeyFrame(frame);
     const auto &key_frame = _map.GetKeyFrame(kf);
-    for (auto map_point : frame.GetMatchedMapPointsRng()) {
-      //      key_frame.AddMatchedMapPoint(map_point, );
-    }
+
     _num_frames_since_last_key_frame = 0;
   }
 }
@@ -145,7 +143,7 @@ void SlamCore::TrackLocalMap(Frame &frame) {
   for (auto kf_vertex : key_frames_to_track_local_map) {
     const auto &key_frame = _map.GetKeyFrame(kf_vertex);
     boost::copy(
-        key_frame.GetMatchedMapPoints(),
+        key_frame.GetMatchedMapPointsRng(),
         std::inserter(map_points_to_project, map_points_to_project.end()));
   }
   for (auto map_point : frame.GetMatchedMapPointsRng()) {

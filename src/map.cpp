@@ -11,19 +11,9 @@
 namespace clean_slam {
 Map::Map(const OctaveScales &octave_scales) : _octave_scales{octave_scales} {}
 
-vertex_t Map::AddKeyFrame(const g2o::SE3Quat &Tcw,
-                          const std::vector<cv::KeyPoint> &key_points,
-                          const cv::Mat &descriptors) {
-
+vertex_t Map::AddKeyFrame(Frame &frame) {
   const auto vertex = add_vertex(_covisibility_graph);
-  _covisibility_graph[vertex] = KeyFrame{Tcw, key_points, descriptors, vertex};
-  return vertex;
-}
-
-vertex_t Map::AddKeyFrame(const g2o::SE3Quat &Tcw,
-                          const OrbFeatures &orb_features) {
-  const auto vertex = add_vertex(_covisibility_graph);
-  _covisibility_graph[vertex] = KeyFrame{Tcw, orb_features, vertex};
+  _covisibility_graph[vertex] = KeyFrame{frame, vertex};
   return vertex;
 }
 
@@ -38,7 +28,7 @@ Map::AddMapPoints(const std::vector<Eigen::Vector3d> &points_3d,
                   const vertex_t &key_frame_vertex) {
   std::vector<MapPoint *> map_points;
   auto &key_frame = _covisibility_graph[key_frame_vertex];
-  const auto &key_points = key_frame.GetKeyPoints();
+  const auto &key_points = key_frame.GetUndistortedKeyPoints();
   const auto &Tcw = key_frame.GetTcw();
   const auto &descriptors = key_frame.GetDescriptors();
   for (std::size_t i{0}; i < points_3d.size(); ++i) {
@@ -63,7 +53,7 @@ Map::AddMapPoints(const std::vector<Eigen::Vector3d> &points_3d,
   auto &key_frame0 = _covisibility_graph[ref_key_frame_vertex0];
   auto &key_frame1 = _covisibility_graph[key_frame_vertex1];
 
-  const auto &key_points0 = key_frame0.GetKeyPoints();
+  const auto &key_points0 = key_frame0.GetUndistortedKeyPoints();
   const auto &Tcw0 = key_frame0.GetTcw();
   const auto &descriptors0 = key_frame0.GetDescriptors();
 

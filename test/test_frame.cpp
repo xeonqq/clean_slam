@@ -3,6 +3,7 @@
 //
 
 #include "frame.h"
+#include "map.h"
 #include "gtest/gtest.h"
 #include <gmock/gmock-matchers.h>
 namespace clean_slam {
@@ -13,14 +14,14 @@ TEST(Frame, GetKeyFramesForLocalMapping) {
   Map map{octave_scales};
   cv::Mat point_descriptor = cv::Mat::zeros(1, 32, CV_8UC1);
   cv::Mat points_descriptors = cv::Mat::zeros(2, 32, CV_8UC1);
-  auto kf0 = map.AddKeyFrame({}, {{}}, point_descriptor);
-  auto kf1 = map.AddKeyFrame(
-      {}, {{}, {}}, points_descriptors); // 2 key points, one share with kf0 and
-                                         // testing frame, one share with kf2
-  auto kf2 = map.AddKeyFrame({}, {{}, {}}, points_descriptors);
-  auto kf3 = map.AddKeyFrame(
-      {}, {{}}, point_descriptor); // for noise, not a neighbor, not share map
-                                   // point with testing frame
+  Frame frame0{OrbFeatures{{{}}, point_descriptor}, &map, {}, {}};
+  Frame frame1{OrbFeatures{{{}, {}}, points_descriptors}, &map, {}, {}};
+  auto kf0 = map.AddKeyFrame(frame0);
+  auto kf1 = map.AddKeyFrame(frame1); // 2 key points, one share with kf0 and
+                                      // testing frame, one share with kf2
+  auto kf2 = map.AddKeyFrame(frame1);
+  auto kf3 = map.AddKeyFrame(frame0); // for noise, not a neighbor, not share
+                                      // map point with testing frame
   map.AddKeyFramesWeight(kf0, kf1, 1);
   map.AddKeyFramesWeight(kf1, kf2, 1);
   map.AddKeyFramesWeight(kf2, kf3, 1);

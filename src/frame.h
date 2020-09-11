@@ -6,19 +6,24 @@
 #define CLEAN_SLAM_SRC_FRAME_H_
 #include "cv_algorithms.h"
 #include "key_frame.h"
-#include "map.h"
 #include "optimizer.h"
 #include "orb_extractor.h"
 #include "orb_feature_matcher.h"
 #include <boost/range/adaptors.hpp>
 #include <opencv2/core/core.hpp>
 namespace clean_slam {
-
+class Map;
 class Frame {
 public:
   static constexpr int kDescriptorDistanceThreshold = 50;
   static constexpr int kNumNearestNeighbor = 5;
   Frame() = default;
+
+  Frame(OrbFeatures orb_features, const Map *map, const g2o::SE3Quat &Tcw,
+        double timestamp)
+      : _orb_features{std::move(orb_features)}, _map{map}, _Tcw{Tcw},
+        _timestamp{timestamp} {}
+
   Frame(OrbFeatures orb_features, const Map *map, const g2o::SE3Quat &Tcw,
         double timestamp, vertex_t ref_kf)
       : _orb_features{std::move(orb_features)}, _map{map}, _Tcw{Tcw},
@@ -72,17 +77,21 @@ public:
   std::vector<MapPoint *> GetMatchedMapPoints() const;
 
   const std::vector<cv::KeyPoint> &GetUndistortedKeyPoints() const;
+  const cv::Mat &GetDescriptors() const;
   const OrbFeatures &GetOrbFeatures() const;
   size_t GetNumMatchedMapPoints() const;
+  size_t GetNumKeyPoints() const;
 
   std::vector<cv::KeyPoint> GetMatchedKeyPoints() const;
 
 private:
+  void SetRefKf(vertex_t kf) { _ref_kf = kf; }
   std::set<vertex_t> GetKeyFramesShareSameMapPoints() const;
   std::vector<cv::KeyPoint> GetUnmatchedKeyPoints() const;
   cv::Mat GetUnmatchedKeyPointsDescriptors() const;
 
 private:
+  friend KeyFrame;
   OrbFeatures _orb_features;
   std::map<MapPoint *, size_t> _matched_map_point_to_idx;
   const Map *_map;

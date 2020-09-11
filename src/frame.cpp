@@ -3,6 +3,7 @@
 //
 #include "frame.h"
 #include "cv_utils.h"
+#include "map.h"
 #include <boost/range/adaptors.hpp>
 #include <boost/range/algorithm/transform.hpp>
 
@@ -116,7 +117,7 @@ const KeyFrame &Frame::GetRefKeyFrame() const {
 }
 
 size_t Frame::GetRefKeyFrameNumKeyPoints() const {
-  return GetRefKeyFrame().NumKeyPoints();
+  return GetRefKeyFrame().GetNumKeyPoints();
 }
 vertex_t Frame::GetRefKfVertex() const { return _ref_kf; }
 
@@ -161,6 +162,12 @@ std::vector<MapPoint *> Frame::GetMatchedMapPoints() const {
 const std::vector<cv::KeyPoint> &Frame::GetUndistortedKeyPoints() const {
   return _orb_features.GetUndistortedKeyPoints();
 }
+
+size_t Frame::GetNumKeyPoints() const { return _orb_features.NumKeyPoints(); }
+const cv::Mat &Frame::GetDescriptors() const {
+  return _orb_features.GetDescriptors();
+}
+
 const OrbFeatures &Frame::GetOrbFeatures() const { return _orb_features; }
 
 size_t Frame::GetNumMatchedMapPoints() const {

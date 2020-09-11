@@ -10,32 +10,29 @@
 #include <vector>
 
 namespace clean_slam {
-
+class Frame;
 class KeyFrame {
 
 public:
   KeyFrame() = default;
-  KeyFrame(const g2o::SE3Quat &Tcw, const OrbFeatures &orb_features,
-           vertex_t vertex);
-  KeyFrame(const g2o::SE3Quat &Tcw, const std::vector<cv::KeyPoint> &keypoints,
-           const cv::Mat &descriptors, vertex_t vertex);
+  KeyFrame(Frame &frame, vertex_t vertex);
+
+  const g2o::SE3Quat &GetTcw() const;
+  const std::vector<cv::KeyPoint> &GetUndistortedKeyPoints() const;
+  const cv::Mat &GetDescriptors() const;
+  boost::select_first_range<std::map<MapPoint *, size_t>>
+  GetMatchedMapPointsRng() const;
+  size_t GetNumKeyPoints() const;
+  size_t GetNumMatchedMapPoints() const;
+
   void AddMatchedMapPoint(MapPoint *map_point, size_t index);
   void EraseMapPoint(MapPoint *map_point);
-  const g2o::SE3Quat &GetTcw() const;
-  const cv::Mat &GetDescriptors() const;
-  const std::vector<cv::KeyPoint> &GetKeyPoints() const;
-  std::vector<MapPoint *> GetMatchedMapPoints() const;
-  size_t NumKeyPoints() const;
-  size_t NumberOfMatchedMapPoints() const;
   vertex_t GetVertex() const;
   ~KeyFrame();
 
 private:
-  g2o::SE3Quat _Tcw;
-  cv::Mat _descriptors;
-  std::vector<cv::KeyPoint> _key_points;
-  std::map<MapPoint *, size_t> _matched_map_point_to_idx;
   std::vector<boost::signals2::connection> _connections;
+  Frame *_frame;
   vertex_t _vertex;
 };
 } // namespace clean_slam

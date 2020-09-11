@@ -16,7 +16,7 @@ MapInitializer::MapInitializer(OrbExtractor *orb_extractor,
                                const OrbFeatureMatcher *orb_feature_matcher,
                                Optimizer *optimizer,
                                const cv::Mat &camera_intrinsic, Map *map,
-                               std::vector<Frame> *frames, IViewer *viewer)
+                               std::list<Frame> *frames, IViewer *viewer)
     : _orb_extractor(orb_extractor), _orb_feature_matcher{orb_feature_matcher},
       _optimizer(optimizer), _camera_motion_estimator{camera_intrinsic},
       _map{map}, _frames{frames}, _viewer{viewer} {}
@@ -68,15 +68,6 @@ bool MapInitializer::InitializeCameraPose(const cv::Mat &image,
         plausible_transformation.GetGoodTriangulatedPoints());
     optimized_result.NormalizeBaseLine();
 
-    const auto kf0 = _map->AddKeyFrame(
-        g2o::SE3Quat(), _previous_orb_features.GetUndistortedKeyPoints(),
-        _previous_orb_features.GetDescriptors());
-    const auto kf1 =
-        _map->AddKeyFrame(optimized_result.optimized_Tcw,
-                          current_orb_features.GetUndistortedKeyPoints(),
-                          current_orb_features.GetDescriptors());
-    _map->AddKeyFramesWeight(kf0, kf1,
-                             optimized_result.optimized_points.size());
     const auto kf0_matched_key_points_indexes =
         FilterByMask(TrainIdxs{}(good_matches),
                      plausible_transformation.GetGoodPointsMask());
@@ -84,16 +75,21 @@ bool MapInitializer::InitializeCameraPose(const cv::Mat &image,
         FilterByMask(QueryIdxs{}(good_matches),
                      plausible_transformation.GetGoodPointsMask());
 
+    _frames->emplace_back(_previous_orb_features, _map, g2o::SE3Quat(),
+                          _previous_timestamp);
+    Frame &prev_frame = _frames->back();
+    _frames->emplace_back(current_orb_features, _map,
+                          optimized_result.optimized_Tcw, timestamp);
+    Frame &curr_frame = _frames->back();
+    const auto kf0 = _map->AddKeyFrame(prev_frame);
+    const auto kf1 = _map->AddKeyFrame(curr_frame);
+    _map->AddKeyFramesWeight(kf0, kf1,
+                             optimized_result.optimized_points.size());
+
     auto map_points = _map->AddMapPoints(optimized_result.optimized_points,
                                          kf0_matched_key_points_indexes, kf0,
                                          kf1_matched_key_points_indexes, kf1);
 
-    _frames->emplace_back(_previous_orb_features, map_points,
-                          kf0_matched_key_points_indexes, _map, g2o::SE3Quat(),
-                          _previous_timestamp, kf0);
-    _frames->emplace_back(current_orb_features, map_points,
-                          kf1_matched_key_points_indexes, _map,
-                          optimized_result.optimized_Tcw, timestamp, kf1);
 #ifdef DEBUG
     cv::Mat out;
     std::vector<cv::DMatch> debug_good_matches;

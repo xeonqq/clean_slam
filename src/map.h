@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "bound.h"
+#include "frame.h"
 #include "graph.h"
 #include "map_point.h"
 #include "octave_scales.h"
@@ -42,11 +43,7 @@ public:
                         const cv::Mat &descriptor,
                         const cv::KeyPoint &key_point);
 
-  vertex_t AddKeyFrame(const g2o::SE3Quat &Tcw,
-                       const std::vector<cv::KeyPoint> &key_points,
-                       const cv::Mat &descriptors);
-  vertex_t AddKeyFrame(const g2o::SE3Quat &Tcw,
-                       const OrbFeatures &orb_features);
+  vertex_t AddKeyFrame(Frame &frame);
 
   void AddKeyFramesWeight(const vertex_t &v0, const vertex_t &v1, int weight);
   const std::set<MapPoint> &GetMapPoints() const;

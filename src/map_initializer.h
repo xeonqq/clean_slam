@@ -5,6 +5,7 @@
 #ifndef CLEAN_SLAM_SRC_MAP_INITIALIZER_H_
 #define CLEAN_SLAM_SRC_MAP_INITIALIZER_H_
 
+#include <list>
 #include <opencv2/core/mat.hpp>
 
 #include "camera_motion_estimator.h"
@@ -21,7 +22,7 @@ public:
   MapInitializer(OrbExtractor *orb_extractor,
                  const OrbFeatureMatcher *orb_feature_matcher,
                  Optimizer *optimizer, const cv::Mat &camera_intrinsic,
-                 Map *map, std::vector<Frame> *frames, IViewer *viewer);
+                 Map *map, std::list<Frame> *frames, IViewer *viewer);
 
   void ProcessFirstImage(const cv::Mat &image, double timestamp);
   bool InitializeCameraPose(const cv::Mat &image, double timestamp);
@@ -32,7 +33,7 @@ private:
   Optimizer *_optimizer;
   CameraMotionEstimator _camera_motion_estimator;
   Map *_map;
-  std::vector<Frame> *_frames;
+  std::list<Frame> *_frames;
   IViewer *_viewer;
   OrbFeatures _previous_orb_features;
   double _previous_timestamp;
