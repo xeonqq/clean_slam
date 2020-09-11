@@ -88,10 +88,12 @@ bool MapInitializer::InitializeCameraPose(const cv::Mat &image,
                                          kf0_matched_key_points_indexes, kf0,
                                          kf1_matched_key_points_indexes, kf1);
 
-    _frames->emplace_back(std::move(good_key_points_pair.first), map_points,
-                          _map, g2o::SE3Quat(), _previous_timestamp, kf0);
-    _frames->emplace_back(std::move(good_key_points_pair.second), map_points,
-                          _map, optimized_result.optimized_Tcw, timestamp, kf1);
+    _frames->emplace_back(_previous_orb_features, map_points,
+                          kf0_matched_key_points_indexes, _map, g2o::SE3Quat(),
+                          _previous_timestamp, kf0);
+    _frames->emplace_back(current_orb_features, map_points,
+                          kf1_matched_key_points_indexes, _map,
+                          optimized_result.optimized_Tcw, timestamp, kf1);
 #ifdef DEBUG
     cv::Mat out;
     std::vector<cv::DMatch> debug_good_matches;

@@ -22,7 +22,7 @@ TEST(RemoveByIndex, Mat) {
   mat.row(2) = 27;
   mat.row(3) = 4;
 
-  auto result = RemoveByIndex(mat, {3, 1});
+  auto result = RemoveByIndex(mat, std::vector{3, 1});
   EXPECT_EQ(result.rows, 2);
   EXPECT_EQ(result.cols, 1);
   EXPECT_EQ(result.at<uint8_t>(0), static_cast<uint8_t>(2));

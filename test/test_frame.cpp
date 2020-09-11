@@ -34,7 +34,7 @@ TEST(Frame, GetKeyFramesForLocalMapping) {
   std::vector<Eigen::Vector3d> points_3d_kf2_3{{2, 1, 2}};
   map.AddMapPoints(points_3d_kf2_3, {1}, kf2, {0}, kf3);
 
-  Frame frame{{{}}, map_points_kf0_1, &map, {}, {}, kf1};
+  Frame frame{{}, map_points_kf0_1, {0}, &map, {}, {}, kf1};
 
   // When
   auto key_frames_for_local_mapping = frame.GetKeyFramesToTrackLocalMap();

@@ -144,19 +144,6 @@ cv::Mat FilterByIndex(const cv::Mat &mat, const std::vector<int> &indexes) {
   return result;
 }
 
-cv::Mat RemoveByIndex(const cv::Mat &mat, const std::vector<int> &indexes) {
-  cv::Mat result(indexes.size() - boost::size(indexes), mat.cols, mat.type());
-  std::vector<bool> indexes_to_keep_mask(mat.rows, true);
-  for (auto index : indexes) {
-    indexes_to_keep_mask[index] = false;
-  }
-  for (size_t i{0}; i < mat.rows; ++i) {
-    if (indexes_to_keep_mask[i]) {
-      result.push_back(mat.row(i));
-    }
-  }
-  return result;
-}
 
 bool IsPointWithInBounds(const Eigen::Vector2d &point, const BoundF &x_bounds,
                          const BoundF &y_bounds) {

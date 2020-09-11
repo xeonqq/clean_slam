@@ -2,6 +2,7 @@
 #define CLEAN_SLAM_SRC_MAP_POINT_H
 
 #include <Eigen/Dense>
+#include <boost/range/adaptors.hpp>
 #include <boost/range/algorithm.hpp>
 #include <boost/signals2.hpp>
 #include <iostream>
@@ -93,7 +94,7 @@ template <typename MapPoints>
 std::vector<Eigen::Vector3d>
 GetMapPointsPositions(const MapPoints &map_points) {
   std::vector<Eigen::Vector3d> map_points_positions;
-  map_points_positions.reserve(map_points.size());
+  map_points_positions.reserve(boost::size(map_points));
   boost::range::transform(
       map_points, std::back_inserter(map_points_positions),
       [](const auto &map_point) { return map_point->GetPoint3D(); });
@@ -102,9 +103,10 @@ GetMapPointsPositions(const MapPoints &map_points) {
 
 template <typename MapPoints>
 cv::Mat GetMapPointsDescriptors(const MapPoints &map_points) {
-  cv::Mat descriptors = cv::Mat(map_points.size(), 32, CV_8UC1);
-  for (size_t i = 0; i < map_points.size(); ++i) {
-    map_points[i]->GetRepresentativeDescriptor().copyTo(descriptors.row(i));
+  cv::Mat descriptors = cv::Mat(boost::size(map_points), 32, CV_8UC1);
+  for (auto map_point : map_points | boost::adaptors::indexed()) {
+    map_point.value()->GetRepresentativeDescriptor().copyTo(
+        descriptors.row(map_point.index()));
   }
   return descriptors;
 }

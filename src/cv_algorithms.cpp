@@ -2,6 +2,7 @@
 // Created by root on 4/18/20.
 //
 #include "cv_algorithms.h"
+#include "match_map.h"
 #include <boost/range/adaptor/indexed.hpp>
 #include <opencv2/features2d.hpp>
 namespace clean_slam {
@@ -38,6 +39,7 @@ Eigen::Vector3d ViewingDirection(const g2o::SE3Quat &Tcw,
   dir.normalize();
   return dir;
 }
+
 std::vector<cv::DMatch> SearchByProjection(
     const OrbFeatureMatcher &matcher,
     const std::vector<Eigen::Vector2d> &projected_map_points,
@@ -66,8 +68,7 @@ std::vector<cv::DMatch> SearchByProjection(
 
   const auto &current_key_points = features.GetUndistortedKeyPoints();
 
-  std::vector<cv::DMatch> matched_pairs;
-  matched_pairs.reserve(map_points_octaves.size());
+  MatchMap map;
 
   for (const auto &matches_per_map_point :
        matches_for_map_points | boost::adaptors::indexed()) {
@@ -87,11 +88,13 @@ std::vector<cv::DMatch> SearchByProjection(
                                search_radius *
                                    octave_scales[current_key_point.octave]) &&
           m.distance <= descriptor_distance_threshold) {
-        matched_pairs.push_back(m);
+
+        map.Emplace(m);
         break;
       }
     }
   }
-  return matched_pairs;
+  return map.ToVector();
 }
+
 } // namespace clean_slam

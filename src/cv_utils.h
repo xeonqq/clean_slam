@@ -7,6 +7,7 @@
 
 #include "bound.h"
 #include <Eigen/Dense>
+#include <boost/range/algorithm.hpp>
 #include <boost/range/size.hpp>
 #include <iostream>
 #include <opencv2/imgcodecs.hpp>
@@ -86,9 +87,40 @@ std::vector<typename Vec::value_type> RemoveByIndex(const Vec &vec,
   return result;
 }
 
-cv::Mat FilterByIndex(const cv::Mat &mat, const std::vector<int> &indexes);
-cv::Mat RemoveByIndex(const cv::Mat &mat, const std::vector<int> &indexes);
+template <typename Rng>
+std::vector<size_t> GetUnmatchedIndexes(size_t size, const Rng &indexes) {
+  std::vector<size_t> result;
+  result.reserve(size - boost::size(indexes));
+  std::vector<bool> indexes_to_keep_mask(size, true);
+  for (auto index : indexes) {
+    indexes_to_keep_mask[index] = false;
+  }
+  for (size_t i{0}; i < size; ++i) {
+    if (indexes_to_keep_mask[i]) {
+      result.push_back(i);
+    }
+  }
+  return result;
+}
 
+cv::Mat FilterByIndex(const cv::Mat &mat, const std::vector<int> &indexes);
+
+template <typename Indexes>
+cv::Mat RemoveByIndex(const cv::Mat &mat, const Indexes &indexes) {
+  cv::Mat result(mat.rows - boost::size(indexes), mat.cols, mat.type());
+  std::vector<bool> indexes_to_keep_mask(mat.rows, true);
+  for (auto index : indexes) {
+    indexes_to_keep_mask[index] = false;
+  }
+  size_t j{0};
+  for (size_t i{0}; i < mat.rows; ++i) {
+    if (indexes_to_keep_mask[i]) {
+      mat.row(i).copyTo(result.row(j));
+      ++j;
+    }
+  }
+  return result;
+}
 Eigen::Vector2d Point2fToVector2d(const cv::Point2f &point2f);
 
 template <typename T> Eigen::Vector3d ToVector3d(const cv::Mat &point3) {

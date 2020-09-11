@@ -5,14 +5,13 @@
 #ifndef CLEAN_SLAM_SRC_FRAME_H_
 #define CLEAN_SLAM_SRC_FRAME_H_
 #include "cv_algorithms.h"
-#include "frame_artifact.h"
 #include "key_frame.h"
 #include "map.h"
 #include "optimizer.h"
 #include "orb_extractor.h"
 #include "orb_feature_matcher.h"
+#include <boost/range/adaptors.hpp>
 #include <opencv2/core/core.hpp>
-
 namespace clean_slam {
 
 class Frame {
@@ -25,23 +24,34 @@ public:
       : _orb_features{std::move(orb_features)}, _map{map}, _Tcw{Tcw},
         _timestamp{timestamp}, _ref_kf{ref_kf} {}
 
-  Frame(std::vector<cv::KeyPoint> key_points,
-        std::vector<MapPoint *> map_points, const Map *map,
+  Frame(OrbFeatures orb_features, const std::vector<MapPoint *> &map_points,
+        const std::vector<int> &matched_key_points_indexes, const Map *map,
         const g2o::SE3Quat &Tcw, double timestamp, vertex_t ref_kf)
-      : _matched_key_points{std::move(key_points)},
-        _matched_map_points{std::move(map_points)}, _map{map}, _Tcw{Tcw},
-        _timestamp{timestamp}, _ref_kf{ref_kf} {}
+      : _orb_features{std::move(orb_features)}, _map{map}, _Tcw{Tcw},
+        _timestamp{timestamp}, _ref_kf{ref_kf} {
+    assert(matched_key_points_indexes.size() == map_points.size());
+    for (size_t i = 0; i < map_points.size(); ++i) {
+      _matched_map_point_to_idx.emplace(map_points[i],
+                                        matched_key_points_indexes[i]);
+    }
+  }
 
   std::vector<Eigen::Vector2d>
   ReprojectPoints3d(const std::vector<Eigen::Vector3d> &points_3d,
                     const cv::Mat &camera_intrinsic) const;
 
-  FrameArtifact
+  std::vector<cv::DMatch>
   SearchByProjection(const OrbFeatureMatcher &matcher,
                      const std::vector<Eigen::Vector2d> &projected_map_points,
                      const Frame &prev_frame, const cv::Mat &mask,
                      int search_radius, const OctaveScales &octave_scales);
 
+  size_t SearchUnmatchedKeyPointsByProjection(
+      const OrbFeatureMatcher &matcher,
+      const std::vector<MapPoint *> &map_points,
+      const std::vector<Eigen::Vector2d> &projected_map_points,
+      const std::vector<uint8_t> &map_points_octaves, int search_radius,
+      const OctaveScales &octave_scales);
   void OptimizePose(OptimizerOnlyPose *optimizer_only_pose);
 
   std::set<vertex_t> GetKeyFramesToTrackLocalMap() const;
@@ -57,22 +67,24 @@ public:
   const KeyFrame &GetRefKeyFrame() const;
   size_t GetRefKeyFrameNumKeyPoints() const;
   vertex_t GetRefKfVertex() const;
-  const std::vector<MapPoint *> &GetMatchedMapPoints() const;
+  boost::select_first_range<std::map<MapPoint *, size_t>>
+  GetMatchedMapPointsRng() const;
+  std::vector<MapPoint *> GetMatchedMapPoints() const;
 
   const std::vector<cv::KeyPoint> &GetUndistortedKeyPoints() const;
   const OrbFeatures &GetOrbFeatures() const;
   size_t GetNumMatchedMapPoints() const;
 
-  const std::vector<cv::KeyPoint> &GetMatchedKeyPoints() const;
+  std::vector<cv::KeyPoint> GetMatchedKeyPoints() const;
 
 private:
   std::set<vertex_t> GetKeyFramesShareSameMapPoints() const;
-  friend FrameArtifact;
+  std::vector<cv::KeyPoint> GetUnmatchedKeyPoints() const;
+  cv::Mat GetUnmatchedKeyPointsDescriptors() const;
 
 private:
   OrbFeatures _orb_features;
-  std::vector<cv::KeyPoint> _matched_key_points;
-  std::vector<MapPoint *> _matched_map_points;
+  std::map<MapPoint *, size_t> _matched_map_point_to_idx;
   const Map *_map;
   g2o::SE3Quat _Tcw;
   double _timestamp;

@@ -18,19 +18,19 @@ ExternalProject_Add(
 add_compile_definitions(DATASET_DIR="${DATASET_DIR}")
 add_compile_definitions(CONFIG_DIR="${CONFIG_DIR}")
 add_compile_definitions(TEST_DIR="${TEST_DIR}")
-include_directories (
+include_directories(
         ${CMAKE_SOURCE_DIR}/src
         ${CMAKE_SOURCE_DIR}
         ${CMAKE_SOURCE_DIR}/include
-        )
+)
 
 set(BINARY ${CMAKE_PROJECT_NAME}_test)
 add_executable(${BINARY} test_dataset_loader.cpp test_slam_system_freiburg.cpp test_slam_system_homography.cpp test_opencv_functions.cpp test_search_by_projection.cpp test_map_point.cpp test_frame.cpp test_cv_utils..cpp)
 add_test(NAME ${BINARY} COMMAND ${BINARY})
-target_link_libraries (
+target_link_libraries(
         ${BINARY}
         PUBLIC ${CMAKE_PROJECT_NAME}
         gtest_main
         gmock
-        )
+)
 add_dependencies(${BINARY} rgbd_dataset_freiburg1_xyz)
