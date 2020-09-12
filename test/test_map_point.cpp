@@ -36,10 +36,10 @@ TEST(MapPoint, OnUpdateEvent) {
   Eigen::Quaterniond r{1, 0, 0, 0};
   Eigen::Vector3d t1{1, 0, 0};
   Frame frame1{{}, {}, {r, t1}, {}};
-  KeyFrame key_frame1{frame1, 0};
+  KeyFrame key_frame1{frame1, vertex_t{}};
   Eigen::Vector3d t2{0, 1, 0};
   Frame frame2{{}, {}, {r, t2}, {}};
-  KeyFrame key_frame2{frame2, 1};
+  KeyFrame key_frame2{frame2, vertex_t{}};
   key_frame1.AddMatchedMapPoint(&map_point, 0);
   key_frame2.AddMatchedMapPoint(&map_point, 0);
   EXPECT_EQ(map_point.NumOfObservers(), 2);

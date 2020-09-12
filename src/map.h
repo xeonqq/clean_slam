@@ -54,6 +54,9 @@ public:
   ~Map();
 
 private:
+  void ConnectKeyFrame(vertex_t vertex);
+
+private:
   const OctaveScales &_octave_scales;
 
   // todo: could be replace by a vector, map point id is the same as the index

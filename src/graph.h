@@ -7,13 +7,14 @@
 
 #include <boost/config.hpp>
 #include <boost/graph/adjacency_list.hpp>
+#include <memory>
 
 namespace clean_slam {
 
 class KeyFrame;
 
 typedef boost::property<boost::edge_weight_t, int> EdgeProperty;
-typedef KeyFrame VertexProperty;
+typedef std::unique_ptr<KeyFrame> VertexProperty;
 typedef boost::adjacency_list<boost::vecS, boost::vecS, boost::undirectedS,
                               VertexProperty, EdgeProperty>
     Graph;

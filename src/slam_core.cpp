@@ -123,6 +123,7 @@ void SlamCore::TrackByMotionModel(const cv::Mat &image, double timestamp) {
   _viewer->OnNotify(Content{Tcw, {}});
   _viewer->OnNotify(image, current_frame.GetOrbFeatures());
 }
+
 void SlamCore::InsertKeyFrame(Frame &frame) {
   if (_num_frames_since_last_key_frame > 20 &&
       (frame.GetNumMatchedMapPoints() <
@@ -131,8 +132,6 @@ void SlamCore::InsertKeyFrame(Frame &frame) {
 
     spdlog::debug("Insert kf");
     const auto kf = _map.AddKeyFrame(frame);
-    const auto &key_frame = _map.GetKeyFrame(kf);
-
     _num_frames_since_last_key_frame = 0;
   }
 }

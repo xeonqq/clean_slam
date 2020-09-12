@@ -13,8 +13,25 @@ Map::Map(const OctaveScales &octave_scales) : _octave_scales{octave_scales} {}
 
 vertex_t Map::AddKeyFrame(Frame &frame) {
   const auto vertex = add_vertex(_covisibility_graph);
-  _covisibility_graph[vertex] = KeyFrame{frame, vertex};
+  _covisibility_graph[vertex] = std::make_unique<KeyFrame>(frame, vertex);
+  ConnectKeyFrame(vertex);
   return vertex;
+}
+
+void Map::ConnectKeyFrame(vertex_t vertex) {
+  auto &key_frame = *_covisibility_graph[vertex];
+  std::map<vertex_t, size_t> kf_to_num_common_mp;
+  for (auto *map_point : key_frame.GetMatchedMapPointsRng()) {
+    for (auto *kf_observer : map_point->Observers()) {
+      const auto kf_observer_vertex = kf_observer->GetVertex();
+      if (kf_observer_vertex != vertex) {
+        ++kf_to_num_common_mp[kf_observer_vertex];
+      }
+    }
+  }
+  for (auto [kf, num_common_mp] : kf_to_num_common_mp) {
+    AddKeyFramesWeight(vertex, kf, num_common_mp);
+  }
 }
 
 void Map::AddKeyFramesWeight(const vertex_t &v0, const vertex_t &v1,
@@ -27,7 +44,7 @@ Map::AddMapPoints(const std::vector<Eigen::Vector3d> &points_3d,
                   const std::vector<int> &matched_key_points_indexes,
                   const vertex_t &key_frame_vertex) {
   std::vector<MapPoint *> map_points;
-  auto &key_frame = _covisibility_graph[key_frame_vertex];
+  auto &key_frame = *_covisibility_graph[key_frame_vertex];
   const auto &key_points = key_frame.GetUndistortedKeyPoints();
   const auto &Tcw = key_frame.GetTcw();
   const auto &descriptors = key_frame.GetDescriptors();
@@ -50,8 +67,8 @@ Map::AddMapPoints(const std::vector<Eigen::Vector3d> &points_3d,
                   const vertex_t &key_frame_vertex1) {
 
   std::vector<MapPoint *> map_points;
-  auto &key_frame0 = _covisibility_graph[ref_key_frame_vertex0];
-  auto &key_frame1 = _covisibility_graph[key_frame_vertex1];
+  auto &key_frame0 = *_covisibility_graph[ref_key_frame_vertex0];
+  auto &key_frame1 = *_covisibility_graph[key_frame_vertex1];
 
   const auto &key_points0 = key_frame0.GetUndistortedKeyPoints();
   const auto &Tcw0 = key_frame0.GetTcw();
@@ -85,7 +102,7 @@ MapPoint &Map::AddMapPoint(const g2o::SE3Quat &Tcw,
 const std::set<MapPoint> &Map::GetMapPoints() const { return _map_points; }
 
 const KeyFrame &Map::GetKeyFrame(const vertex_t &kf_vertex) const {
-  return _covisibility_graph[kf_vertex];
+  return *_covisibility_graph[kf_vertex];
 }
 
 std::vector<vertex_t> Map::GetNeighbors(vertex_t vertex) const {

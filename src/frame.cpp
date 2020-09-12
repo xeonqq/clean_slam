@@ -48,7 +48,6 @@ std::vector<cv::DMatch> Frame::SearchByProjection(
     const std::vector<Eigen::Vector2d> &projected_map_points,
     const Frame &prev_frame, const cv::Mat &mask, int search_radius,
     const OctaveScales &octave_scales) {
-
   auto matches_map_point_to_key_point = clean_slam::SearchByProjection(
       matcher, projected_map_points,
       prev_frame.GetMatchedMapPointsDescriptors(),
@@ -56,6 +55,7 @@ std::vector<cv::DMatch> Frame::SearchByProjection(
       search_radius, octave_scales, kNumNearestNeighbor,
       kDescriptorDistanceThreshold);
   const auto prev_frame_matches_map_points = prev_frame.GetMatchedMapPoints();
+  _matched_map_point_to_idx.clear();
   for (const auto &match : matches_map_point_to_key_point) {
     _matched_map_point_to_idx.emplace(
         prev_frame_matches_map_points[match.queryIdx], match.trainIdx);

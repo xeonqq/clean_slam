@@ -11,8 +11,8 @@
 
 namespace clean_slam {
 class Frame;
-class KeyFrame {
 
+class KeyFrame {
 public:
   KeyFrame() = default;
   KeyFrame(Frame &frame, vertex_t vertex);
