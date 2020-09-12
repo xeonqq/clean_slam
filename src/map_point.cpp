@@ -47,6 +47,7 @@ bool MapPoint::operator<(const MapPoint &rhs) const { return _id < rhs._id; }
 void MapPoint::Update() {
   auto key_frames = _events();
   _view_direction = AverageViewingDirection(*this, key_frames);
+  // todo: update descriptor
 }
 
 const cv::Mat &MapPoint::GetRepresentativeDescriptor() const {

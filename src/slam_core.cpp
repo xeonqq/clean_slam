@@ -107,12 +107,12 @@ void SlamCore::TrackByMotionModel(const cv::Mat &image, double timestamp) {
   }
   TrackLocalMap(frame);
 
-  InsertKeyFrame(frame);
 
   if (frame.GetNumMatchedMapPoints() > kNumMatchedMapPointsForBA) {
 #if 0
     DrawMatches(image, frame, prev_frame, matches);
 #endif
+    InsertKeyFrame(frame);
     _frames.push_back(std::move(frame));
   } else {
     spdlog::warn("Num matched map points < {}, only: {}",

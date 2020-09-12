@@ -43,7 +43,9 @@ public:
   MapPoint();
 
   template <typename Func> boost::signals2::connection AddObserver(Func func) {
-    return _events.connect(func);
+    auto c = _events.connect(func);
+    Update();
+    return c;
   }
 
   size_t NumOfObservers() const { return _events.num_slots(); }

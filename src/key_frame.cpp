@@ -6,6 +6,7 @@ namespace clean_slam {
 
 KeyFrame::KeyFrame(Frame &frame, vertex_t vertex)
     : _frame(&frame), _vertex(vertex) {
+  // todo: set ref kf based on most shared map points
   _frame->SetRefKf(vertex);
   for (auto map_point : _frame->GetMatchedMapPointsRng()) {
     _connections.push_back(map_point->AddObserver([&]() { return this; }));
