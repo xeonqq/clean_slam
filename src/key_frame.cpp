@@ -42,6 +42,10 @@ size_t KeyFrame::GetNumMatchedMapPoints() const {
   return _frame->GetNumMatchedMapPoints();
 }
 
+cv::Mat KeyFrame::GetMatchedKeyPointDescriptor(MapPoint *map_point) const {
+  return _frame->GetMatchedKeyPointDescriptor(map_point);
+}
+
 KeyFrame::~KeyFrame() {
   std::for_each(_connections.begin(), _connections.end(),
                 [](auto &c) { c.disconnect(); });

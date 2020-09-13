@@ -53,7 +53,6 @@ public:
   std::vector<KeyFrame *> Observers() const { return _events(); }
   bool operator<(const MapPoint &rhs) const;
 
-  void Update();
 
   size_t GetId() const;
 
@@ -69,6 +68,9 @@ public:
                          const OctaveScales &octave_scales) const;
 
   ~MapPoint();
+
+private:
+  void Update();
 
 private:
   size_t _id;

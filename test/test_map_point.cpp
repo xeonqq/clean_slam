@@ -43,7 +43,6 @@ TEST(MapPoint, OnUpdateEvent) {
   key_frame1.AddMatchedMapPoint(&map_point, 0);
   key_frame2.AddMatchedMapPoint(&map_point, 0);
   EXPECT_EQ(map_point.NumOfObservers(), 2);
-  map_point.Update();
   Eigen::Vector3d expected_dir{0.7071067, 0.7071067, 0};
   //  std::cout << map_point.GetViewDirection() << std::endl;
   EXPECT_TRUE(map_point.GetViewDirection().isApprox(expected_dir, 1e-4));

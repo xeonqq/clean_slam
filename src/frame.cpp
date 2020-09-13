@@ -173,4 +173,8 @@ const OrbFeatures &Frame::GetOrbFeatures() const { return _orb_features; }
 size_t Frame::GetNumMatchedMapPoints() const {
   return _matched_map_point_to_idx.size();
 }
+
+cv::Mat Frame::GetMatchedKeyPointDescriptor(MapPoint *map_point) const {
+  return GetDescriptors().row(_matched_map_point_to_idx.at(map_point));
+}
 } // namespace clean_slam

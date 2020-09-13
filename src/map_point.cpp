@@ -22,6 +22,15 @@ AverageViewingDirection(const MapPoint &map_point,
   result.normalize();
   return result;
 }
+cv::Mat MinDistanceDescriptor(MapPoint *map_point,
+                              const std::vector<KeyFrame *> &key_frames) {
+  cv::Mat min_distance_descriptor = map_point->GetRepresentativeDescriptor();
+  //  for (const auto key_frame : key_frames) {
+  //    int dist = cv::norm(min_distance_descriptor,
+  //    key_frame->GetMatchedKeyPointDescriptor(map_point), cv::NORM_HAMMING);
+  //  }
+  return min_distance_descriptor;
+}
 
 MapPoint::MapPoint(const Eigen::Vector3d &point_3_d,
                    const Eigen::Vector3d &view_direction,

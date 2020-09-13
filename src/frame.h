@@ -84,6 +84,8 @@ public:
 
   std::vector<cv::KeyPoint> GetMatchedKeyPoints() const;
 
+  cv::Mat GetMatchedKeyPointDescriptor(MapPoint *map_point) const;
+
 private:
   void SetRefKf(vertex_t kf) { _ref_kf = kf; }
   std::set<vertex_t> GetKeyFramesShareSameMapPoints() const;

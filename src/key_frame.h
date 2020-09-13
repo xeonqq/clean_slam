@@ -24,6 +24,7 @@ public:
   GetMatchedMapPointsRng() const;
   size_t GetNumKeyPoints() const;
   size_t GetNumMatchedMapPoints() const;
+  cv::Mat GetMatchedKeyPointDescriptor(MapPoint *map_point) const;
 
   void AddMatchedMapPoint(MapPoint *map_point, size_t index);
   void EraseMapPoint(MapPoint *map_point);
