@@ -22,9 +22,6 @@ TEST(Frame, GetKeyFramesForLocalMapping) {
   auto kf2 = map.AddKeyFrame(frame1);
   auto kf3 = map.AddKeyFrame(frame0); // for noise, not a neighbor, not share
                                       // map point with testing frame
-  map.AddKeyFramesWeight(kf0, kf1, 1);
-  map.AddKeyFramesWeight(kf1, kf2, 1);
-  map.AddKeyFramesWeight(kf2, kf3, 1);
 
   std::vector<Eigen::Vector3d> points_3d_kf0_1{{1, 1, 1}};
   auto map_points_kf0_1 = map.AddMapPoints(points_3d_kf0_1, {0}, kf0, {0}, kf1);

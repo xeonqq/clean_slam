@@ -83,8 +83,6 @@ bool MapInitializer::InitializeCameraPose(const cv::Mat &image,
     Frame &curr_frame = _frames->back();
     const auto kf0 = _map->AddKeyFrame(prev_frame);
     const auto kf1 = _map->AddKeyFrame(curr_frame);
-    _map->AddKeyFramesWeight(kf0, kf1,
-                             optimized_result.optimized_points.size());
 
     auto map_points = _map->AddMapPoints(optimized_result.optimized_points,
                                          kf0_matched_key_points_indexes, kf0,

@@ -45,16 +45,20 @@ public:
 
   vertex_t AddKeyFrame(Frame &frame);
 
-  void AddKeyFramesWeight(const vertex_t &v0, const vertex_t &v1, int weight);
   const std::set<MapPoint> &GetMapPoints() const;
 
   const KeyFrame &GetKeyFrame(const vertex_t &kf_vertex) const;
 
   std::vector<vertex_t> GetNeighbors(vertex_t vertex) const;
+
+  void LocalMapping(vertex_t vertex);
   ~Map();
 
 private:
+  void AddKeyFramesWeight(const vertex_t &v0, const vertex_t &v1, int weight);
   void ConnectKeyFrame(vertex_t vertex);
+  std::vector<vertex_t> GetHighCovisibleKeyFrames(vertex_t vertex,
+                                                  size_t max_num_kfs) const;
 
 private:
   const OctaveScales &_octave_scales;
