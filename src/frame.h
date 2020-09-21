@@ -13,10 +13,12 @@
 #include <opencv2/core/core.hpp>
 namespace clean_slam {
 class Map;
+
 class Frame {
 public:
   static constexpr int kDescriptorDistanceThreshold = 50;
   static constexpr int kNumNearestNeighbor = 5;
+  static constexpr double kDistanceToEpipolarLineThreshold = 10;
   Frame() = default;
 
   Frame(OrbFeatures orb_features, const Map *map, const g2o::SE3Quat &Tcw,
@@ -57,6 +59,7 @@ public:
       const std::vector<Eigen::Vector2d> &projected_map_points,
       const std::vector<uint8_t> &map_points_octaves, int search_radius,
       const OctaveScales &octave_scales);
+
   void OptimizePose(OptimizerOnlyPose *optimizer_only_pose);
 
   std::set<vertex_t> GetKeyFramesToTrackLocalMap() const;
@@ -88,8 +91,13 @@ public:
 
 private:
   void SetRefKf(vertex_t kf) { _ref_kf = kf; }
+  TriangulationResult MatchUnmatchedKeyPoints(
+      const OrbFeatureMatcher &matcher, Frame &frame,
+      const cv::Mat &camera_intrinsics); // can only be called from key frame
   std::set<vertex_t> GetKeyFramesShareSameMapPoints() const;
+  OrbFeatures GetUnmatchedFeatures() const;
   std::vector<cv::KeyPoint> GetUnmatchedKeyPoints() const;
+  std::vector<size_t> GetUnmatchedIndexes() const;
   cv::Mat GetUnmatchedKeyPointsDescriptors() const;
 
 private:

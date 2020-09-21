@@ -4,6 +4,8 @@
 #include "cv_algorithms.h"
 #include "match_map.h"
 #include <boost/range/adaptor/indexed.hpp>
+#include <cv.hpp>
+#include <opencv2/core/eigen.hpp>
 #include <opencv2/features2d.hpp>
 namespace clean_slam {
 
@@ -97,4 +99,57 @@ std::vector<cv::DMatch> SearchByProjection(
   return map.ToVector();
 }
 
+Eigen::Matrix3d GetEssentialMatrix(const g2o::SE3Quat &Tc0w,
+                                   const g2o::SE3Quat &Tc1w) {
+  const auto Tc0c1 = Tc0w * Tc1w.inverse();
+  return g2o::skew(Tc0c1.translation()) * Tc0c1.rotation();
+}
+
+Eigen::Matrix3d GetFundamentalMatrix(const g2o::SE3Quat &Tc0w,
+                                     const g2o::SE3Quat &Tc1w,
+                                     const Eigen::Matrix3d &intrinsics) {
+  // p0*F*p1 = 0
+  auto E = GetEssentialMatrix(Tc0w, Tc1w);
+  return intrinsics.transpose().inverse() * E * intrinsics.inverse();
+}
+
+Eigen::Matrix<double, 3, 4>
+GetProjectionMatrix(const g2o::SE3Quat &Tcw,
+                    const Eigen::Matrix3d &intrinsics) {
+  Eigen::Matrix<double, 3, 4> projection_matrix;
+  projection_matrix.block<3, 3>(0, 0) =
+      intrinsics * Tcw.rotation().toRotationMatrix();
+  projection_matrix.block<3, 1>(0, 3) = intrinsics * Tcw.translation();
+  return projection_matrix;
+}
+
+double DistanceToEpipolarLine(const cv::Point2f &point0,
+                              const Eigen::Matrix3d &fundamental_mat,
+                              const cv::Point2f &point1) {
+  Eigen::Vector3d point0_homo{point0.x, point0.y, 1};
+  Eigen::Vector3d point1_homo{point1.x, point1.y, 1};
+  auto epipolar_line = fundamental_mat * point1_homo;
+  auto distance =
+      std::abs(epipolar_line.dot(point0_homo)) /
+      std::sqrt(std::pow(epipolar_line[0], 2) + std::pow(epipolar_line[1], 2));
+  return distance;
+}
+
+cv::Mat TriangulatePoints(const g2o::SE3Quat &Tc0w,
+                          const std::vector<cv::Point2f> &points0,
+                          const g2o::SE3Quat &Tc1w,
+                          const std::vector<cv::Point2f> &points1,
+                          const Eigen::Matrix3d &K) {
+  cv::Mat points_3d_homo;
+  cv::Mat projection_mat0, projection_mat1;
+  cv::eigen2cv(GetProjectionMatrix(Tc0w, K), projection_mat0);
+  cv::eigen2cv(GetProjectionMatrix(Tc1w, K), projection_mat1);
+
+  cv::triangulatePoints(projection_mat0, projection_mat1, points0, points1,
+                        points_3d_homo);
+  cv::Mat points_3d_cartisian;
+  cv::convertPointsFromHomogeneous(points_3d_homo.t(), points_3d_cartisian);
+  // points in row wise
+  return points_3d_cartisian;
+}
 } // namespace clean_slam

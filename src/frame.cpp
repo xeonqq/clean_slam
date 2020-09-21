@@ -4,8 +4,10 @@
 #include "frame.h"
 #include "cv_utils.h"
 #include "map.h"
+#include "match_map.h"
 #include <boost/range/adaptors.hpp>
 #include <boost/range/algorithm/transform.hpp>
+#include <opencv2/core/eigen.hpp>
 
 namespace clean_slam {
 
@@ -69,16 +71,13 @@ size_t Frame::SearchUnmatchedKeyPointsByProjection(
     const std::vector<Eigen::Vector2d> &projected_map_points,
     const std::vector<uint8_t> &map_points_octaves, int search_radius,
     const OctaveScales &octave_scales) {
-  auto unmatched_orb_features =
-      OrbFeatures(GetUnmatchedKeyPoints(), GetUnmatchedKeyPointsDescriptors());
+  auto unmatched_orb_features = GetUnmatchedFeatures();
   const auto matches_map_point_to_key_point = clean_slam::SearchByProjection(
       matcher, projected_map_points, GetMapPointsDescriptors(map_points),
       map_points_octaves, unmatched_orb_features, cv::Mat{}, search_radius,
       octave_scales, kNumNearestNeighbor, kDescriptorDistanceThreshold);
 
-  const auto unmatched_key_points_idxes = GetUnmatchedIndexes(
-      GetUndistortedKeyPoints().size(),
-      _matched_map_point_to_idx | boost::adaptors::map_values);
+  const auto unmatched_key_points_idxes = GetUnmatchedIndexes();
   for (const auto &match : matches_map_point_to_key_point) {
     _matched_map_point_to_idx.emplace(
         map_points[match.queryIdx], unmatched_key_points_idxes[match.trainIdx]);
@@ -86,6 +85,66 @@ size_t Frame::SearchUnmatchedKeyPointsByProjection(
 
   return matches_map_point_to_key_point.size();
 }
+
+std::vector<size_t> Frame::GetUnmatchedIndexes() const {
+  return clean_slam::GetUnmatchedIndexes(GetUndistortedKeyPoints().size(),
+                                         _matched_map_point_to_idx |
+                                             boost::adaptors::map_values);
+}
+
+OrbFeatures Frame::GetUnmatchedFeatures() const {
+  return OrbFeatures(GetUnmatchedKeyPoints(),
+                     GetUnmatchedKeyPointsDescriptors());
+}
+
+TriangulationResult
+Frame::MatchUnmatchedKeyPoints(const OrbFeatureMatcher &matcher, Frame &frame,
+                               const cv::Mat &camera_intrinsics) {
+  const auto unmatched_features_query = GetUnmatchedFeatures();
+  const auto unmatched_features_train = frame.GetUnmatchedFeatures();
+  const auto matches_for_key_points =
+      matcher.KnnMatch(unmatched_features_query.GetDescriptors(),
+                       unmatched_features_train.GetDescriptors(), 1);
+  const auto unmatched_query_key_points_idxes = GetUnmatchedIndexes();
+  const auto unmatched_train_key_points_idxes = frame.GetUnmatchedIndexes();
+  MatchMap map;
+  // for each query feature, so for each unmatched feature in current frame
+  for (const auto &matches_for_key_point : matches_for_key_points) {
+    const auto &match = matches_for_key_point[0];
+    if (match.distance <= kDescriptorDistanceThreshold) {
+      map.Emplace(match);
+    }
+  }
+  const auto &key_points_query = unmatched_features_query.GetKeyPoints();
+  const auto &key_points_train = unmatched_features_train.GetKeyPoints();
+  std::vector<cv::Point2f> good_points_query;
+  std::vector<cv::Point2f> good_points_train;
+  std::vector<int> good_points_query_idxes;
+  std::vector<int> good_points_train_idxes;
+  Eigen::Matrix3d K;
+  cv::cv2eigen(camera_intrinsics, K);
+  const auto F = GetFundamentalMatrix(_Tcw, frame.GetTcw(), K);
+  for (const auto &match :
+       map.GetTrainIdxToMatch() | boost::adaptors::map_values) {
+    const auto &key_point_query = key_points_query[match.queryIdx];
+    const auto &key_point_train = key_points_train[match.trainIdx];
+    const auto distance =
+        DistanceToEpipolarLine(key_point_query.pt, F, key_point_train.pt);
+    if (distance < kDistanceToEpipolarLineThreshold) {
+      good_points_query.push_back(key_point_query.pt);
+      good_points_train.push_back(key_point_train.pt);
+      good_points_query_idxes.push_back(
+          unmatched_query_key_points_idxes[match.queryIdx]);
+      good_points_train_idxes.push_back(
+          unmatched_train_key_points_idxes[match.trainIdx]);
+    }
+  }
+  cv::Mat points_3d_cartisian = TriangulatePoints(
+      _Tcw, good_points_query, frame.GetTcw(), good_points_train, K);
+  return {points_3d_cartisian, std::move(good_points_query_idxes),
+          std::move(good_points_train_idxes)};
+}
+
 void Frame::OptimizePose(OptimizerOnlyPose *optimizer_only_pose) {
 
   optimizer_only_pose->Clear();

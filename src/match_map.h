@@ -23,6 +23,9 @@ public:
 
 private:
   std::map<int, cv::DMatch> _train_idx_to_match;
+
+public:
+  const std::map<int, cv::DMatch> &GetTrainIdxToMatch() const;
 };
 
 } // namespace clean_slam

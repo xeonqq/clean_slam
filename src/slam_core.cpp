@@ -52,7 +52,8 @@ SlamCore::SlamCore(const cv::Mat &camera_intrinsics,
       _optimizer{optimizer}, _optimizer_only_pose{optimizer_only_pose},
       _viewer(viewer), _undistorted_image_boundary{camera_intrinsics,
                                                    camera_distortion_coeffs},
-      _octave_scales{octave_scale}, _map{_octave_scales} {}
+      _octave_scales{octave_scale}, _map{_octave_scales, _orb_feature_matcher,
+                                         camera_intrinsics} {}
 
 void SlamCore::ProcessFirstImage(const cv::Mat &image, double timestamp) {
   _undistorted_image_boundary.ComputeUndistortedCorners(image);
@@ -131,7 +132,7 @@ void SlamCore::InsertKeyFrame(Frame &frame) {
       frame.GetOrbFeatures().NumKeyPoints() > 50) {
 
     spdlog::debug("Insert kf");
-    const auto kf = _map.AddKeyFrame(frame);
+    _map.AddKeyFrame(frame);
     _num_frames_since_last_key_frame = 0;
   }
 }
@@ -140,7 +141,8 @@ void SlamCore::TrackLocalMap(Frame &frame) {
   auto key_frames_to_track_local_map = frame.GetKeyFramesToTrackLocalMap();
   std::set<MapPoint *> map_points_to_project;
   for (auto kf_vertex : key_frames_to_track_local_map) {
-    const auto &key_frame = _map.GetKeyFrame(kf_vertex);
+    const auto &key_frame =
+        static_cast<const Map &>(_map).GetKeyFrame(kf_vertex);
     boost::copy(
         key_frame.GetMatchedMapPointsRng(),
         std::inserter(map_points_to_project, map_points_to_project.end()));

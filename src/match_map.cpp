@@ -16,5 +16,8 @@ void MatchMap::Emplace(const cv::DMatch &m) {
     }
   }
 }
+const std::map<int, cv::DMatch> &MatchMap::GetTrainIdxToMatch() const {
+  return _train_idx_to_match;
+}
 
 } // namespace clean_slam

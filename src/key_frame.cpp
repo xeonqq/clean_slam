@@ -1,5 +1,6 @@
 #include "key_frame.h"
 #include "frame.h"
+#include "orb_feature_matcher.h"
 #include <boost/range/adaptor/map.hpp>
 #include <boost/range/algorithm/copy.hpp>
 namespace clean_slam {
@@ -25,6 +26,14 @@ const cv::Mat &KeyFrame::GetDescriptors() const {
 boost::select_first_range<std::map<MapPoint *, size_t>>
 KeyFrame::GetMatchedMapPointsRng() const {
   return _frame->GetMatchedMapPointsRng();
+}
+
+TriangulationResult
+KeyFrame::MatchUnmatchedKeyPoints(const OrbFeatureMatcher &matcher,
+                                  KeyFrame &key_frame,
+                                  const cv::Mat &camera_instrinsics) {
+  return _frame->MatchUnmatchedKeyPoints(matcher, *key_frame._frame,
+                                         camera_instrinsics);
 }
 
 void KeyFrame::AddMatchedMapPoint(MapPoint *map_point, size_t index) {

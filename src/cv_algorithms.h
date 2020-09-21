@@ -57,5 +57,24 @@ BoundF Calculate3DPointDistanceBound(const g2o::SE3Quat &Tcw,
 Eigen::Vector3d ViewingDirection(const g2o::SE3Quat &Tcw,
                                  const Eigen::Vector3d &point_3d);
 
+Eigen::Matrix3d GetEssentialMatrix(const g2o::SE3Quat &Tc0w,
+                                   const g2o::SE3Quat &Tc1w);
+
+Eigen::Matrix3d GetFundamentalMatrix(const g2o::SE3Quat &Tc0w,
+                                     const g2o::SE3Quat &Tc1w,
+                                     const Eigen::Matrix3d &intrinsics);
+
+Eigen::Matrix<double, 3, 4>
+GetProjectionMatrix(const g2o::SE3Quat &Tcw, const Eigen::Matrix3d &intrinsics);
+
+double DistanceToEpipolarLine(const cv::Point2f &point0,
+                              const Eigen::Matrix3d &fundamental_mat,
+                              const cv::Point2f &point1);
+
+cv::Mat TriangulatePoints(const g2o::SE3Quat &Tc0w,
+                          const std::vector<cv::Point2f> &points0,
+                          const g2o::SE3Quat &Tc1w,
+                          const std::vector<cv::Point2f> &points1,
+                          const Eigen::Matrix3d &K);
 } // namespace clean_slam
 #endif // CLEAN_SLAM_SRC_CV_ALGORITHMS_H_

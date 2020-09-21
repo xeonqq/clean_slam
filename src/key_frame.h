@@ -11,7 +11,13 @@
 
 namespace clean_slam {
 class Frame;
+class OrbFeatureMatcher;
 
+struct TriangulationResult {
+  cv::Mat triangulated_points;
+  std::vector<int> matched_key_points_indexes;
+  std::vector<int> matched_key_points_indexes_other_frame;
+};
 class KeyFrame {
 public:
   KeyFrame() = default;
@@ -26,6 +32,9 @@ public:
   size_t GetNumMatchedMapPoints() const;
   cv::Mat GetMatchedKeyPointDescriptor(MapPoint *map_point) const;
 
+  TriangulationResult
+  MatchUnmatchedKeyPoints(const OrbFeatureMatcher &matcher, KeyFrame &key_frame,
+                          const cv::Mat &camera_instrinsics);
   void AddMatchedMapPoint(MapPoint *map_point, size_t index);
   void EraseMapPoint(MapPoint *map_point);
   vertex_t GetVertex() const;

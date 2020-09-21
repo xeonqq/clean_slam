@@ -3,6 +3,7 @@
 //
 
 #include "cv_utils.h"
+#include <cxeigen.hpp>
 #include <opencv2/core/hal/interface.h>
 
 namespace clean_slam {
@@ -91,6 +92,15 @@ Eigen::Vector2d Point2fToVector2d(const cv::Point2f &point2f) {
   vec << static_cast<double>(point2f.x), static_cast<double>(point2f.y);
   return vec;
 }
+std::vector<Eigen::Vector3d> ToVectorOfVector3d(const cv::Mat &points) {
+  std::vector<Eigen::Vector3d> vec;
+  vec.reserve(points.rows);
+  for (size_t i{0}; i < points.rows; ++i) {
+    vec.emplace_back(points.at<float>(i, 0), points.at<float>(i, 1),
+                     points.at<float>(i, 2));
+  }
+  return vec;
+}
 
 cv::Mat FilterByMask(const cv::Mat &mat, const cv::Mat &mask) {
   assert(mat.rows == mask.rows);
@@ -143,7 +153,6 @@ cv::Mat FilterByIndex(const cv::Mat &mat, const std::vector<int> &indexes) {
   }
   return result;
 }
-
 
 bool IsPointWithInBounds(const Eigen::Vector2d &point, const BoundF &x_bounds,
                          const BoundF &y_bounds) {

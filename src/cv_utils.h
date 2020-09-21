@@ -123,6 +123,8 @@ cv::Mat RemoveByIndex(const cv::Mat &mat, const Indexes &indexes) {
 }
 Eigen::Vector2d Point2fToVector2d(const cv::Point2f &point2f);
 
+std::vector<Eigen::Vector3d> ToVectorOfVector3d(const cv::Mat &points);
+
 template <typename T> Eigen::Vector3d ToVector3d(const cv::Mat &point3) {
   Eigen::Vector3d vec(point3.at<T>(0), point3.at<T>(1), point3.at<T>(2));
   return vec;

@@ -24,7 +24,8 @@ class Map {
 
 public:
   Map() = default;
-  Map(const OctaveScales &);
+  Map(const OctaveScales &, const OrbFeatureMatcher &,
+      const cv::Mat &camera_instrinsics);
 
   std::vector<MapPoint *>
   AddMapPoints(const std::vector<Eigen::Vector3d> &points_3d,
@@ -36,7 +37,8 @@ public:
                const std::vector<int> &matched_key_points_indexes0,
                const vertex_t &ref_key_frame_vertex0,
                const std::vector<int> &matched_key_points_indexes1,
-               const vertex_t &key_frame_vertex1);
+               const vertex_t &key_frame_vertex1,
+               boost::optional<edge_t> edge = {});
 
   MapPoint &AddMapPoint(const g2o::SE3Quat &Tcw,
                         const Eigen::Vector3d &point_3d,
@@ -47,7 +49,7 @@ public:
 
   const std::set<MapPoint> &GetMapPoints() const;
 
-  const KeyFrame &GetKeyFrame(const vertex_t &kf_vertex) const;
+  const KeyFrame &GetKeyFrame(vertex_t kf_vertex) const;
 
   std::vector<vertex_t> GetNeighbors(vertex_t vertex) const;
 
@@ -55,14 +57,17 @@ public:
   ~Map();
 
 private:
-  void AddKeyFramesWeight(const vertex_t &v0, const vertex_t &v1, int weight);
+  KeyFrame &GetKeyFrame(vertex_t kf_vertex);
+  void AddKeyFramesWeight(const vertex_t &v0, const vertex_t &v1, int weight,
+                          boost::optional<edge_t> edge);
   void ConnectKeyFrame(vertex_t vertex);
-  std::vector<vertex_t> GetHighCovisibleKeyFrames(vertex_t vertex,
-                                                  size_t max_num_kfs) const;
+  std::vector<std::tuple<vertex_t, edge_t>>
+  GetHighCovisibleKeyFrames(vertex_t vertex, size_t max_num_kfs) const;
 
 private:
   const OctaveScales &_octave_scales;
-
+  const OrbFeatureMatcher &_matcher;
+  cv::Mat _camera_intrinsics;
   // todo: could be replace by a vector, map point id is the same as the index
   // of the vector
   std::set<MapPoint> _map_points;

@@ -11,7 +11,8 @@ namespace clean_slam {
 TEST(Frame, GetKeyFramesForLocalMapping) {
   // Given
   OctaveScales octave_scales{1.2};
-  Map map{octave_scales};
+  OrbFeatureMatcher matcher;
+  Map map{octave_scales, matcher, {}};
   cv::Mat point_descriptor = cv::Mat::zeros(1, 32, CV_8UC1);
   cv::Mat points_descriptors = cv::Mat::zeros(2, 32, CV_8UC1);
   Frame frame0{OrbFeatures{{{}}, point_descriptor}, &map, {}, {}};
