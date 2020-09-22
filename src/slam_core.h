@@ -31,10 +31,13 @@ class SlamCore : public boost::msm ::front::state_machine_def<SlamCore> {
 public:
   friend MapInitialization;
   friend MotionTrack;
+
   SlamCore(const cv::Mat &camera_intrinsics,
            const cv::Mat &camera_distortion_coeffs, OrbExtractor *orb_extractor,
+           OrbFeatureMatcher *orb_feature_matcher, Map *map,
            Optimizer *optimizer, OptimizerOnlyPose *optimizer_only_pose,
            IViewer *viewer, const OctaveScales &octave_scale);
+
   void ProcessFirstImage(const cv::Mat &image, double timestamp);
   void TrackByMotionModel(const cv::Mat &image, double timestamp);
   void TrackLocalMap(Frame &frame);
@@ -87,16 +90,15 @@ public:
 private:
   cv::Mat _camera_intrinsic;
   OrbExtractor *_orb_extractor;
+  OrbFeatureMatcher *_orb_feature_matcher;
+  Map *_map;
   Optimizer *_optimizer;
   OptimizerOnlyPose *_optimizer_only_pose;
   IViewer *_viewer;
 
-  OrbFeatureMatcher _orb_feature_matcher;
   UndistortedImageBoundary _undistorted_image_boundary;
 
   const OctaveScales &_octave_scales;
-
-  Map _map;
 
   size_t _num_frames_since_last_key_frame{0};
   std::list<Frame> _frames;

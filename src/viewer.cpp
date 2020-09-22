@@ -3,6 +3,7 @@
 //
 
 #include "viewer.h"
+#include "map.h"
 #include <cv.hpp>
 namespace clean_slam {
 void DrawCartisianCoordinate() {
@@ -63,13 +64,19 @@ void DrawMapPoints(const std::vector<Eigen::Vector3d> &points_3d) {
   }
 }
 
+void DrawMapPoints(const Map &map) {
+  const auto &map_points = map.GetMapPoints();
+  for (const auto &map_point : map_points) {
+    DrawMapPoint(map_point.GetPoint3D());
+  }
+}
 void DrawCameraWithCoordinate() {
   DrawCamera();
   DrawCartisianCoordinate();
 }
 
-Viewer::Viewer(const ViewerSettings &viewer_settings)
-    : _viewer_settings_(viewer_settings) {
+Viewer::Viewer(const ViewerSettings &viewer_settings, const Map &map)
+    : _viewer_settings_(viewer_settings), _map{map} {
   //  _contents.push_back(Content{});
 }
 
@@ -119,9 +126,10 @@ void Viewer::Run() {
         DrawCameraWithCoordinate();
         glPopMatrix();
 
-        DrawMapPoints(content.triangulated_points);
+        //        DrawMapPoints(content.triangulated_points);
       }
     }
+    DrawMapPoints(_map);
     pangolin::FinishFrame();
     if (!_image.empty()) {
       cv::Mat img_with_key_points;

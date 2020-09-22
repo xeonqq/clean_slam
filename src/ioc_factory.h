@@ -5,6 +5,7 @@
 #ifndef CLEAN_SLAM_SRC_IOC_FACTORY_H_
 #define CLEAN_SLAM_SRC_IOC_FACTORY_H_
 #include "dataset_loader.h"
+#include "map.h"
 #include "octave_scales.h"
 #include "optimizer.h"
 #include "orb_extractor.h"
@@ -29,6 +30,8 @@ private:
   OctaveScales _octave_scales;
   Optimizer _optimizer;
   OptimizerOnlyPose _optimizer_only_pose;
+  OrbFeatureMatcher _orb_feature_matcher;
+  Map _map;
 };
 } // namespace clean_slam
 #endif // CLEAN_SLAM_SRC_IOC_FACTORY_H_

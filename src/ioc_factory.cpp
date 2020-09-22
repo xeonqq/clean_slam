@@ -11,9 +11,12 @@ IocFactory::IocFactory(const DatasetLoader *dataset_loader, bool use_gui)
       _octave_scales{dataset_loader->GetOrbExtractorSettings().scale_factor},
       _optimizer{dataset_loader->GetCameraIntrinsics(), _octave_scales},
       _optimizer_only_pose{dataset_loader->GetCameraIntrinsics(),
-                           _octave_scales} {
+                           _octave_scales},
+      _orb_feature_matcher{}, _map{_octave_scales, _orb_feature_matcher,
+                                   dataset_loader->GetCameraIntrinsics()} {
   if (use_gui) {
-    _viewer = std::make_unique<Viewer>(dataset_loader->GetViewerSettings());
+    _viewer =
+        std::make_unique<Viewer>(dataset_loader->GetViewerSettings(), _map);
   } else {
     _viewer = std::make_unique<NullViewer>();
   }
@@ -33,8 +36,9 @@ std::unique_ptr<boost::msm::back::state_machine<SlamCore>>
 IocFactory::CreateSlamCore() {
   return std::make_unique<boost::msm::back::state_machine<SlamCore>>(
       _dataset_loader->GetCameraIntrinsics(),
-      _dataset_loader->GetDistortionCoeffs(), &_orb_extractor, &_optimizer,
-      &_optimizer_only_pose, _viewer.get(), _octave_scales);
+      _dataset_loader->GetDistortionCoeffs(), &_orb_extractor,
+      &_orb_feature_matcher, &_map, &_optimizer, &_optimizer_only_pose,
+      _viewer.get(), _octave_scales);
 }
 
 boost::optional<std::thread> IocFactory::CreateViewerThread() {

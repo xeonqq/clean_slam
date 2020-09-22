@@ -45,15 +45,16 @@ void DrawMatches(const cv::Mat &image, const Frame &frame,
 
 SlamCore::SlamCore(const cv::Mat &camera_intrinsics,
                    const cv::Mat &camera_distortion_coeffs,
-                   OrbExtractor *orb_extractor, Optimizer *optimizer,
-                   OptimizerOnlyPose *optimizer_only_pose, IViewer *viewer,
-                   const OctaveScales &octave_scale)
+                   OrbExtractor *orb_extractor,
+                   OrbFeatureMatcher *orb_feature_matcher, Map *map,
+                   Optimizer *optimizer, OptimizerOnlyPose *optimizer_only_pose,
+                   IViewer *viewer, const OctaveScales &octave_scale)
     : _camera_intrinsic(camera_intrinsics), _orb_extractor(orb_extractor),
+      _orb_feature_matcher{orb_feature_matcher}, _map{map},
       _optimizer{optimizer}, _optimizer_only_pose{optimizer_only_pose},
       _viewer(viewer), _undistorted_image_boundary{camera_intrinsics,
                                                    camera_distortion_coeffs},
-      _octave_scales{octave_scale}, _map{_octave_scales, _orb_feature_matcher,
-                                         camera_intrinsics} {}
+      _octave_scales{octave_scale} {}
 
 void SlamCore::ProcessFirstImage(const cv::Mat &image, double timestamp) {
   _undistorted_image_boundary.ComputeUndistortedCorners(image);
@@ -69,7 +70,7 @@ void SlamCore::TrackByMotionModel(const cv::Mat &image, double timestamp) {
       clean_slam::GetVelocity(prev_Tcw, prev_prev_frame.GetTcw());
   auto Tcw = velocity * prev_Tcw;
 
-  Frame frame{_orb_extractor->DetectAndUndistortKeyPoints(image), &_map, Tcw,
+  Frame frame{_orb_extractor->DetectAndUndistortKeyPoints(image), _map, Tcw,
               timestamp, prev_frame.GetRefKfVertex()};
 
   // project the matched map points in the previous frame to current frame
@@ -88,15 +89,15 @@ void SlamCore::TrackByMotionModel(const cv::Mat &image, double timestamp) {
   }
   const int search_radius = 7;
   auto matches =
-      frame.SearchByProjection(_orb_feature_matcher, points_reprojected,
+      frame.SearchByProjection(*_orb_feature_matcher, points_reprojected,
                                prev_frame, mask, search_radius, _octave_scales);
   if (matches.size() < 20) {
     spdlog::info(
         "Search again with larger radius, num matched map points < 20: {}",
         matches.size());
-    matches = frame.SearchByProjection(_orb_feature_matcher, points_reprojected,
-                                       prev_frame, mask, search_radius * 2,
-                                       _octave_scales);
+    matches = frame.SearchByProjection(*_orb_feature_matcher,
+                                       points_reprojected, prev_frame, mask,
+                                       search_radius * 2, _octave_scales);
     spdlog::info("After search again , num matched map points: {}",
                  matches.size());
   }
@@ -107,7 +108,6 @@ void SlamCore::TrackByMotionModel(const cv::Mat &image, double timestamp) {
     frame.OptimizePose(_optimizer_only_pose);
   }
   TrackLocalMap(frame);
-
 
   if (frame.GetNumMatchedMapPoints() > kNumMatchedMapPointsForBA) {
 #if 0
@@ -132,7 +132,7 @@ void SlamCore::InsertKeyFrame(Frame &frame) {
       frame.GetOrbFeatures().NumKeyPoints() > 50) {
 
     spdlog::debug("Insert kf");
-    _map.AddKeyFrame(frame);
+    _map->AddKeyFrame(frame);
     _num_frames_since_last_key_frame = 0;
   }
 }
@@ -142,7 +142,7 @@ void SlamCore::TrackLocalMap(Frame &frame) {
   std::set<MapPoint *> map_points_to_project;
   for (auto kf_vertex : key_frames_to_track_local_map) {
     const auto &key_frame =
-        static_cast<const Map &>(_map).GetKeyFrame(kf_vertex);
+        static_cast<const Map &>(*_map).GetKeyFrame(kf_vertex);
     boost::copy(
         key_frame.GetMatchedMapPointsRng(),
         std::inserter(map_points_to_project, map_points_to_project.end()));
@@ -193,7 +193,7 @@ void SlamCore::TrackLocalMap(Frame &frame) {
     valid_map_points_reprojected.push_back(point_reprojected);
   }
   auto matches = frame.SearchUnmatchedKeyPointsByProjection(
-      _orb_feature_matcher, valid_map_points, valid_map_points_reprojected,
+      *_orb_feature_matcher, valid_map_points, valid_map_points_reprojected,
       valid_map_points_octaves, 7, _octave_scales);
   spdlog::info("Num additional matched map points track local map: {}",
                matches);

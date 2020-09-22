@@ -32,7 +32,7 @@ class NullViewer : public IViewer {};
 class Viewer : public IViewer {
 
 public:
-  Viewer(const ViewerSettings &viewer_settings);
+  Viewer(const ViewerSettings &viewer_settings, const Map &map);
   void Run() override;
 
   void OnNotify(const Content &content) override {
@@ -51,6 +51,7 @@ private:
   std::mutex _mutex;
 
   ViewerSettings _viewer_settings_;
+  const Map &_map;
   std::vector<Content> _contents;
   cv::Mat _image;
   OrbFeatures _features;
