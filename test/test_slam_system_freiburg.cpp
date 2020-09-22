@@ -83,8 +83,8 @@ struct Report {
   int _count{0};
   std::vector<double> _rotation_errors;
   std::vector<double> _translation_errors;
-  float _translation_error_sum;
-  float _rotation_error_sum;
+  float _translation_error_sum{0};
+  float _rotation_error_sum{0};
 };
 
 TEST(SlamSystemFreiburgTest, Run) {

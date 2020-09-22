@@ -45,7 +45,7 @@ void Map::LocalMapping(vertex_t vertex) {
   auto high_covisible_neighbor_kfs = GetHighCovisibleKeyFrames(vertex, 10);
   auto &key_frame = GetKeyFrame(vertex);
   for (const auto &[covisible_kf, edge] : high_covisible_neighbor_kfs) {
-    auto covisible_key_frame = GetKeyFrame(covisible_kf);
+    auto &covisible_key_frame = GetKeyFrame(covisible_kf);
     const auto triangulation_result = key_frame.MatchUnmatchedKeyPoints(
         _matcher, covisible_key_frame, _camera_intrinsics);
     const auto points_3d =
@@ -68,7 +68,8 @@ Map::GetHighCovisibleKeyFrames(vertex_t vertex, size_t max_num_kfs) const {
   for (tie(ei, e_end) = out_edges(vertex, _covisibility_graph); ei != e_end;
        ++ei) {
     const auto num_common_map_points = get(weight_map, *ei);
-    auto neighbor_kf = target(*ei, _covisibility_graph);
+    const auto tar = target(*ei, _covisibility_graph);
+    auto neighbor_kf = tar == vertex ? source(*ei, _covisibility_graph) : tar;
     covisible_neighbor_kfs.emplace_back(neighbor_kf, num_common_map_points,
                                         *ei);
   }

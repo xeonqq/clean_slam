@@ -140,6 +140,9 @@ cv::Mat TriangulatePoints(const g2o::SE3Quat &Tc0w,
                           const g2o::SE3Quat &Tc1w,
                           const std::vector<cv::Point2f> &points1,
                           const Eigen::Matrix3d &K) {
+  cv::Mat points_3d_cartisian;
+  if (points0.empty())
+    return points_3d_cartisian;
   cv::Mat points_3d_homo;
   cv::Mat projection_mat0, projection_mat1;
   cv::eigen2cv(GetProjectionMatrix(Tc0w, K), projection_mat0);
@@ -147,7 +150,6 @@ cv::Mat TriangulatePoints(const g2o::SE3Quat &Tc0w,
 
   cv::triangulatePoints(projection_mat0, projection_mat1, points0, points1,
                         points_3d_homo);
-  cv::Mat points_3d_cartisian;
   cv::convertPointsFromHomogeneous(points_3d_homo.t(), points_3d_cartisian);
   // points in row wise
   return points_3d_cartisian;
