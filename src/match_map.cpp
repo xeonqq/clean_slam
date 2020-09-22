@@ -19,5 +19,19 @@ void MatchMap::Emplace(const cv::DMatch &m) {
 const std::map<int, cv::DMatch> &MatchMap::GetTrainIdxToMatch() const {
   return _train_idx_to_match;
 }
+std::vector<cv::DMatch>
+MatchMap::Filter(const std::vector<cv::DMatch> &matches) {
+  for (const auto &m : matches) {
+    Emplace(m);
+  }
+  return ToVector();
+}
+std::vector<cv::DMatch> MatchMap::ToVector() const {
+  std::vector<cv::DMatch> matches;
+  matches.reserve(_train_idx_to_match.size());
+  boost::transform(_train_idx_to_match, std::back_inserter(matches),
+                   [](const auto &pair) { return pair.second; });
+  return matches;
+}
 
 } // namespace clean_slam

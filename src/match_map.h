@@ -12,14 +12,9 @@ namespace clean_slam {
 
 class MatchMap {
 public:
+  std::vector<cv::DMatch> Filter(const std::vector<cv::DMatch> &matches);
   void Emplace(const cv::DMatch &m);
-  std::vector<cv::DMatch> ToVector() const {
-    std::vector<cv::DMatch> matches;
-    matches.reserve(_train_idx_to_match.size());
-    boost::transform(_train_idx_to_match, std::back_inserter(matches),
-                     [](const auto &pair) { return pair.second; });
-    return matches;
-  }
+  std::vector<cv::DMatch> ToVector() const;
 
 private:
   std::map<int, cv::DMatch> _train_idx_to_match;

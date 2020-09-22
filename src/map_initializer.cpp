@@ -6,6 +6,7 @@
 #include "cv_algorithms.h"
 #include "cv_utils.h"
 #include "key_frame.h"
+#include "match_map.h"
 #include "viewer.h"
 
 #include <third_party/spdlog/spdlog.h>
@@ -32,9 +33,10 @@ bool MapInitializer::InitializeCameraPose(const cv::Mat &image,
   bool initialized{false};
   auto current_orb_features =
       _orb_extractor->DetectAndUndistortKeyPoints(image);
-  const std::vector<cv::DMatch> good_matches =
+  std::vector<cv::DMatch> good_matches =
       _orb_feature_matcher->Match(current_orb_features, _previous_orb_features);
-
+  MatchMap map;
+  good_matches = map.Filter(good_matches);
   // 1st time filter by matched orb features
   const PointsPair matched_points_pair_undistorted =
       OrbFeatureMatcher::GetMatchedPointsPairUndistorted(

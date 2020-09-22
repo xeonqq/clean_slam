@@ -8,6 +8,7 @@
 #include "key_frame.h"
 #include <boost/graph/graphviz.hpp>
 #include <boost/range/algorithm/transform.hpp>
+#include <third_party/spdlog/spdlog.h>
 
 namespace clean_slam {
 Map::Map(const OctaveScales &octave_scales, const OrbFeatureMatcher &matcher,
@@ -49,6 +50,7 @@ void Map::LocalMapping(vertex_t vertex) {
         _matcher, covisible_key_frame, _camera_intrinsics);
     const auto points_3d =
         ToVectorOfVector3d(triangulation_result.triangulated_points.reshape(1));
+    spdlog::info("LocalMapping num new map points: {}", points_3d.size());
     AddMapPoints(points_3d, triangulation_result.matched_key_points_indexes,
                  vertex,
                  triangulation_result.matched_key_points_indexes_other_frame,

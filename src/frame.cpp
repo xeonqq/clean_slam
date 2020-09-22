@@ -110,9 +110,11 @@ Frame::MatchUnmatchedKeyPoints(const OrbFeatureMatcher &matcher, Frame &frame,
   MatchMap map;
   // for each query feature, so for each unmatched feature in current frame
   for (const auto &matches_for_key_point : matches_for_key_points) {
-    const auto &match = matches_for_key_point[0];
-    if (match.distance <= kDescriptorDistanceThreshold) {
-      map.Emplace(match);
+    if (!matches_for_key_point.empty()) {
+      const auto &match = matches_for_key_point[0];
+      if (match.distance <= kDescriptorDistanceThreshold) {
+        map.Emplace(match);
+      }
     }
   }
   const auto &key_points_query = unmatched_features_query.GetKeyPoints();
