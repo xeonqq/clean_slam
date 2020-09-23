@@ -48,11 +48,10 @@ void Map::LocalMapping(vertex_t vertex) {
     auto &covisible_key_frame = GetKeyFrame(covisible_kf);
     const auto triangulation_result = key_frame.MatchUnmatchedKeyPoints(
         _matcher, covisible_key_frame, _camera_intrinsics);
-    const auto points_3d =
-        ToVectorOfVector3d(triangulation_result.triangulated_points.reshape(1));
-    spdlog::info("LocalMapping num new map points: {}", points_3d.size());
-    AddMapPoints(points_3d, triangulation_result.matched_key_points_indexes,
-                 vertex,
+    spdlog::info("LocalMapping num new map points: {}",
+                 triangulation_result.triangulated_points.size());
+    AddMapPoints(triangulation_result.triangulated_points,
+                 triangulation_result.matched_key_points_indexes, vertex,
                  triangulation_result.matched_key_points_indexes_other_frame,
                  covisible_kf, edge);
   }

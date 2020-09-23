@@ -2,6 +2,7 @@
 // Created by root on 4/18/20.
 //
 #include "cv_algorithms.h"
+#include "cv_utils.h"
 #include "match_map.h"
 #include <boost/range/adaptor/indexed.hpp>
 #include <cv.hpp>
@@ -153,5 +154,18 @@ cv::Mat TriangulatePoints(const g2o::SE3Quat &Tc0w,
   cv::convertPointsFromHomogeneous(points_3d_homo.t(), points_3d_cartisian);
   // points in row wise
   return points_3d_cartisian;
+}
+
+void ValidateMapPoints(const cv::Mat &triangulated_points,
+                       const g2o::SE3Quat &Tcw, cv::Mat &mask) {
+  if (mask.empty()) {
+    mask = cv::Mat(triangulated_points.rows, 1, CV_8U, 1U);
+  }
+  for (size_t i{0}; i < triangulated_points.rows; ++i) {
+    const auto point_3d = ToVector3d<float>(triangulated_points.row(i));
+    const auto point_in_cam_frame = Tcw.map(point_3d);
+    // positive depth
+    mask.row(i) = mask.row(i) & (point_in_cam_frame[2] > 0);
+  }
 }
 } // namespace clean_slam

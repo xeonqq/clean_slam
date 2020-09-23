@@ -14,7 +14,7 @@ class Frame;
 class OrbFeatureMatcher;
 
 struct TriangulationResult {
-  cv::Mat triangulated_points;
+  std::vector<Eigen::Vector3d> triangulated_points;
   std::vector<int> matched_key_points_indexes;
   std::vector<int> matched_key_points_indexes_other_frame;
 };

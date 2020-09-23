@@ -76,5 +76,8 @@ cv::Mat TriangulatePoints(const g2o::SE3Quat &Tc0w,
                           const g2o::SE3Quat &Tc1w,
                           const std::vector<cv::Point2f> &points1,
                           const Eigen::Matrix3d &K);
+
+void ValidateMapPoints(const cv::Mat &triangulated_points,
+                       const g2o::SE3Quat &Tcw, cv::Mat &mask);
 } // namespace clean_slam
 #endif // CLEAN_SLAM_SRC_CV_ALGORITHMS_H_

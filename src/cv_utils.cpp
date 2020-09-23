@@ -96,8 +96,7 @@ std::vector<Eigen::Vector3d> ToVectorOfVector3d(const cv::Mat &points) {
   std::vector<Eigen::Vector3d> vec;
   vec.reserve(points.rows);
   for (size_t i{0}; i < points.rows; ++i) {
-    vec.emplace_back(points.at<float>(i, 0), points.at<float>(i, 1),
-                     points.at<float>(i, 2));
+    vec.emplace_back(ToVector3d<float>(points.row(i)));
   }
   return vec;
 }

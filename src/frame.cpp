@@ -141,10 +141,16 @@ Frame::MatchUnmatchedKeyPoints(const OrbFeatureMatcher &matcher, Frame &frame,
           unmatched_train_key_points_idxes[match.trainIdx]);
     }
   }
-  cv::Mat points_3d_cartisian = TriangulatePoints(
-      _Tcw, good_points_query, frame.GetTcw(), good_points_train, K);
-  return {points_3d_cartisian, std::move(good_points_query_idxes),
-          std::move(good_points_train_idxes)};
+  cv::Mat points_3d_cartisian =
+      TriangulatePoints(_Tcw, good_points_query, frame.GetTcw(),
+                        good_points_train, K)
+          .reshape(1);
+  cv::Mat mask;
+  ValidateMapPoints(points_3d_cartisian, _Tcw, mask);
+  ValidateMapPoints(points_3d_cartisian, frame.GetTcw(), mask);
+  return {ToStdVectorByMask(points_3d_cartisian, mask),
+          FilterByMask(good_points_query_idxes, mask),
+          FilterByMask(good_points_train_idxes, mask)};
 }
 
 void Frame::OptimizePose(OptimizerOnlyPose *optimizer_only_pose) {
