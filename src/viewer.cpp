@@ -7,22 +7,23 @@
 #include <cv.hpp>
 namespace clean_slam {
 void DrawCartisianCoordinate() {
-  glLineWidth(3);
+  glLineWidth(1);
   glBegin(GL_LINES);
+  float axis_length = 0.1;
   glColor3f(0.8f, 0.f, 0.f);
   glVertex3f(0, 0, 0);
-  glVertex3f(1, 0, 0);
+  glVertex3f(axis_length, 0, 0);
   glColor3f(0.f, 0.8f, 0.f);
   glVertex3f(0, 0, 0);
-  glVertex3f(0, 1, 0);
+  glVertex3f(0, axis_length, 0);
   glColor3f(0.2f, 0.2f, 1.f);
   glVertex3f(0, 0, 0);
-  glVertex3f(0, 0, 1);
+  glVertex3f(0, 0, axis_length);
   glEnd();
 }
 
 void DrawCamera() {
-  const float w = 1;
+  const float w = 0.1;
   const float h = w * 0.75;
   const float z = w * 0.6;
   glLineWidth(2);
@@ -70,9 +71,24 @@ void DrawMapPoints(const Map &map) {
     DrawMapPoint(map_point.GetPoint3D());
   }
 }
+
 void DrawCameraWithCoordinate() {
   DrawCamera();
   DrawCartisianCoordinate();
+}
+
+void DrawKeyFrames(const Map &map) {
+  auto lock = map.Lock();
+  const auto &g = map.GetCovisibilityGraph();
+  graph_traits<Graph>::vertex_iterator vi, end;
+  for (tie(vi, end) = vertices(g); vi != end; ++vi) {
+    const auto &key_frame = *g[*vi];
+    auto camera_pose = key_frame.GetTcw().to_homogeneous_matrix();
+    glPushMatrix();
+    glMultMatrixd((double *)camera_pose.data());
+    DrawCameraWithCoordinate();
+    glPopMatrix();
+  }
 }
 
 Viewer::Viewer(const ViewerSettings &viewer_settings, const Map &map)
@@ -115,20 +131,8 @@ void Viewer::Run() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
     d_cam.Activate(s_cam);
-    {
-      std::lock_guard<std::mutex> lock(_mutex);
-      for (const auto &content : _contents) {
-
-        const auto camera_pose =
-            content.homogeneous_matrix.to_homogeneous_matrix();
-        glPushMatrix();
-        glMultMatrixd((double *)camera_pose.data());
-        DrawCameraWithCoordinate();
-        glPopMatrix();
-
-        //        DrawMapPoints(content.triangulated_points);
-      }
-    }
+    //    DrawFrames();
+    DrawKeyFrames(_map);
     DrawMapPoints(_map);
     pangolin::FinishFrame();
     if (!_image.empty()) {
@@ -141,6 +145,16 @@ void Viewer::Run() {
       cv::imshow("Clean-SLAM: Current Frame", img_with_key_points);
       cv::waitKey(_viewer_settings_.display_interval_ms);
     }
+  }
+}
+void Viewer::DrawFrames() const {
+  for (const auto &content : this->_contents) {
+
+    const auto camera_pose = content.homogeneous_matrix.to_homogeneous_matrix();
+    glPushMatrix();
+    glMultMatrixd((double *)camera_pose.data());
+    DrawCameraWithCoordinate();
+    glPopMatrix();
   }
 }
 } // namespace clean_slam

@@ -91,10 +91,10 @@ TEST(SlamSystemFreiburgTest, Run) {
   // arrange
   DatasetLoader dataset_loader;
   dataset_loader.LoadFreiburgDataset(
-      //      DATASET_DIR + std::string("/rgbd_dataset_freiburg1_xyz"),
-      //      CONFIG_DIR + std::string("/TUM1.yaml"));
-      DATASET_DIR + std::string("/freiburg3_long_office_household"),
-      CONFIG_DIR + std::string("/TUM3.yaml"));
+      DATASET_DIR + std::string("/rgbd_dataset_freiburg1_xyz"),
+      CONFIG_DIR + std::string("/TUM1.yaml"));
+  //      DATASET_DIR + std::string("/freiburg3_long_office_household"),
+  //      CONFIG_DIR + std::string("/TUM3.yaml"));
   SlamSystem system{&dataset_loader, true};
 
   // act

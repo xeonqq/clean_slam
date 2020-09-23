@@ -17,8 +17,12 @@ Map::Map(const OctaveScales &octave_scales, const OrbFeatureMatcher &matcher,
       _camera_intrinsics{camera_instrinsics} {}
 
 vertex_t Map::AddKeyFrame(Frame &frame) {
-  const auto vertex = add_vertex(_covisibility_graph);
-  _covisibility_graph[vertex] = std::make_unique<KeyFrame>(frame, vertex);
+  vertex_t vertex;
+  {
+    auto lock = Lock();
+    vertex = add_vertex(_covisibility_graph);
+    _covisibility_graph[vertex] = std::make_unique<KeyFrame>(frame, vertex);
+  }
   ConnectKeyFrame(vertex);
   LocalMapping(vertex);
   return vertex;
@@ -185,4 +189,5 @@ Map::~Map() {
   std::cout
       << "\nTo visualize the graph run: dot -Tpng graph.dot > graph.png\n";
 }
+const Graph &Map::GetCovisibilityGraph() const { return _covisibility_graph; }
 } // namespace clean_slam

@@ -16,6 +16,7 @@
 #include "map_point.h"
 #include "octave_scales.h"
 #include "orb_extractor.h"
+#include <mutex>
 
 namespace clean_slam {
 using namespace boost;
@@ -54,6 +55,12 @@ public:
   std::vector<vertex_t> GetNeighbors(vertex_t vertex) const;
 
   void LocalMapping(vertex_t vertex);
+
+  const Graph &GetCovisibilityGraph() const;
+
+  std::lock_guard<std::mutex> Lock() const {
+    return std::lock_guard<std::mutex>(_mutex);
+  }
   ~Map();
 
 private:
@@ -72,6 +79,10 @@ private:
   // of the vector
   std::set<MapPoint> _map_points;
   Graph _covisibility_graph;
+
+  // for viewer, during visualization, graph can be updated
+  mutable std::mutex _mutex;
+
 }; // namespace clean_slam
 } // namespace clean_slam
 #endif // CLEAN_SLAM_SRC_MAP_H_

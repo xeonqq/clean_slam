@@ -47,6 +47,8 @@ public:
     _features = orb_features;
   }
 
+  void DrawFrames() const;
+
 private:
   std::mutex _mutex;
 
