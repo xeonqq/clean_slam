@@ -158,14 +158,13 @@ cv::Mat TriangulatePoints(const g2o::SE3Quat &Tc0w,
 
 void ValidateMapPoints(const cv::Mat &triangulated_points,
                        const g2o::SE3Quat &Tcw, cv::Mat &mask) {
-  if (mask.empty()) {
-    mask = cv::Mat(triangulated_points.rows, 1, CV_8U, 1U);
-  }
   for (size_t i{0}; i < triangulated_points.rows; ++i) {
-    const auto point_3d = ToVector3d<float>(triangulated_points.row(i));
-    const auto point_in_cam_frame = Tcw.map(point_3d);
-    // positive depth
-    mask.row(i) = mask.row(i) & (point_in_cam_frame[2] > 0);
+    if (mask.at<uint8_t>(i) == 1) {
+      const auto point_3d = ToVector3d<float>(triangulated_points.row(i));
+      const auto point_in_cam_frame = Tcw.map(point_3d);
+      // positive depth
+      mask.at<uint8_t>(i) &= (point_in_cam_frame[2] > 0);
+    }
   }
 }
 } // namespace clean_slam

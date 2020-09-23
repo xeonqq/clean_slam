@@ -145,7 +145,7 @@ Frame::MatchUnmatchedKeyPoints(const OrbFeatureMatcher &matcher, Frame &frame,
       TriangulatePoints(_Tcw, good_points_query, frame.GetTcw(),
                         good_points_train, K)
           .reshape(1);
-  cv::Mat mask;
+  cv::Mat mask = cv::Mat(points_3d_cartisian.rows, 1, CV_8U, 1U);
   ValidateMapPoints(points_3d_cartisian, _Tcw, mask);
   ValidateMapPoints(points_3d_cartisian, frame.GetTcw(), mask);
   return {ToStdVectorByMask(points_3d_cartisian, mask),
