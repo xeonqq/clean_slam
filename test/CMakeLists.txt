@@ -13,6 +13,17 @@ ExternalProject_Add(
         BUILD_COMMAND ""
         INSTALL_COMMAND ""
 )
+ExternalProject_Add(
+        freiburg3_long_office_household
+        PREFIX ""
+        URL https://vision.in.tum.de/rgbd/dataset/freiburg3/rgbd_dataset_freiburg3_long_office_household.tgz
+        URL_HASH SHA512=630e3a2d262ae4220d6323c17e8e48e2e91c906dcbe0fe8fe60b0099272a8c626338f4d20f379adcdadd125361004f14ef8efa49b7c877413de36bd86dbe82da
+        DOWNLOAD_DIR ${DATASET_DIR}
+        SOURCE_DIR ${DATASET_DIR}/freiburg3_long_office_household
+        CONFIGURE_COMMAND ""
+        BUILD_COMMAND ""
+        INSTALL_COMMAND ""
+)
 
 
 add_compile_definitions(DATASET_DIR="${DATASET_DIR}")
@@ -33,4 +44,4 @@ target_link_libraries(
         gtest_main
         gmock
 )
-add_dependencies(${BINARY} rgbd_dataset_freiburg1_xyz)
+add_dependencies(${BINARY} rgbd_dataset_freiburg1_xyz freiburg3_long_office_household)
