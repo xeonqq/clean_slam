@@ -10,11 +10,6 @@
 
 namespace clean_slam {
 
-cv::Mat
-Calculate3DPointsReprojectionError(const cv::Mat &points_3d,
-                                   const cv::Mat &projection_matrix,
-                                   const std::vector<cv::Point2f> &points_2d);
-
 std::vector<cv::Mat>
 GetProjectionMatrixCandidates(const cv::Mat &camera_intrinsics,
                               const std::vector<cv::Mat> &Rs,

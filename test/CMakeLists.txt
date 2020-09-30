@@ -44,4 +44,5 @@ target_link_libraries(
         gtest_main
         gmock
 )
-add_dependencies(${BINARY} rgbd_dataset_freiburg1_xyz freiburg3_long_office_household)
+#add_dependencies(${BINARY} rgbd_dataset_freiburg1_xyz freiburg3_long_office_household)
+add_dependencies(${BINARY} rgbd_dataset_freiburg1_xyz)

@@ -6,9 +6,11 @@
 #define CLEAN_SLAM_SRC_CV_ALGORITHMS_H_
 
 #include "bound.h"
+#include "homogeneous_matrix.h"
 #include "octave_scales.h"
 #include "orb_extractor.h"
 #include "orb_feature_matcher.h"
+#include "plausible_transformation.h"
 #include <Eigen/Dense>
 #include <boost/range/algorithm.hpp>
 #include <opencv2/core/mat.hpp>
@@ -67,9 +69,9 @@ Eigen::Matrix3d GetFundamentalMatrix(const g2o::SE3Quat &Tc0w,
 Eigen::Matrix<double, 3, 4>
 GetProjectionMatrix(const g2o::SE3Quat &Tcw, const Eigen::Matrix3d &intrinsics);
 
-double DistanceToEpipolarLine(const cv::Point2f &point0,
-                              const Eigen::Matrix3d &fundamental_mat,
-                              const cv::Point2f &point1);
+double DistanceSqrToEpipolarLine(const cv::Point2f &point0,
+                                 const Eigen::Matrix3d &fundamental_mat,
+                                 const cv::Point2f &point1);
 
 cv::Mat TriangulatePoints(const g2o::SE3Quat &Tc0w,
                           const std::vector<cv::Point2f> &points0,
@@ -77,7 +79,12 @@ cv::Mat TriangulatePoints(const g2o::SE3Quat &Tc0w,
                           const std::vector<cv::Point2f> &points1,
                           const Eigen::Matrix3d &K);
 
-void ValidateMapPoints(const cv::Mat &triangulated_points,
-                       const g2o::SE3Quat &Tcw, cv::Mat &mask);
+void ValidateMapPointsPositiveDepth(const cv::Mat &triangulated_points,
+                                    const g2o::SE3Quat &Tcw, cv::Mat &mask);
+
+cv::Mat
+Calculate3DPointsReprojectionError(const cv::Mat &points_3d,
+                                   const cv::Mat &projection_matrix,
+                                   const std::vector<cv::Point2f> &points_2d);
 } // namespace clean_slam
 #endif // CLEAN_SLAM_SRC_CV_ALGORITHMS_H_

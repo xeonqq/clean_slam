@@ -3,6 +3,7 @@
 //
 
 #include "projective_transformation.h"
+#include "cv_algorithms.h"
 #include "cv_utils.h"
 #include "homography_motion_estimator.h"
 #include <cv.hpp>
@@ -136,23 +137,6 @@ int ProjectiveTransformation::ValidateTriangulatedPoints(
   //  std::cout << "prev_err: " << reproj_error_prev_frame.row(1) << std::endl;
   //  std::cout << "curr_err: " << reproj_error_curr_frame.row(1) << std::endl;
   return cv::countNonZero(good_points_mask);
-}
-
-cv::Mat
-Calculate3DPointsReprojectionError(const cv::Mat &points_3d,
-                                   const cv::Mat &projection_matrix,
-                                   const std::vector<cv::Point2f> &points_2d) {
-  cv::Mat reprojected_image_points;
-  cv::transform(points_3d, reprojected_image_points, projection_matrix);
-  cv::convertPointsFromHomogeneous(reprojected_image_points.t(),
-                                   reprojected_image_points);
-
-  cv::Mat reprojection_error =
-      cv::Mat(points_2d).reshape(2) - reprojected_image_points;
-
-  cv::pow(reprojection_error, 2, reprojection_error);
-  reprojection_error = SumChannels(reprojection_error);
-  return reprojection_error;
 }
 
 std::vector<cv::Mat>

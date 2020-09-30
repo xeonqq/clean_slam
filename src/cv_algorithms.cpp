@@ -3,11 +3,15 @@
 //
 #include "cv_algorithms.h"
 #include "cv_utils.h"
+#include "homography_motion_estimator.h"
 #include "match_map.h"
+#include "projective_transformation.h"
 #include <boost/range/adaptor/indexed.hpp>
 #include <cv.hpp>
+#include <iostream>
 #include <opencv2/core/eigen.hpp>
 #include <opencv2/features2d.hpp>
+
 namespace clean_slam {
 
 g2o::SE3Quat GetVelocity(const g2o::SE3Quat &Tcw_current,
@@ -124,16 +128,16 @@ GetProjectionMatrix(const g2o::SE3Quat &Tcw,
   return projection_matrix;
 }
 
-double DistanceToEpipolarLine(const cv::Point2f &point0,
-                              const Eigen::Matrix3d &fundamental_mat,
-                              const cv::Point2f &point1) {
+double DistanceSqrToEpipolarLine(const cv::Point2f &point0,
+                                 const Eigen::Matrix3d &fundamental_mat,
+                                 const cv::Point2f &point1) {
   Eigen::Vector3d point0_homo{point0.x, point0.y, 1};
   Eigen::Vector3d point1_homo{point1.x, point1.y, 1};
   auto epipolar_line = fundamental_mat * point1_homo;
-  auto distance =
-      std::abs(epipolar_line.dot(point0_homo)) /
-      std::sqrt(std::pow(epipolar_line[0], 2) + std::pow(epipolar_line[1], 2));
-  return distance;
+  auto distance_sqr =
+      std::pow(epipolar_line.dot(point0_homo), 2) /
+      (std::pow(epipolar_line[0], 2) + std::pow(epipolar_line[1], 2));
+  return distance_sqr;
 }
 
 cv::Mat TriangulatePoints(const g2o::SE3Quat &Tc0w,
@@ -142,8 +146,6 @@ cv::Mat TriangulatePoints(const g2o::SE3Quat &Tc0w,
                           const std::vector<cv::Point2f> &points1,
                           const Eigen::Matrix3d &K) {
   cv::Mat points_3d_cartisian;
-  if (points0.empty())
-    return points_3d_cartisian;
   cv::Mat points_3d_homo;
   cv::Mat projection_mat0, projection_mat1;
   cv::eigen2cv(GetProjectionMatrix(Tc0w, K), projection_mat0);
@@ -156,15 +158,32 @@ cv::Mat TriangulatePoints(const g2o::SE3Quat &Tc0w,
   return points_3d_cartisian;
 }
 
-void ValidateMapPoints(const cv::Mat &triangulated_points,
-                       const g2o::SE3Quat &Tcw, cv::Mat &mask) {
-  for (size_t i{0}; i < triangulated_points.rows; ++i) {
+void ValidateMapPointsPositiveDepth(const cv::Mat &triangulated_points,
+                                    const g2o::SE3Quat &Tcw, cv::Mat &mask) {
+  cv::Mat points_3d = triangulated_points.reshape(1);
+  for (size_t i{0}; i < points_3d.rows; ++i) {
     if (mask.at<uint8_t>(i) == 1) {
-      const auto point_3d = ToVector3d<float>(triangulated_points.row(i));
+      const auto point_3d = ToVector3d<float>(points_3d.row(i));
       const auto point_in_cam_frame = Tcw.map(point_3d);
       // positive depth
       mask.at<uint8_t>(i) &= (point_in_cam_frame[2] > 0);
     }
   }
+}
+cv::Mat
+Calculate3DPointsReprojectionError(const cv::Mat &points_3d,
+                                   const cv::Mat &projection_matrix,
+                                   const std::vector<cv::Point2f> &points_2d) {
+  cv::Mat reprojected_image_points;
+  cv::transform(points_3d, reprojected_image_points, projection_matrix);
+  cv::convertPointsFromHomogeneous(reprojected_image_points.t(),
+                                   reprojected_image_points);
+
+  cv::Mat reprojection_error =
+      cv::Mat(points_2d).reshape(2) - reprojected_image_points;
+
+  cv::pow(reprojection_error, 2, reprojection_error);
+  reprojection_error = clean_slam::SumChannels(reprojection_error);
+  return reprojection_error;
 }
 } // namespace clean_slam

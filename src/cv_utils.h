@@ -132,6 +132,8 @@ template <typename T> Eigen::Vector3d ToVector3d(const cv::Mat &point3) {
 
 cv::Mat ToTransformationMatrix(const cv::Mat &R, const cv::Mat &T);
 
+cv::Mat ToTransformationMatrix(const g2o::SE3Quat &Tcw);
+
 cv::Mat NormPoints(const cv::Mat &m);
 cv::Mat SumChannels(const cv::Mat &m);
 cv::Mat SumColumns(const cv::Mat &m);

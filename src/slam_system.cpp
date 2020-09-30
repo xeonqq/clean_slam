@@ -16,7 +16,7 @@ CameraTrajectory SlamSystem::GetCamTrajectory() const {
 
 void SlamSystem::Run() {
 
-  spdlog::set_level(spdlog::level::debug); // Set global log level to debug
+  spdlog::set_level(spdlog::level::warn); // Set global log level to debug
 
   if (_dataset_loader) {
     auto viewer_thread = _ioc_factory.CreateViewerThread();

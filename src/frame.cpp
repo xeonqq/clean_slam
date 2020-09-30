@@ -3,6 +3,8 @@
 //
 #include "frame.h"
 #include "cv_utils.h"
+#include "epipolar_constraint_motion_estimator.h"
+#include "homography_motion_estimator.h"
 #include "map.h"
 #include "match_map.h"
 #include <boost/range/adaptors.hpp>
@@ -130,9 +132,11 @@ Frame::MatchUnmatchedKeyPoints(const OrbFeatureMatcher &matcher, Frame &frame,
        map.GetTrainIdxToMatch() | boost::adaptors::map_values) {
     const auto &key_point_query = key_points_query[match.queryIdx];
     const auto &key_point_train = key_points_train[match.trainIdx];
-    const auto distance =
-        DistanceToEpipolarLine(key_point_query.pt, F, key_point_train.pt);
-    if (distance < kDistanceToEpipolarLineThreshold) {
+    const auto distance_sqr =
+        DistanceSqrToEpipolarLine(key_point_query.pt, F, key_point_train.pt);
+    // todo: the threshold for distance to epipolar line is too high
+    if (distance_sqr <
+        EpipolarConstraintMotionEstimator::chi_square_threshold * 30) {
       good_points_query.push_back(key_point_query.pt);
       good_points_train.push_back(key_point_train.pt);
       good_points_query_idxes.push_back(
@@ -141,14 +145,27 @@ Frame::MatchUnmatchedKeyPoints(const OrbFeatureMatcher &matcher, Frame &frame,
           unmatched_train_key_points_idxes[match.trainIdx]);
     }
   }
-  cv::Mat points_3d_cartisian =
-      TriangulatePoints(_Tcw, good_points_query, frame.GetTcw(),
-                        good_points_train, K)
-          .reshape(1);
+  if (good_points_query.empty()) {
+    return {};
+  }
+  cv::Mat points_3d_cartisian = TriangulatePoints(
+      _Tcw, good_points_query, frame.GetTcw(), good_points_train, K);
   cv::Mat mask = cv::Mat(points_3d_cartisian.rows, 1, CV_8U, 1U);
-  ValidateMapPoints(points_3d_cartisian, _Tcw, mask);
-  ValidateMapPoints(points_3d_cartisian, frame.GetTcw(), mask);
-  return {ToStdVectorByMask(points_3d_cartisian, mask),
+  ValidateMapPointsPositiveDepth(points_3d_cartisian, _Tcw, mask);
+  ValidateMapPointsPositiveDepth(points_3d_cartisian, frame.GetTcw(), mask);
+  const auto reproj_err_query = Calculate3DPointsReprojectionError(
+      points_3d_cartisian, camera_intrinsics * ToTransformationMatrix(_Tcw),
+      good_points_query);
+  const auto reproj_err_train = Calculate3DPointsReprojectionError(
+      points_3d_cartisian,
+      camera_intrinsics * ToTransformationMatrix(frame.GetTcw()),
+      good_points_train);
+  mask = (reproj_err_query < HomographyMotionEstimator::chi_square_threshold) &
+         mask;
+  mask = (reproj_err_train < HomographyMotionEstimator::chi_square_threshold) &
+         mask;
+
+  return {ToStdVectorByMask(points_3d_cartisian.reshape(1), mask),
           FilterByMask(good_points_query_idxes, mask),
           FilterByMask(good_points_train_idxes, mask)};
 }

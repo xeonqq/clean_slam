@@ -68,6 +68,13 @@ cv::Mat ToTransformationMatrix(const cv::Mat &R, const cv::Mat &T) {
   return transformation;
 }
 
+cv::Mat ToTransformationMatrix(const g2o::SE3Quat &Tcw) {
+  cv::Mat transformation;
+  Eigen::Matrix<double, 3, 4> T = Tcw.to_homogeneous_matrix().block<3, 4>(0, 0);
+  cv::eigen2cv(T, transformation);
+  return transformation;
+}
+
 cv::Mat NormPoints(const cv::Mat &m) {
   // calculate norm of points, i.e. 3 dim points means 3 channels
   cv::Mat norms = m.mul(m);
